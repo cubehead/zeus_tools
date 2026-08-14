@@ -7,6 +7,7 @@
 #include "eui/platform.h"
 
 #include <algorithm>
+#include <array>
 #include <string>
 
 #ifndef ZEUS_APP_VERSION
@@ -24,14 +25,27 @@ namespace {
 AppState& app_state = controller::state();
 constexpr const char* kProjectUrl = "https://github.com/cubehead/zeus_tools";
 
+struct OpenSourceProject {
+    const char* name;
+    const char* url;
+};
+
+constexpr std::array<OpenSourceProject, 5> kOpenSourceProjects{{
+    {"EUI-NEO", "https://github.com/sudoevolve/EUI-NEO"},
+    {"pugixml", "https://github.com/zeux/pugixml"},
+    {"yaml-cpp", "https://github.com/jbeder/yaml-cpp"},
+    {"Font Awesome", "https://fontawesome.com"},
+    {"Primer Octicons", "https://github.com/primer/octicons"},
+}};
+
 } // namespace
 
 void build_about_dialog(eui::Ui& ui, const ViewContext& context) {
     if (!app_state.about_dialog_open) return;
 
     const auto& tokens = context.tokens;
-    const float dialog_width = std::min(570.0f, context.screen_width - 40.0f);
-    const float dialog_height = std::min(410.0f, context.screen_height - 40.0f);
+    const float dialog_width = std::min(650.0f, context.screen_width - 40.0f);
+    const float dialog_height = std::min(570.0f, context.screen_height - 40.0f);
     const float dialog_x = (context.screen_width - dialog_width) * 0.5f;
     const float dialog_y = (context.screen_height - dialog_height) * 0.5f;
     const std::string version = std::string(controller::tr(i18n::Text::Version)) +
@@ -140,6 +154,43 @@ void build_about_dialog(eui::Ui& ui, const ViewContext& context) {
                 .verticalAlign(eui::VerticalAlign::Center)
                 .color(tokens.text)
                 .build();
+
+            ui.text("about.thanks.title")
+                .position(28.0f, 310.0f)
+                .size(dialog_width - 56.0f, 28.0f)
+                .text(controller::tr(i18n::Text::SpecialThanks))
+                .fontFamily(fonts::ui())
+                .fontSize(19.0f)
+                .fontWeight(700)
+                .color(tokens.text)
+                .build();
+
+            ui.text("about.thanks.description")
+                .position(28.0f, 340.0f)
+                .size(dialog_width - 56.0f, 24.0f)
+                .text(controller::tr(i18n::Text::OpenSourceThanks))
+                .fontFamily(fonts::ui())
+                .fontSize(14.0f)
+                .color(components::theme::withAlpha(tokens.text, 0.66f))
+                .build();
+
+            constexpr float link_gap = 10.0f;
+            const float link_width = (dialog_width - 56.0f - link_gap * 2.0f) / 3.0f;
+            for (std::size_t index = 0; index < kOpenSourceProjects.size(); ++index) {
+                const auto& project = kOpenSourceProjects[index];
+                const float column = static_cast<float>(index % 3);
+                const float row = static_cast<float>(index / 3);
+                components::button(ui, "about.thanks." + std::to_string(index))
+                    .position(
+                        28.0f + column * (link_width + link_gap),
+                        370.0f + row * 46.0f)
+                    .size(link_width, 38.0f)
+                    .text(std::string(project.name) + "  ↗")
+                    .fontSize(15.0f)
+                    .theme(tokens, false)
+                    .onClick([url = project.url] { eui::platform::openUrl(url); })
+                    .build();
+            }
 
             components::button(ui, "about.project")
                 .position(28.0f, dialog_height - 72.0f)

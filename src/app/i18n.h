@@ -16,8 +16,8 @@ enum class Text {
     MessageInput, MessageResult, KeyEncoding, ShowKey, HideKey,
     WeakAlgorithm, PreviewingFirst, Rows, RowsCopyTsv, TablePreviewCopyTsv,
     SearchResult, InvalidRegex, CopyAll, CopySelected, Selected, LocalOnly,
-    About, Version, Build, AboutDescription, PrivacySummary, ProjectWebsite,
-    License, Close, Count,
+    About, Version, Build, AboutDescription, PrivacySummary, SpecialThanks,
+    OpenSourceThanks, ProjectWebsite, License, Close, Count,
 };
 
 struct Translation {
