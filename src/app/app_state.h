@@ -80,6 +80,7 @@ struct AppState {
     int input_type_override_index = 0;
     bool input_type_dropdown_open = false;
     bool language_dropdown_open = false;
+    bool about_dialog_open = false;
     std::size_t full_repaint_revision = 0;
     int theme_preference_index = static_cast<int>(zeus::load_theme_preference());
     int locale_preference_index = static_cast<int>(zeus::load_locale_preference());

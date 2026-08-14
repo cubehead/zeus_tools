@@ -76,6 +76,8 @@ void initialize_documentation_scenario() {
         app_state.crypto.hmac_key = "docs-demo-key";
         app_state.crypto.key_visible = false;
         compute_crypto_output(zeus::DigestAlgorithm::Sha256);
+    } else if (scenario == "about") {
+        app_state.about_dialog_open = true;
     }
 #endif
 }

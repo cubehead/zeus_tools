@@ -15,7 +15,9 @@ enum class Text {
     Inspect, Base64Encode, UrlEncode, Upper, Lower, Digest, Hmac, HmacKey,
     MessageInput, MessageResult, KeyEncoding, ShowKey, HideKey,
     WeakAlgorithm, PreviewingFirst, Rows, RowsCopyTsv, TablePreviewCopyTsv,
-    SearchResult, InvalidRegex, CopyAll, CopySelected, Selected, LocalOnly, Count,
+    SearchResult, InvalidRegex, CopyAll, CopySelected, Selected, LocalOnly,
+    About, Version, Build, AboutDescription, PrivacySummary, ProjectWebsite,
+    License, Close, Count,
 };
 
 struct Translation {

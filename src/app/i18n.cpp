@@ -56,6 +56,14 @@ const std::array<Translation, static_cast<std::size_t>(Text::Count)> translation
     {"复制选中", "複製所選", "Copy selected", "選択をコピー", "선택 복사", "Copiar selección", "Copier la sélection", "Auswahl kopieren", "Copiar seleção", "Копировать выбранное"},
     {"已选择", "已選取", "Selected", "選択済み", "선택됨", "Seleccionado", "Sélectionné", "Ausgewählt", "Selecionado", "Выбрано"},
     {"仅本地处理", "僅在本機處理", "Local only", "ローカルのみ", "로컬 전용", "Solo local", "Local uniquement", "Nur lokal", "Somente local", "Только локально"},
+    {"关于", "關於", "About", "このアプリについて", "정보", "Acerca de", "À propos", "Info", "Sobre", "О программе"},
+    {"版本", "版本", "Version", "バージョン", "버전", "Versión", "Version", "Version", "Versão", "Версия"},
+    {"构建", "組建", "Build", "ビルド", "빌드", "Compilación", "Build", "Build", "Compilação", "Сборка"},
+    {"本地优先的开发者文本格式化与编码工具。", "本機優先的開發者文字格式化與編碼工具。", "A local-first text formatting and encoding tool for developers.", "開発者向けのローカル優先テキスト整形・エンコードツールです。", "개발자를 위한 로컬 우선 텍스트 포맷 및 인코딩 도구입니다.", "Una herramienta local de formato y codificación de texto para desarrolladores.", "Un outil local de formatage et d’encodage de texte pour les développeurs.", "Ein lokal arbeitendes Textformatierungs- und Kodierungswerkzeug für Entwickler.", "Uma ferramenta local de formatação e codificação de texto para desenvolvedores.", "Локальный инструмент форматирования и кодирования текста для разработчиков."},
+    {"所有内容仅在本机处理，不上传，也不保存历史记录。", "所有內容僅在本機處理，不上傳，也不儲存歷史記錄。", "All content stays on this device. Nothing is uploaded or saved to history.", "すべての内容はこの端末内で処理され、アップロードも履歴保存もされません。", "모든 콘텐츠는 이 기기에서만 처리되며 업로드하거나 기록에 저장하지 않습니다.", "Todo el contenido se procesa en este dispositivo; no se sube ni se guarda en el historial.", "Tout le contenu reste sur cet appareil, sans envoi ni historique.", "Alle Inhalte bleiben auf diesem Gerät und werden weder hochgeladen noch gespeichert.", "Todo o conteúdo permanece neste dispositivo, sem envio ou histórico.", "Все данные обрабатываются на этом устройстве, не загружаются и не сохраняются в историю."},
+    {"项目主页", "專案首頁", "Project website", "プロジェクトサイト", "프로젝트 웹사이트", "Sitio del proyecto", "Site du projet", "Projektwebsite", "Site do projeto", "Сайт проекта"},
+    {"MIT 许可证", "MIT 授權條款", "MIT License", "MIT ライセンス", "MIT 라이선스", "Licencia MIT", "Licence MIT", "MIT-Lizenz", "Licença MIT", "Лицензия MIT"},
+    {"关闭", "關閉", "Close", "閉じる", "닫기", "Cerrar", "Fermer", "Schließen", "Fechar", "Закрыть"},
 }};
 
 const char* get(Text text, zeus::LocalePreference locale) {

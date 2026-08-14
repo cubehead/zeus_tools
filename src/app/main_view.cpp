@@ -1,5 +1,6 @@
 #include "app_controller.h"
 #include "views/action_bar.h"
+#include "views/about_dialog.h"
 #include "views/crypto_panel.h"
 #include "views/header_bar.h"
 #include "views/input_panel.h"
@@ -66,9 +67,11 @@ void compose(eui::Ui& ui, const eui::Screen& screen) {
     context.result_height = std::max(
         220.0f, context.bottom_bar_y - context.result_y - 8.0f);
     context.header_spacer_width = std::max(
-        0.0f, context.content_width - 474.0f);
+        0.0f, context.content_width - 524.0f);
     context.theme_button_center_x =
         context.margin + 197.0f + context.header_spacer_width;
+    context.about_button_center_x =
+        context.margin + 407.0f + context.header_spacer_width;
 
     ui.stack("root")
         .size(screen.width, screen.height)
@@ -128,6 +131,7 @@ void compose(eui::Ui& ui, const eui::Screen& screen) {
             views::build_crypto_panel(ui, context);
             views::build_result_panel(ui, context);
             views::build_search_bar(ui, context);
+            views::build_about_dialog(ui, context);
         })
         .build();
 }

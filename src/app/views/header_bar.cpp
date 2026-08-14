@@ -95,6 +95,19 @@ void build_header_bar(eui::Ui& ui, const ViewContext& context) {
                 })
                 .build();
 
+            components::button(ui, "header.about")
+                .size(42.0f, 38.0f)
+                .text("")
+                .icon(0xF05A)
+                .iconSize(18.0f)
+                .theme(tokens, false)
+                .onClick([] {
+                    app_state.language_dropdown_open = false;
+                    app_state.about_dialog_open = true;
+                    request_full_repaint();
+                })
+                .build();
+
             components::button(ui, "header.clear")
                 .size(88.0f, 38.0f)
                 .text(tr(i18n::Text::Clear))
@@ -130,6 +143,15 @@ void build_header_bar(eui::Ui& ui, const ViewContext& context) {
         .source("header.theme.bg")
         .value(theme_tooltip())
         .anchor(theme_button_center_x, margin + header_height - 2.0f)
+        .bounds(context.screen_width, context.screen_height)
+        .theme(tokens)
+        .zIndex(1000)
+        .build();
+
+    components::tooltip(ui, "header.about.tooltip")
+        .source("header.about.bg")
+        .value(tr(i18n::Text::About))
+        .anchor(context.about_button_center_x, margin + header_height - 2.0f)
         .bounds(context.screen_width, context.screen_height)
         .theme(tokens)
         .zIndex(1000)

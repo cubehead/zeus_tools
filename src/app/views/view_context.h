@@ -22,6 +22,7 @@ struct ViewContext {
     float bottom_bar_height = 0.0f;
     float header_spacer_width = 0.0f;
     float theme_button_center_x = 0.0f;
+    float about_button_center_x = 0.0f;
 };
 
 } // namespace app::views

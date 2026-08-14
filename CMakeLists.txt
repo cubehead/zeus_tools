@@ -122,6 +122,7 @@ if(ZEUS_BUILD_APP)
         src/app/app_controller.cpp
         src/app/i18n.cpp
         src/app/main_view.cpp
+        src/app/views/about_dialog.cpp
         src/app/views/action_bar.cpp
         src/app/views/crypto_panel.cpp
         src/app/views/header_bar.cpp
@@ -175,6 +176,9 @@ if(ZEUS_BUILD_APP)
         target_link_libraries(zeus_tools PRIVATE "-framework CoreText" "-framework CoreFoundation")
     endif()
     eui_neo_configure_app(zeus_tools)
+    target_compile_definitions(zeus_tools PRIVATE
+        ZEUS_APP_VERSION="${PROJECT_VERSION}"
+        ZEUS_APP_BUILD_NUMBER="${ZEUS_BUILD_NUMBER}")
     if(NOT ZEUS_DOCS_SCENARIO STREQUAL "")
         target_compile_definitions(zeus_tools PRIVATE
             ZEUS_DOCS_SCENARIO="${ZEUS_DOCS_SCENARIO}")
