@@ -4,7 +4,10 @@
 
 #include "zeus/csv_document.h"
 
-#include "eui_neo.h"
+#include "components/components.h"
+#include "core/platform/platform.h"
+#include "eui/dsl.h"
+#include "eui/types.h"
 #include "core/render/text.h"
 
 #include <algorithm>

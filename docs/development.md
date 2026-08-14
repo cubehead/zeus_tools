@@ -112,12 +112,18 @@ cmake --build --preset dev
 ```text
 include/zeus/       公共 C++ 核心接口
 src/core/           格式检测、格式化、高亮文档和搜索
-src/app/            EUI-NEO 桌面应用
+src/app/            应用状态、控制器、纯处理服务和 EUI-NEO 页面/控件
 tests/              单元测试与性能基准
 docs/               产品、架构、评估、实施和开发文档
 resources/          应用图标与平台打包资源
 scripts/            可重复执行的资源生成脚本
 ```
+
+`src/app/app.cpp` 只定义窗口和运行参数；`main_view.cpp` 只负责尺寸计算和页面编排；
+`src/app/views/` 分别实现 Header、输入区、操作栏、Crypto、结果区和搜索栏；
+`app_controller.cpp` 负责状态变更、异步调度和用户操作；
+`processing_service.cpp` 负责不依赖 EUI 的输入分析与单层解码。
+自定义富文本和 CSV 控件不包含 EUI 的应用实现头，以避免多翻译单元重复定义。
 
 ## 隐私约束
 

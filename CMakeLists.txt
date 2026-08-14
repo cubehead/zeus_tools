@@ -62,6 +62,13 @@ target_include_directories(zeus_core PUBLIC include)
 target_compile_features(zeus_core PUBLIC cxx_std_17)
 target_link_libraries(zeus_core PUBLIC pugixml::pugixml yaml-cpp::yaml-cpp)
 
+add_library(zeus_app_processing
+    src/app/processing_service.cpp
+)
+target_include_directories(zeus_app_processing PUBLIC src/app)
+target_link_libraries(zeus_app_processing PUBLIC zeus_core)
+target_compile_features(zeus_app_processing PUBLIC cxx_std_17)
+
 if(WIN32)
     target_link_libraries(zeus_core PUBLIC bcrypt)
 endif()
@@ -95,9 +102,31 @@ if(ZEUS_BUILD_APP)
         set(ZEUS_EUI_SOURCE_ROOT "${eui_neo_SOURCE_DIR}")
     endif()
 
+    # EUI-NEO v0.5.3 only exposes arrow/hand cursors. Apply a small,
+    # idempotent compatibility patch so pane splitters can use the native
+    # vertical-resize cursor on macOS and Windows.
+    execute_process(
+        COMMAND ${CMAKE_COMMAND}
+                -DSOURCE_DIR=${ZEUS_EUI_SOURCE_ROOT}
+                -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/patch_eui_vertical_resize_cursor.cmake
+        RESULT_VARIABLE ZEUS_EUI_CURSOR_PATCH_RESULT
+    )
+    if(NOT ZEUS_EUI_CURSOR_PATCH_RESULT EQUAL 0)
+        message(FATAL_ERROR "Failed to add vertical-resize cursor support to EUI-NEO")
+    endif()
+
     set(ZEUS_APP_SOURCES
         "${ZEUS_EUI_APP_MAIN}"
         src/app/app.cpp
+        src/app/app_controller.cpp
+        src/app/i18n.cpp
+        src/app/main_view.cpp
+        src/app/views/action_bar.cpp
+        src/app/views/crypto_panel.cpp
+        src/app/views/header_bar.cpp
+        src/app/views/input_panel.cpp
+        src/app/views/result_panel.cpp
+        src/app/views/search_bar.cpp
     )
     if(APPLE)
         list(APPEND ZEUS_APP_SOURCES
@@ -138,7 +167,7 @@ if(ZEUS_BUILD_APP)
     else()
         add_executable(zeus_tools ${ZEUS_APP_SOURCES})
     endif()
-    target_link_libraries(zeus_tools PRIVATE zeus_core)
+    target_link_libraries(zeus_tools PRIVATE zeus_app_processing)
     if(WIN32)
         target_link_libraries(zeus_tools PRIVATE Advapi32)
     elseif(APPLE)
@@ -191,6 +220,10 @@ if(ZEUS_BUILD_TESTS)
     add_executable(zeus_core_tests tests/core_tests.cpp)
     target_link_libraries(zeus_core_tests PRIVATE zeus_core)
     add_test(NAME zeus_core_tests COMMAND zeus_core_tests)
+
+    add_executable(zeus_app_processing_tests tests/app_processing_tests.cpp)
+    target_link_libraries(zeus_app_processing_tests PRIVATE zeus_app_processing)
+    add_test(NAME zeus_app_processing_tests COMMAND zeus_app_processing_tests)
 
     add_executable(zeus_core_benchmark tests/core_benchmark.cpp)
     target_link_libraries(zeus_core_benchmark PRIVATE zeus_core)

@@ -18,7 +18,12 @@ EUI 相关代码限制在 `src/app/` 和 `src/platform/`。升级框架前必须
 ## 当前结构
 
 - `zeus_core`：格式检测、解析、转换、crypto、CSV 和只读文档模型。
-- `src/app/`：窗口组合、i18n、主题、上下文操作带、`RichTextView` 和 CSV 视图。
+- `src/app/app.cpp`：仅保存应用窗口与运行参数。
+- `src/app/main_view.cpp`：页面尺寸计算和区域编排。
+- `src/app/views/`：Header、输入区、操作栏、Crypto、结果区和搜索栏。
+- `src/app/app_controller.cpp`：状态变更、异步调度、搜索、复制与摘要/HMAC 操作。
+- `src/app/processing_service.cpp`：不依赖 EUI 的输入分析、转换结果组织和单层解码。
+- `src/app/` 自定义控件：`RichTextView`、CSV 视图与虚拟列表。
 - `src/platform/`：系统主题、平台字体和 Windows/macOS 差异实现。
 - CMake FetchContent：使用不可变提交获取 EUI-NEO、pugixml 和 yaml-cpp。
 - CPack：生成 macOS DMG 和 Windows Portable ZIP，不生成安装器。

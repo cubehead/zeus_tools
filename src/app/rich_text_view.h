@@ -3,7 +3,10 @@
 #include "font_tokens.h"
 #include "dynamic_virtual_list.h"
 
-#include "eui_neo.h"
+#include "components/components.h"
+#include "core/platform/platform.h"
+#include "eui/dsl.h"
+#include "eui/types.h"
 
 #include "zeus/text_document.h"
 #include "zeus/text_selection.h"

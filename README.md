@@ -27,6 +27,7 @@ macOS and Windows.
   time, with an explicit continuation action for nested content.
 - Shows CSV in a virtualized table with delimiter and header controls.
 - Searches text and CSV cells with case-sensitive and regular-expression modes.
+- Resizes the input and result workspaces with a bounded horizontal splitter.
 - Calculates MD5, SHA-1, SHA-256, SHA-512 and HMAC locally.
 - Supports system/light/dark themes and ten interface languages.
 - Never uploads or saves the text being processed.
@@ -167,7 +168,7 @@ cmake --build build/package-windows --target package
 ```text
 include/zeus/   Public core interfaces
 src/core/       Detection, formatting, conversion, crypto and data models
-src/app/        EUI-NEO desktop UI and custom read-only views
+src/app/        App state, controller, processing service, EUI-NEO view and widgets
 src/platform/   macOS, Windows and fallback platform adapters
 tests/          Unit tests and synthetic performance benchmarks
 resources/      Application icons and packaging assets

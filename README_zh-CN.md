@@ -26,6 +26,7 @@ Windows。
   继续操作手动处理嵌套内容。
 - 使用虚拟化表格显示 CSV，支持分隔符和表头设置。
 - 可搜索文本和 CSV 单元格，支持区分大小写和正则表达式模式。
+- 可拖动水平分隔条调整输入区和结果区，且保留合理的最小显示比例。
 - 在本地计算 MD5、SHA-1、SHA-256、SHA-512 和 HMAC。
 - 支持跟随系统、亮色和暗色主题，以及十种界面语言。
 - 不上传也不保存正在处理的文本。
@@ -161,7 +162,7 @@ cmake --build build/package-windows --target package
 ```text
 include/zeus/   核心模块的公开接口
 src/core/       检测、格式化、转换、加密和数据模型
-src/app/        EUI-NEO 桌面界面和自定义只读视图
+src/app/        应用状态、控制器、处理服务、EUI-NEO 页面和自定义控件
 src/platform/   macOS、Windows 和后备平台适配器
 tests/          单元测试和合成数据性能基准
 resources/      应用图标和打包资源
