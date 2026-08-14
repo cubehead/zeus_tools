@@ -4,6 +4,10 @@
   <img src="resources/icons/zeus-tools-1024.png" width="128" alt="Zeus Tools icon">
 </p>
 
+<p align="center">
+  <strong>English</strong> | <a href="README_zh-CN.md">简体中文</a>
+</p>
+
 Zeus Tools is an offline, cross-platform developer toolbox for formatting,
 inspecting, converting, encoding and searching structured text. It is written
 in C++17 with [EUI-NEO](https://github.com/sudoevolve/EUI-NEO) and targets

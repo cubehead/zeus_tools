@@ -6,6 +6,7 @@ cd "$project_dir"
 
 required_files="
 README.md
+README_zh-CN.md
 LICENSE
 PRIVACY.md
 SECURITY.md
