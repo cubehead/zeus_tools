@@ -22,6 +22,7 @@ enum class ProcessingMode {
     Base64Encode,
     UrlDecode,
     UrlEncode,
+    DecodeOneLayer,
     Csv,
     Text,
     Upper,

@@ -23,7 +23,8 @@ macOS and Windows.
 - Formats JSON, XML and YAML with read-only syntax highlighting.
 - Folds nested JSON containers, XML elements and indented YAML blocks.
 - Converts JSON ↔ YAML, JSON ↔ XML and JSON → CSV.
-- Escapes/unescapes JSON and decodes Base64 or URL encoding exactly one layer.
+- Escapes/unescapes JSON and decodes Base64 or URL encoding one layer at a
+  time, with an explicit continuation action for nested content.
 - Shows CSV in a virtualized table with delimiter and header controls.
 - Searches text and CSV cells with case-sensitive and regular-expression modes.
 - Calculates MD5, SHA-1, SHA-256, SHA-512 and HMAC locally.
@@ -63,7 +64,7 @@ font rendering may differ on Windows.
 | URL encoding | Decode one high-confidence layer | Encode arbitrary UTF-8 text |
 | JWT | Decode and format header/payload | Search/copy claims; signature is not verified |
 | Text | Read-only result and search | Upper/lower case, Base64/URL encode |
-| Digest/HMAC | Manual local calculation | MD5, SHA-1/256/512, Hex and Base64 output |
+| Digest/HMAC | Manual local calculation | Input/result source, UTF-8/Hex/Base64 keys, masked key, Hex/Base64 output |
 
 Automatic detection can always be overridden from the input-type menu without
 changing the source text.
@@ -92,12 +93,11 @@ The project intentionally does not create an NSIS/MSI installer.
 - YAML intentionally accepts a single-document safe subset and rejects
   directives, tags, anchors, aliases and multi-document input.
 - JWT inspection decodes claims but does not verify the signature.
-- Automatic Base64/URL decoding stops after one layer. There is not yet a
-  dedicated “continue decoding” action; copy the result back to the input when
-  another manual layer is needed.
-- HMAC currently uses the original input and displays Hex and Base64 together.
-  Message-source selection, key-encoding selection and a masked key field are
-  still planned; do not use a real sensitive key in an alpha demonstration.
+- Automatic Base64/URL decoding stops after one layer. Use `Decode +1` to
+  process another detected layer manually; the source input remains unchanged.
+- HMAC keys are kept in process memory only and are actively cleared when the
+  HMAC or digest panel closes. Test packages remain Alpha software, so avoid
+  using production secrets during evaluation.
 
 ## Build prerequisites
 

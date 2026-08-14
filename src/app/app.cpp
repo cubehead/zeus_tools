@@ -81,6 +81,14 @@ bool language_dropdown_open = false;
 bool crypto_panel_open = false;
 bool crypto_hmac = false;
 std::string hmac_key;
+int crypto_message_source_index = 0;
+bool crypto_message_dropdown_open = false;
+int hmac_key_encoding_index = 0;
+bool hmac_key_encoding_dropdown_open = false;
+bool hmac_key_visible = false;
+std::string current_result_value;
+std::string decode_chain;
+bool can_continue_decode = false;
 zeus::ContentKind detected_input_kind = zeus::ContentKind::Text;
 int theme_preference_index = static_cast<int>(zeus::load_theme_preference());
 int locale_preference_index = static_cast<int>(zeus::load_locale_preference());
@@ -231,6 +239,50 @@ std::vector<std::string> csv_delimiter_items() {
             tr(i18n::Text::DelimiterSemicolon), tr(i18n::Text::DelimiterPipe)};
 }
 
+std::vector<std::string> crypto_message_items() {
+    return {tr(i18n::Text::MessageInput), tr(i18n::Text::MessageResult)};
+}
+
+std::vector<std::string> hmac_key_encoding_items() {
+    return {"UTF-8", "Hex", "Base64"};
+}
+
+zeus::HmacKeyEncoding hmac_key_encoding() {
+    switch (hmac_key_encoding_index) {
+    case 1: return zeus::HmacKeyEncoding::Hex;
+    case 2: return zeus::HmacKeyEncoding::Base64;
+    default: return zeus::HmacKeyEncoding::Utf8;
+    }
+}
+
+void clear_hmac_key() {
+    std::fill(hmac_key.begin(), hmac_key.end(), '\0');
+    hmac_key.clear();
+    hmac_key.shrink_to_fit();
+    hmac_key_visible = false;
+    crypto_message_source_index = 0;
+    crypto_message_dropdown_open = false;
+    hmac_key_encoding_index = 0;
+    hmac_key_encoding_dropdown_open = false;
+}
+
+void clear_hmac_input_state(eui::Ui& ui) {
+    using InputState = components::input_detail::InputModel::InputState;
+    InputState& state = ui.state<InputState>("actions.crypto.key");
+    const auto wipe = [](std::string& value) {
+        std::fill(value.begin(), value.end(), '\0');
+        value.clear();
+        value.shrink_to_fit();
+    };
+    wipe(state.text);
+    wipe(state.compositionText);
+    for (auto& snapshot : state.undoStack) wipe(snapshot.text);
+    for (auto& snapshot : state.redoStack) wipe(snapshot.text);
+    state.undoStack.clear();
+    state.redoStack.clear();
+    ui.releaseStateScope("actions.crypto.key");
+}
+
 char csv_delimiter_for(int index) {
     switch (index) {
     case 1: return ',';
@@ -252,7 +304,17 @@ struct AnalysisPayload {
     std::shared_ptr<zeus::HighlightedDocument> document;
     std::shared_ptr<zeus::CsvDocument> csv;
     bool first_row_header = true;
+    bool can_continue_decode = false;
+    std::string decode_chain;
     std::int64_t elapsed_ms = 0;
+};
+
+struct DecodePayload {
+    zeus::ProcessResult result;
+    std::shared_ptr<zeus::HighlightedDocument> document;
+    std::string source;
+    std::string chain;
+    bool can_continue = false;
 };
 
 struct SearchPayload {
@@ -392,6 +454,12 @@ void analyze_input(bool debounce = false) {
                 }
             }
             const std::string display = payload.result.value.empty() ? snapshot : payload.result.value;
+            if (payload.result.decoded) {
+                payload.decode_chain = payload.result.label;
+                const auto next = zeus::process_text(
+                    display, zeus::ProcessingMode::DecodeOneLayer);
+                payload.can_continue_decode = next.ok && next.decoded;
+            }
             if (payload.result.detected == zeus::ContentKind::Xml) {
                 payload.document = std::make_shared<zeus::HighlightedDocument>(
                     zeus::HighlightedDocument::xml(display));
@@ -415,6 +483,9 @@ void analyze_input(bool debounce = false) {
             result_document = payload.document;
             result_csv = payload.csv;
             const auto& result = payload.result;
+            current_result_value = result.value.empty() ? input_text : result.value;
+            decode_chain = payload.decode_chain;
+            can_continue_decode = payload.can_continue_decode;
             if (!result.ok) {
                 issue_text = compact_issue(
                     result.error_message.empty() ? result.error_code : result.error_message);
@@ -450,6 +521,79 @@ void analyze_input(bool debounce = false) {
             selected_csv_row = no_csv_cell;
             selected_csv_column = no_csv_cell;
             result_selection.clear();
+            update_search();
+            request_full_repaint();
+        });
+}
+
+void continue_decode_one_layer() {
+    if (!can_continue_decode || current_result_value.empty()) return;
+    const std::string source = current_result_value;
+    const std::string previous_chain = decode_chain;
+    status_text = tr(i18n::Text::Processing);
+    issue_text.clear();
+    issue_detail_text.clear();
+    core::platform::requestUiUpdate();
+
+    async::restart(
+        "zeus.process.input",
+        [source, previous_chain](const async::CancelToken& token) {
+            DecodePayload payload;
+            payload.source = source;
+            if (token.canceled()) return payload;
+            payload.result = zeus::process_text(
+                source, zeus::ProcessingMode::DecodeOneLayer);
+            if (!payload.result.ok || token.canceled()) return payload;
+
+            const std::string display = payload.result.value.empty()
+                ? source : payload.result.value;
+            if (payload.result.detected == zeus::ContentKind::Xml) {
+                payload.document = std::make_shared<zeus::HighlightedDocument>(
+                    zeus::HighlightedDocument::xml(display));
+            } else if (payload.result.detected == zeus::ContentKind::Yaml) {
+                payload.document = std::make_shared<zeus::HighlightedDocument>(
+                    zeus::HighlightedDocument::yaml(display));
+            } else {
+                payload.document = std::make_shared<zeus::HighlightedDocument>(
+                    payload.result.structured
+                        ? zeus::HighlightedDocument::json(display)
+                        : zeus::HighlightedDocument::plain(display));
+            }
+            payload.chain = previous_chain.empty()
+                ? payload.result.label
+                : previous_chain + " → " + payload.result.label;
+            const auto next = zeus::process_text(
+                display, zeus::ProcessingMode::DecodeOneLayer);
+            payload.can_continue = next.ok && next.decoded;
+            return payload;
+        },
+        [](const async::Result<DecodePayload>& completed) {
+            if (!completed.ok || completed.value.source != current_result_value) return;
+            const DecodePayload& payload = completed.value;
+            if (!payload.result.ok || !payload.document) {
+                issue_text = compact_issue(payload.result.error_message);
+                issue_detail_text = payload.result.error_message;
+                status_text = tr(i18n::Text::Invalid);
+                can_continue_decode = false;
+                core::platform::requestUiUpdate();
+                return;
+            }
+            current_result_value = payload.result.value;
+            decode_chain = payload.chain;
+            can_continue_decode = payload.can_continue;
+            result_folds.clear();
+            result_document = payload.document;
+            result_csv.reset();
+            result_scroll = 0.0f;
+            csv_horizontal_scroll = 0.0f;
+            selected_csv_row = no_csv_cell;
+            selected_csv_column = no_csv_cell;
+            result_selection.clear();
+            issue_text.clear();
+            issue_detail_text.clear();
+            status_text = decode_chain + " · " +
+                std::to_string(current_result_value.size()) + " " +
+                tr(i18n::Text::Bytes);
             update_search();
             request_full_repaint();
         });
@@ -505,15 +649,20 @@ void copy_result(bool selection_only) {
 }
 
 void compute_crypto_output(zeus::DigestAlgorithm algorithm) {
+    const bool use_result = crypto_message_source_index == 1 &&
+        !current_result_value.empty();
+    const std::string& message = use_result ? current_result_value : input_text;
     const zeus::CryptoResult result = crypto_hmac
-        ? zeus::compute_hmac(input_text, hmac_key, algorithm)
-        : zeus::compute_digest(input_text, algorithm);
+        ? zeus::compute_hmac_encoded(message, hmac_key, hmac_key_encoding(), algorithm)
+        : zeus::compute_digest(message, algorithm);
     const std::string name = crypto_hmac
         ? "HMAC-" + std::string(zeus::digest_algorithm_name(algorithm))
         : zeus::digest_algorithm_name(algorithm);
     if (!result.ok) {
-        issue_text = result.error;
+        issue_text = compact_issue(result.error);
+        issue_detail_text = result.error;
         status_text = name;
+        core::platform::requestUiUpdate();
         return;
     }
     std::string display = name + "\n\nHex\n" + result.hex +
@@ -527,8 +676,13 @@ void compute_crypto_output(zeus::DigestAlgorithm algorithm) {
     result_csv.reset();
     result_scroll = 0.0f;
     result_selection.clear();
+    can_continue_decode = false;
+    decode_chain.clear();
     issue_text.clear();
-    status_text = name + " · Hex + Base64";
+    issue_detail_text.clear();
+    status_text = name + " · " +
+        (use_result ? tr(i18n::Text::MessageResult) : tr(i18n::Text::MessageInput)) +
+        " · Hex + Base64";
     core::platform::requestUiUpdate();
 }
 
@@ -549,7 +703,9 @@ void compose(eui::Ui& ui, const eui::Screen& screen) {
     language_tokens.metrics.spacing.large = 23.0f;
     const float margin = 18.0f;
     const float header_height = 46.0f;
-    const float actions_height = crypto_panel_open ? 88.0f : 44.0f;
+    const float actions_height = crypto_panel_open
+        ? (crypto_hmac ? 126.0f : 88.0f)
+        : 44.0f;
     const float bottom_bar_height = 42.0f;
     const float content_width = std::max(480.0f, screen.width - margin * 2.0f);
     const float available_height = std::max(
@@ -642,7 +798,7 @@ void compose(eui::Ui& ui, const eui::Screen& screen) {
                         .text(tr(i18n::Text::Clear))
                         .fontSize(20.0f)
                         .theme(tokens, false)
-                        .onClick([] {
+                        .onClick([&ui] {
                             input_text.clear();
                             search_query.clear();
                             hmac_key.clear();
@@ -654,6 +810,13 @@ void compose(eui::Ui& ui, const eui::Screen& screen) {
                             csv_first_row_header = true;
                             crypto_panel_open = false;
                             crypto_hmac = false;
+                            crypto_message_source_index = 0;
+                            crypto_message_dropdown_open = false;
+                            clear_hmac_key();
+                            clear_hmac_input_state(ui);
+                            current_result_value.clear();
+                            decode_chain.clear();
+                            can_continue_decode = false;
                             analyze_input();
                         })
                         .build();
@@ -844,6 +1007,17 @@ void compose(eui::Ui& ui, const eui::Screen& screen) {
                         action("actions.jwt.inspect", tr(i18n::Text::Inspect), 0, 64.0f);
                     }
 
+                    if (can_continue_decode) {
+                        components::button(ui, "actions.decode.again")
+                            .size(94.0f, 30.0f)
+                            .text(tr(i18n::Text::DecodeAgain))
+                            .fontSize(18.0f)
+                            .theme(tokens, false)
+                            .radius(5.0f)
+                            .onClick([] { continue_decode_one_layer(); })
+                            .build();
+                    }
+
                     if (detected_input_kind != zeus::ContentKind::Empty) {
                         ui.rect("actions.common.divider")
                             .size(1.0f, 22.0f)
@@ -867,15 +1041,16 @@ void compose(eui::Ui& ui, const eui::Screen& screen) {
                             .textColor(tokens.text)
                             .border(0.0f, {0.0f, 0.0f, 0.0f, 0.0f})
                             .shadow(0.0f, 0.0f, 0.0f, {0.0f, 0.0f, 0.0f, 0.0f})
-                            .onClick([] {
+                            .onClick([&ui] {
                                 crypto_panel_open = !crypto_panel_open;
                                 if (!crypto_panel_open) {
                                     crypto_hmac = false;
-                                    std::fill(hmac_key.begin(), hmac_key.end(), '\0');
-                                    hmac_key.clear();
-                                    hmac_key.shrink_to_fit();
+                                    crypto_message_source_index = 0;
+                                    crypto_message_dropdown_open = false;
+                                    clear_hmac_key();
+                                    clear_hmac_input_state(ui);
                                 }
-                                core::platform::requestUiUpdate();
+                                request_full_repaint();
                             })
                             .build();
                     }
@@ -921,30 +1096,134 @@ void compose(eui::Ui& ui, const eui::Screen& screen) {
                             .text("HMAC")
                             .fontSize(18.0f)
                             .theme(tokens, crypto_hmac)
-                            .onClick([] {
+                            .onClick([&ui] {
                                 crypto_hmac = !crypto_hmac;
                                 if (!crypto_hmac) {
-                                    std::fill(hmac_key.begin(), hmac_key.end(), '\0');
-                                    hmac_key.clear();
-                                    hmac_key.shrink_to_fit();
+                                    clear_hmac_key();
+                                    clear_hmac_input_state(ui);
                                 }
-                                core::platform::requestUiUpdate();
+                                request_full_repaint();
                             })
                             .build();
-
-                        if (crypto_hmac) {
-                            components::input(ui, "actions.crypto.key")
-                                .size(std::max(150.0f, content_width - 520.0f), 30.0f)
-                                .value(hmac_key)
-                                .placeholder(tr(i18n::Text::HmacKey))
-                                .fontFamily(fonts::code())
-                                .fontSize(13.0f)
-                                .theme(tokens)
-                                .onChange([](const std::string& value) { hmac_key = value; })
-                                .build();
-                        }
                     })
                     .build();
+
+                if (crypto_hmac) {
+                    const float key_width = std::max(120.0f, content_width - 352.0f);
+                    ui.row("actions.crypto.hmac.options")
+                        .position(margin + 16.0f, actions_y + 85.0f)
+                        .size(content_width - 32.0f, 34.0f)
+                        .zIndex(190)
+                        .gap(8.0f)
+                        .alignItems(eui::Align::CENTER)
+                        .content([&] {
+                            ui.stack("actions.crypto.message.slot")
+                                .size(112.0f, 30.0f)
+                                .zIndex(195)
+                                .content([&] {
+                                    components::dropdown(ui, "actions.crypto.message")
+                                        .size(112.0f, 30.0f)
+                                        .items(crypto_message_items())
+                                        .selected(crypto_message_source_index)
+                                        .open(crypto_message_dropdown_open)
+                                        .itemHeight(30.0f)
+                                        .zIndex(195)
+                                        .theme(tokens)
+                                        .transition(eui::Transition{})
+                                        .onOpenChange([](bool open) {
+                                            crypto_message_dropdown_open = open;
+                                            request_full_repaint();
+                                        })
+                                        .onChange([](int index) {
+                                            crypto_message_dropdown_open = false;
+                                            crypto_message_source_index = index;
+                                            request_full_repaint();
+                                        })
+                                        .build();
+                                })
+                                .build();
+
+                            ui.stack("actions.crypto.encoding.slot")
+                                .size(92.0f, 30.0f)
+                                .zIndex(195)
+                                .content([&] {
+                                    components::dropdown(ui, "actions.crypto.encoding")
+                                        .size(92.0f, 30.0f)
+                                        .items(hmac_key_encoding_items())
+                                        .selected(hmac_key_encoding_index)
+                                        .open(hmac_key_encoding_dropdown_open)
+                                        .itemHeight(30.0f)
+                                        .zIndex(195)
+                                        .theme(tokens)
+                                        .transition(eui::Transition{})
+                                        .onOpenChange([](bool open) {
+                                            hmac_key_encoding_dropdown_open = open;
+                                            request_full_repaint();
+                                        })
+                                        .onChange([](int index) {
+                                            hmac_key_encoding_dropdown_open = false;
+                                            hmac_key_encoding_index = index;
+                                            request_full_repaint();
+                                        })
+                                        .build();
+                                })
+                                .build();
+
+                            ui.stack("actions.crypto.key.slot")
+                                .size(key_width, 30.0f)
+                                .content([&] {
+                                    if (hmac_key_visible) {
+                                        components::input(ui, "actions.crypto.key")
+                                            .size(key_width, 30.0f)
+                                            .value(hmac_key)
+                                            .placeholder(tr(i18n::Text::HmacKey))
+                                            .fontFamily(fonts::code())
+                                            .fontSize(14.0f)
+                                            .theme(tokens)
+                                            .onChange([](const std::string& value) { hmac_key = value; })
+                                            .build();
+                                    } else {
+                                        auto secure_style = components::InputStyle(tokens);
+                                        secure_style.text = {0.0f, 0.0f, 0.0f, 0.0f};
+                                        components::input(ui, "actions.crypto.key")
+                                            .size(key_width, 30.0f)
+                                            .value(hmac_key)
+                                            .placeholder(tr(i18n::Text::HmacKey))
+                                            .fontFamily(fonts::code())
+                                            .fontSize(14.0f)
+                                            .style(secure_style)
+                                            .onChange([](const std::string& value) { hmac_key = value; })
+                                            .build();
+                                        if (!hmac_key.empty()) {
+                                            ui.text("actions.crypto.key.mask")
+                                                .position(10.0f, 0.0f)
+                                                .size(std::max(0.0f, key_width - 20.0f), 30.0f)
+                                                .text(std::string(hmac_key.size(), '*'))
+                                                .fontFamily(fonts::code())
+                                                .fontSize(14.0f)
+                                                .verticalAlign(eui::VerticalAlign::Center)
+                                                .color(tokens.text)
+                                                .build();
+                                        }
+                                    }
+                                })
+                                .build();
+
+                            components::button(ui, "actions.crypto.key.visibility")
+                                .size(92.0f, 30.0f)
+                                .text(hmac_key_visible
+                                    ? tr(i18n::Text::HideKey)
+                                    : tr(i18n::Text::ShowKey))
+                                .fontSize(16.0f)
+                                .theme(tokens, hmac_key_visible)
+                                .onClick([] {
+                                    hmac_key_visible = !hmac_key_visible;
+                                    request_full_repaint();
+                                })
+                                .build();
+                        })
+                        .build();
+                }
             }
 
             ui.rect("result.background")

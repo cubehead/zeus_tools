@@ -464,6 +464,38 @@ ProcessResult process_text(const std::string& input, ProcessingMode mode) {
         return result;
     }
 
+    if (mode == ProcessingMode::DecodeOneLayer) {
+        std::string unescaped;
+        if (inspect_escaped_json(input, unescaped)) {
+            ProcessResult result;
+            result.detected = ContentKind::Json;
+            result.label = "JSON Unescape";
+            result.value = std::move(unescaped);
+            result.decoded = true;
+            result.structured = true;
+            return result;
+        }
+
+        std::string decoded;
+        std::size_t encoded_count = 0;
+        if (decode_url(input, decoded, encoded_count) && encoded_count > 0 &&
+            is_displayable_text(decoded)) {
+            return decoded_result(ContentKind::UrlEncoded, "URL Decode", std::move(decoded));
+        }
+
+        decoded.clear();
+        if (decode_base64(trimmed, decoded)) {
+            return decoded_result(ContentKind::Base64, "Base64", std::move(decoded));
+        }
+
+        ProcessResult result = failure(
+            ContentKind::Text,
+            "NO_ENCODED_LAYER",
+            "Current result is not a supported encoded layer");
+        result.value = input;
+        return result;
+    }
+
     if (mode == ProcessingMode::Auto || mode == ProcessingMode::Json) {
         const auto json = format_json(input, 2);
         if (json.ok) {

@@ -14,6 +14,12 @@ enum class DigestAlgorithm {
     Sha512,
 };
 
+enum class HmacKeyEncoding {
+    Utf8,
+    Hex,
+    Base64,
+};
+
 struct CryptoResult {
     bool ok = false;
     std::vector<std::uint8_t> bytes;
@@ -28,6 +34,11 @@ CryptoResult compute_digest(std::string_view input, DigestAlgorithm algorithm);
 CryptoResult compute_hmac(
     std::string_view input,
     std::string_view key,
+    DigestAlgorithm algorithm);
+CryptoResult compute_hmac_encoded(
+    std::string_view input,
+    std::string_view key,
+    HmacKeyEncoding key_encoding,
     DigestAlgorithm algorithm);
 
 } // namespace zeus

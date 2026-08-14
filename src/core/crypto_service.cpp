@@ -1,6 +1,8 @@
 #include "zeus/crypto_service.h"
 
+#include <algorithm>
 #include <array>
+#include <cctype>
 #include <iomanip>
 #include <sstream>
 
@@ -8,7 +10,9 @@
 #include <CommonCrypto/CommonDigest.h>
 #include <CommonCrypto/CommonHMAC.h>
 #elif defined(_WIN32)
+#ifndef NOMINMAX
 #define NOMINMAX
+#endif
 #include <windows.h>
 #include <bcrypt.h>
 #endif
@@ -49,6 +53,103 @@ std::string base64_encode(const std::vector<std::uint8_t>& bytes) {
         output.push_back(index + 2 < bytes.size() ? alphabet[value & 0x3FU] : '=');
     }
     return output;
+}
+
+int base64_value(char ch) {
+    if (ch >= 'A' && ch <= 'Z') return ch - 'A';
+    if (ch >= 'a' && ch <= 'z') return ch - 'a' + 26;
+    if (ch >= '0' && ch <= '9') return ch - '0' + 52;
+    if (ch == '+' || ch == '-') return 62;
+    if (ch == '/' || ch == '_') return 63;
+    return -1;
+}
+
+bool decode_hmac_key(
+    std::string_view encoded,
+    HmacKeyEncoding encoding,
+    std::string& decoded,
+    std::string& error) {
+    decoded.clear();
+    error.clear();
+    if (encoding == HmacKeyEncoding::Utf8) {
+        decoded.assign(encoded);
+        return true;
+    }
+
+    std::string compact;
+    compact.reserve(encoded.size());
+    for (const unsigned char ch : encoded) {
+        if (!std::isspace(ch)) compact.push_back(static_cast<char>(ch));
+    }
+
+    if (encoding == HmacKeyEncoding::Hex) {
+        if (compact.size() % 2 != 0) {
+            error = "Hex key must contain an even number of digits";
+            return false;
+        }
+        decoded.reserve(compact.size() / 2);
+        const auto hex = [](char ch) {
+            if (ch >= '0' && ch <= '9') return ch - '0';
+            if (ch >= 'a' && ch <= 'f') return ch - 'a' + 10;
+            if (ch >= 'A' && ch <= 'F') return ch - 'A' + 10;
+            return -1;
+        };
+        for (std::size_t index = 0; index < compact.size(); index += 2) {
+            const int high = hex(compact[index]);
+            const int low = hex(compact[index + 1]);
+            if (high < 0 || low < 0) {
+                error = "Hex key contains a non-hexadecimal character";
+                decoded.clear();
+                return false;
+            }
+            decoded.push_back(static_cast<char>((high << 4) | low));
+        }
+        return true;
+    }
+
+    if (compact.empty()) return true;
+    const auto padding = compact.find('=');
+    if (padding != std::string::npos) {
+        const std::size_t padding_count = compact.size() - padding;
+        if (compact.size() % 4 != 0 || padding_count > 2 ||
+            compact.find_first_not_of('=', padding) != std::string::npos) {
+            error = "Base64 key has invalid padding";
+            return false;
+        }
+        compact.resize(padding);
+        const std::size_t expected_padding = (4 - compact.size() % 4) % 4;
+        if (expected_padding != padding_count) {
+            error = "Base64 key has invalid padding";
+            return false;
+        }
+    }
+    if (compact.size() % 4 == 1) {
+        error = "Base64 key has an invalid length";
+        return false;
+    }
+    decoded.reserve((compact.size() * 3) / 4);
+    std::uint32_t buffer = 0;
+    int bits = 0;
+    for (const char ch : compact) {
+        const int value = base64_value(ch);
+        if (value < 0) {
+            error = "Base64 key contains an invalid character";
+            decoded.clear();
+            return false;
+        }
+        buffer = (buffer << 6U) | static_cast<std::uint32_t>(value);
+        bits += 6;
+        if (bits >= 8) {
+            bits -= 8;
+            decoded.push_back(static_cast<char>((buffer >> bits) & 0xFFU));
+        }
+    }
+    if (bits > 0 && (buffer & ((1U << bits) - 1U)) != 0) {
+        error = "Base64 key has non-zero trailing bits";
+        decoded.clear();
+        return false;
+    }
+    return true;
 }
 
 #ifdef __APPLE__
@@ -193,6 +294,25 @@ CryptoResult compute_hmac(
     DigestAlgorithm algorithm) {
     std::vector<std::uint8_t> bytes;
     return finish(platform_hmac(input, key, algorithm, bytes), std::move(bytes));
+}
+
+CryptoResult compute_hmac_encoded(
+    std::string_view input,
+    std::string_view key,
+    HmacKeyEncoding key_encoding,
+    DigestAlgorithm algorithm) {
+    std::string decoded_key;
+    std::string error;
+    if (!decode_hmac_key(key, key_encoding, decoded_key, error)) {
+        CryptoResult result;
+        result.error = std::move(error);
+        return result;
+    }
+    CryptoResult result = compute_hmac(input, decoded_key, algorithm);
+    std::fill(decoded_key.begin(), decoded_key.end(), '\0');
+    decoded_key.clear();
+    decoded_key.shrink_to_fit();
+    return result;
 }
 
 } // namespace zeus

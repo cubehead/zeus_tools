@@ -55,10 +55,42 @@ int main() {
                 "b42af09057bac1e2d41708e48a902e09b5ff7f12ab428a4fe86653c73dd248fb"
                 "82f948a549f7b791a5b41915ee4d1ec3935357e4e2317250d0372afa2ebeeb3a",
             "HMAC-SHA512 should match the standard vector");
+    require(zeus::compute_hmac_encoded(
+                hmac_message, "6b6579", zeus::HmacKeyEncoding::Hex,
+                zeus::DigestAlgorithm::Sha256).hex ==
+                "f7bc83f430538424b13298e6aa6fb143ef4d59a14946175997479dbc2d1a3cd8",
+            "hex-encoded HMAC keys should decode to raw key bytes");
+    require(zeus::compute_hmac_encoded(
+                hmac_message, "a2V5", zeus::HmacKeyEncoding::Base64,
+                zeus::DigestAlgorithm::Sha256).hex ==
+                "f7bc83f430538424b13298e6aa6fb143ef4d59a14946175997479dbc2d1a3cd8",
+            "Base64-encoded HMAC keys should decode to raw key bytes");
+    require(!zeus::compute_hmac_encoded(
+                hmac_message, "abc", zeus::HmacKeyEncoding::Hex,
+                zeus::DigestAlgorithm::Sha256).ok,
+            "invalid encoded HMAC keys should return an error");
+    require(!zeus::compute_hmac_encoded(
+                hmac_message, "a2V5=", zeus::HmacKeyEncoding::Base64,
+                zeus::DigestAlgorithm::Sha256).ok,
+            "non-canonical Base64 key padding should return an error");
     require(zeus::digest_algorithm_is_weak(zeus::DigestAlgorithm::Md5) &&
                 zeus::digest_algorithm_is_weak(zeus::DigestAlgorithm::Sha1) &&
                 !zeus::digest_algorithm_is_weak(zeus::DigestAlgorithm::Sha256),
             "MD5 and SHA-1 should be marked as weak algorithms");
+
+    const auto decode_layer_base64 = zeus::process_text(
+        "YUdWc2JHOD0=", zeus::ProcessingMode::DecodeOneLayer);
+    require(decode_layer_base64.ok && decode_layer_base64.decoded &&
+                decode_layer_base64.value == "aGVsbG8=",
+            "manual continuation should decode exactly one Base64 layer");
+    const auto decode_layer_url = zeus::process_text(
+        "%2561%2562%2563", zeus::ProcessingMode::DecodeOneLayer);
+    require(decode_layer_url.ok && decode_layer_url.value == "%61%62%63",
+            "manual continuation should decode exactly one URL layer");
+    const auto no_decode_layer = zeus::process_text(
+        "plain text", zeus::ProcessingMode::DecodeOneLayer);
+    require(!no_decode_layer.ok && no_decode_layer.error_code == "NO_ENCODED_LAYER",
+            "manual continuation should reject plain text");
 
     const auto formatted = zeus::format_json(R"({"name":"Zeus","active":true,"count":3,"items":[null,2]})");
     require(formatted.ok, "valid JSON should format");
