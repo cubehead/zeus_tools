@@ -1,0 +1,10 @@
+/build/
+/.cache/
+/.codegraph/
+/.cursor/
+.DS_Store
+*.user
+*.suo
+
+# Generated icon intermediates (recreated by scripts/generate-icons.sh)
+/resources/icons/zeus-tools.iconset/

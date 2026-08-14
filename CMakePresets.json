@@ -1,0 +1,83 @@
+{
+  "version": 6,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 20,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "dev",
+      "displayName": "Development",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/dev",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "ZEUS_BUILD_APP": "ON",
+        "ZEUS_BUILD_TESTS": "ON"
+      }
+    },
+    {
+      "name": "core",
+      "displayName": "Core only",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/core",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "ZEUS_BUILD_APP": "OFF",
+        "ZEUS_BUILD_TESTS": "ON"
+      }
+    },
+    {
+      "name": "package-macos",
+      "displayName": "macOS release package",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/package-macos",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Darwin"
+      },
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "ZEUS_BUILD_APP": "ON",
+        "ZEUS_BUILD_TESTS": "OFF",
+        "ZEUS_ENABLE_PACKAGING": "ON"
+      }
+    },
+    {
+      "name": "package-windows",
+      "displayName": "Windows portable ZIP",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/package-windows",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      },
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "ZEUS_BUILD_APP": "ON",
+        "ZEUS_BUILD_TESTS": "OFF",
+        "ZEUS_ENABLE_PACKAGING": "ON"
+      }
+    }
+  ],
+  "buildPresets": [
+    { "name": "dev", "configurePreset": "dev" },
+    { "name": "core", "configurePreset": "core" },
+    { "name": "package-macos", "configurePreset": "package-macos" },
+    { "name": "package-windows", "configurePreset": "package-windows" }
+  ],
+  "packagePresets": [
+    { "name": "package-macos", "configurePreset": "package-macos" },
+    { "name": "package-windows", "configurePreset": "package-windows" }
+  ],
+  "testPresets": [
+    {
+      "name": "core",
+      "configurePreset": "core",
+      "output": { "outputOnFailure": true }
+    }
+  ]
+}
