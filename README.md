@@ -13,9 +13,15 @@ inspecting, converting, encoding and searching structured text. It is written
 in C++17 with [EUI-NEO](https://github.com/sudoevolve/EUI-NEO) and targets
 macOS and Windows.
 
-> Project status: **Alpha**. The macOS arm64 build is usable for testing.
-> Windows packaging is configured but still requires native Windows 10/11
-> validation before the first public release.
+> Project status: **Alpha**. Release packages are available for testing.
+> The Windows x64 package is cross-compiled and still requires native Windows
+> 10/11 validation.
+
+## Download
+
+Download the latest unsigned macOS arm64 DMG or Windows x64 portable ZIP from
+[GitHub Releases](https://github.com/cubehead/zeus_tools/releases/latest).
+Windows uses a portable package and does not include an NSIS/MSI installer.
 
 ## Highlights
 
@@ -85,7 +91,7 @@ theme and language preferences are persisted. See [PRIVACY.md](PRIVACY.md).
 | Platform | Artifact | Current status |
 | --- | --- | --- |
 | macOS 12+ | `.app` / `.dmg` | arm64 build tested; signing and notarization pending |
-| Windows 10/11 x64 | Portable `.zip` | configured; native validation pending |
+| Windows 10/11 x64 | Portable `.zip` | cross-built; native validation pending |
 
 The project intentionally does not create an NSIS/MSI installer.
 

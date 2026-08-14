@@ -6,6 +6,8 @@ semantic versioning after the first stable release.
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-08-14
+
 ### Added
 
 - Structural folding for JSON containers, XML elements and YAML indentation blocks in the read-only result view.
@@ -24,7 +26,30 @@ semantic versioning after the first stable release.
   entry and active in-memory key cleanup when the panel closes.
 - System/light/dark themes and ten interface languages.
 - macOS DMG and Windows portable ZIP packaging configuration.
+- Localized About dialog with project, license and open-source acknowledgement
+  links.
+
+### Changed
+
+- Replaced the formatted output layer with a read-only rich text view that
+  supports normal character/word selection, copying and exact search matches.
+- Added a bounded draggable splitter so the input and result areas can be
+  resized without hiding either workspace.
+- Reorganized context-sensitive actions by detected input type and kept common
+  encoding actions at the end of the action bar.
+
+### Fixed
+
+- Prevented stale partial colors after type, language, theme and CSV option
+  changes by invalidating the complete window when required.
+- Hardened background processing and CSV parsing so malformed input reports a
+  concise error instead of terminating the application.
+- Corrected CSV cell-level search highlighting, popup layering and several
+  alignment, font-size and first-render issues.
 
 ### Security
 
 - XML DTD/entity rejection, constrained YAML parsing and local-only processing.
+
+[Unreleased]: https://github.com/cubehead/zeus_tools/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/cubehead/zeus_tools/releases/tag/v0.1.0

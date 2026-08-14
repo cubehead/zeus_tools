@@ -13,8 +13,14 @@ Zeus Tools 是一款离线、跨平台的开发者工具箱，用于格式化、
 [EUI-NEO](https://github.com/sudoevolve/EUI-NEO) 开发，支持 macOS 和
 Windows。
 
-> 项目状态：**Alpha**。macOS arm64 版本已可用于测试。Windows 打包配置已
-> 完成，但在首次公开发布前仍需在原生 Windows 10/11 环境中验证。
+> 项目状态：**Alpha**。现已提供可供测试的发布包。Windows x64 版本由交叉
+> 编译生成，仍需在原生 Windows 10/11 环境中完成验证。
+
+## 下载
+
+请从 [GitHub Releases](https://github.com/cubehead/zeus_tools/releases/latest)
+下载最新的未签名 macOS arm64 DMG 或 Windows x64 便携版 ZIP。Windows 版本
+无需安装，且不提供 NSIS/MSI 安装包。
 
 ## 功能亮点
 
@@ -83,7 +89,7 @@ Windows。
 | 平台 | 产物 | 当前状态 |
 | --- | --- | --- |
 | macOS 12+ | `.app` / `.dmg` | arm64 版本已测试；签名和公证待完成 |
-| Windows 10/11 x64 | 便携版 `.zip` | 已配置；原生验证待完成 |
+| Windows 10/11 x64 | 便携版 `.zip` | 已交叉构建；原生验证待完成 |
 
 本项目有意不提供 NSIS/MSI 安装包。
 
