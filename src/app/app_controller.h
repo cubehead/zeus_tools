@@ -14,6 +14,7 @@
 namespace app::controller {
 
 AppState& state();
+void initialize_documentation_scenario();
 
 const char* tr(i18n::Text text);
 const char* theme_label();

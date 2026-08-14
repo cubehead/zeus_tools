@@ -13,6 +13,7 @@ set(ZEUS_EUI_NEO_SOURCE_DIR "" CACHE PATH "Path to an existing EUI-NEO v0.5.3 ch
 set(ZEUS_APP_IDENTIFIER "io.github.zeustools.app" CACHE STRING "macOS application bundle identifier")
 set(ZEUS_BUILD_NUMBER "1" CACHE STRING "Numeric platform build number")
 set(ZEUS_CODESIGN_IDENTITY "" CACHE STRING "Optional macOS Developer ID Application identity")
+set(ZEUS_DOCS_SCENARIO "" CACHE STRING "Optional synthetic README screenshot scenario")
 
 include(FetchContent)
 set(PUGIXML_BUILD_TESTS OFF CACHE BOOL "" FORCE)
@@ -174,6 +175,19 @@ if(ZEUS_BUILD_APP)
         target_link_libraries(zeus_tools PRIVATE "-framework CoreText" "-framework CoreFoundation")
     endif()
     eui_neo_configure_app(zeus_tools)
+    if(NOT ZEUS_DOCS_SCENARIO STREQUAL "")
+        target_compile_definitions(zeus_tools PRIVATE
+            ZEUS_DOCS_SCENARIO="${ZEUS_DOCS_SCENARIO}")
+    endif()
+    # EUI itself remains exception-free in release builds, but Zeus performs
+    # parsing in application-owned worker callbacks. Keep exceptions enabled
+    # for this target so those callbacks can turn failures into UI errors.
+    if(MSVC)
+        target_compile_options(zeus_tools PRIVATE /EHsc)
+    else()
+        target_compile_options(zeus_tools PRIVATE
+            $<$<COMPILE_LANGUAGE:CXX>:-fexceptions>)
+    endif()
     # Copy only the runtime asset Zeus Tools actually uses. Avoid shipping the
     # complete EUI gallery asset directory and unrelated demo fonts.
     add_custom_command(TARGET zeus_tools POST_BUILD

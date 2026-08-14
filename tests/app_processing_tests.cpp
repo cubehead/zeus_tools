@@ -37,6 +37,28 @@ void test_csv_analysis() {
     expect(result.first_row_header, "CSV header preference should be retained");
 }
 
+void test_csv_manual_delimiters_use_original_input() {
+    app::processing::AnalysisRequest comma_request;
+    comma_request.input = "name,value\nZeus,1\nHera,2";
+    comma_request.action_index = 4;
+    comma_request.csv_delimiter_index = 1;
+    const auto comma = app::processing::analyze(comma_request);
+    expect(comma.process.ok && comma.csv != nullptr,
+           "manual comma CSV should parse the original input");
+    expect(comma.csv->delimiter == ',' && comma.csv->rows[1][1] == "1",
+           "manual comma CSV should retain comma-separated cells");
+
+    app::processing::AnalysisRequest semicolon_request;
+    semicolon_request.input = "name;value\nZeus;1\nHera;2";
+    semicolon_request.input_override_index = 4;
+    semicolon_request.csv_delimiter_index = 3;
+    const auto semicolon = app::processing::analyze(semicolon_request);
+    expect(semicolon.process.ok && semicolon.csv != nullptr,
+           "CSV override should honor a manually selected delimiter");
+    expect(semicolon.csv->delimiter == ';' && semicolon.csv->rows[2][0] == "Hera",
+           "manual semicolon CSV should retain semicolon-separated cells");
+}
+
 void test_input_override() {
     app::processing::AnalysisRequest request;
     request.input = "name: Zeus\nenabled: true";
@@ -66,6 +88,7 @@ void test_decode_one_layer() {
 int main() {
     test_json_analysis();
     test_csv_analysis();
+    test_csv_manual_delimiters_use_original_input();
     test_input_override();
     test_decode_one_layer();
     std::cout << "All app processing tests passed.\n";

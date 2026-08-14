@@ -49,6 +49,10 @@ macOS and Windows.
   </tr>
 </table>
 
+### JWT inspection
+
+![Zeus Tools decoding a JWT header and payload](docs/assets/jwt-inspect.jpg)
+
 Screenshots use synthetic data and show the current macOS alpha UI. Platform
 font rendering may differ on Windows.
 

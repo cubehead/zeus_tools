@@ -20,6 +20,7 @@
 #include <chrono>
 #include <cctype>
 #include <cstdint>
+#include <exception>
 #include <memory>
 #include <string>
 #include <thread>
@@ -37,6 +38,46 @@ AppState& app_state = app_state_storage;
 
 AppState& state() {
     return app_state_storage;
+}
+
+void initialize_documentation_scenario() {
+#ifdef ZEUS_DOCS_SCENARIO
+    static bool initialized = false;
+    if (initialized) return;
+    initialized = true;
+
+    const std::string scenario(ZEUS_DOCS_SCENARIO);
+    app_state.theme_preference_index = static_cast<int>(zeus::ThemePreference::Dark);
+    app_state.locale_preference_index = static_cast<int>(zeus::LocalePreference::Chinese);
+
+    if (scenario == "json") {
+        app_state.input_text =
+            R"({"service":"Zeus Tools","version":"0.1.0","offline":true,"formats":["JSON","XML","YAML","CSV"],"features":{"autoDetect":true,"decodeDepth":1,"theme":"system"},"limits":{"maxInputMb":10},"releasedAt":"2026-08-14T08:00:00Z"})";
+    } else if (scenario == "csv") {
+        app_state.input_text =
+            "id,name,format,status,latency_ms\n"
+            "1001,Aurora,JSON,ready,4\n"
+            "1002,Atlas,XML,ready,6\n"
+            "1003,Nova,YAML,ready,5\n"
+            "1004,Orion,CSV,ready,3\n"
+            "1005,Helios,JWT,ready,4\n"
+            "1006,Luna,Base64,ready,2";
+        app_state.csv.delimiter_index = 1;
+    } else if (scenario == "jwt") {
+        app_state.input_text =
+            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9."
+            "eyJzdWIiOiJkb2NzLXVzZXIiLCJuYW1lIjoiWmV1cyBEZW1vIiwicm9sZXMiOlsiZGV2ZWxvcGVyIiwicmV2aWV3ZXIiXSwib2ZmbGluZSI6dHJ1ZSwiaWF0IjoxNzg2Njk0NDAwfQ."
+            "docs-signature";
+    } else if (scenario == "hmac") {
+        app_state.input_text = "release=0.1.0&platform=desktop&offline=true";
+        app_state.result.detected_input_kind = zeus::ContentKind::Text;
+        app_state.crypto.panel_open = true;
+        app_state.crypto.hmac = true;
+        app_state.crypto.hmac_key = "docs-demo-key";
+        app_state.crypto.key_visible = false;
+        compute_crypto_output(zeus::DigestAlgorithm::Sha256);
+    }
+#endif
 }
 
 zeus::LocalePreference system_locale_preference() {
@@ -230,27 +271,40 @@ void update_search() {
     async::restart(
         "zeus.search.result",
         [query, case_sensitive, use_regex, document, csv](const async::CancelToken& token) {
-            for (int elapsed = 0; elapsed < 100 && !token.canceled(); elapsed += 20) {
-                std::this_thread::sleep_for(std::chrono::milliseconds(20));
-            }
             SearchPayload payload;
             payload.query = query;
             payload.case_sensitive = case_sensitive;
             payload.use_regex = use_regex;
             payload.document_source = document;
             payload.csv_source = csv;
-            if (token.canceled()) return payload;
-            if (csv) {
-                payload.csv_matches = csv->search(
-                    query, case_sensitive, use_regex, &payload.error);
-            } else if (document) {
-                payload.document_matches = document->search(
-                    query, case_sensitive, use_regex, &payload.error);
+            try {
+                for (int elapsed = 0; elapsed < 100 && !token.canceled(); elapsed += 20) {
+                    std::this_thread::sleep_for(std::chrono::milliseconds(20));
+                }
+                if (token.canceled()) return async::success(std::move(payload));
+                if (csv) {
+                    payload.csv_matches = csv->search(
+                        query, case_sensitive, use_regex, &payload.error);
+                } else if (document) {
+                    payload.document_matches = document->search(
+                        query, case_sensitive, use_regex, &payload.error);
+                }
+                return async::success(std::move(payload));
+            } catch (const std::exception& exception) {
+                return async::failure<SearchPayload>(exception.what());
+            } catch (...) {
+                return async::failure<SearchPayload>("Unknown background search error");
             }
-            return payload;
         },
         [](const async::Result<SearchPayload>& completed) {
-            if (!completed.ok || completed.value.query != app_state.search.query ||
+            if (!completed.ok) {
+                app_state.search.issue = tr(i18n::Text::Invalid);
+                app_state.search.issue_detail = completed.error.empty()
+                    ? "Background search failed" : completed.error;
+                core::platform::requestUiUpdate();
+                return;
+            }
+            if (completed.value.query != app_state.search.query ||
                 completed.value.case_sensitive != app_state.search.case_sensitive ||
                 completed.value.use_regex != app_state.search.use_regex) return;
             const auto& payload = completed.value;
@@ -313,17 +367,35 @@ void analyze_input(bool debounce) {
     async::restart(
         "zeus.process.input",
         [request = std::move(request), debounce](const async::CancelToken& token) {
-            if (debounce) {
-                for (int elapsed = 0; elapsed < 180 && !token.canceled(); elapsed += 20) {
-                    std::this_thread::sleep_for(std::chrono::milliseconds(20));
+            try {
+                if (debounce) {
+                    for (int elapsed = 0; elapsed < 180 && !token.canceled(); elapsed += 20) {
+                        std::this_thread::sleep_for(std::chrono::milliseconds(20));
+                    }
                 }
+                if (token.canceled()) {
+                    return async::success(processing::AnalysisResult{});
+                }
+                auto result = processing::analyze(request);
+                return async::success(token.canceled()
+                    ? processing::AnalysisResult{} : std::move(result));
+            } catch (const std::exception& exception) {
+                return async::failure<processing::AnalysisResult>(exception.what());
+            } catch (...) {
+                return async::failure<processing::AnalysisResult>(
+                    "Unknown background processing error");
             }
-            if (token.canceled()) return processing::AnalysisResult{};
-            auto result = processing::analyze(request);
-            return token.canceled() ? processing::AnalysisResult{} : std::move(result);
         },
         [](const async::Result<processing::AnalysisResult>& completed) {
-            if (!completed.ok || !completed.value.document) return;
+            if (!completed.ok) {
+                app_state.result.issue = tr(i18n::Text::Invalid);
+                app_state.result.issue_detail = completed.error.empty()
+                    ? "Background processing failed" : completed.error;
+                app_state.result.status = tr(i18n::Text::Invalid);
+                request_full_repaint();
+                return;
+            }
+            if (!completed.value.document) return;
             const processing::AnalysisResult& payload = completed.value;
             app_state.result.detected_input_kind = payload.detected;
             reset_result_interaction_state();
@@ -380,12 +452,30 @@ void continue_decode_one_layer() {
     async::restart(
         "zeus.process.input",
         [source, previous_chain](const async::CancelToken& token) {
-            if (token.canceled()) return processing::DecodeResult{};
-            auto result = processing::decode_one_layer(source, previous_chain);
-            return token.canceled() ? processing::DecodeResult{} : std::move(result);
+            try {
+                if (token.canceled()) {
+                    return async::success(processing::DecodeResult{});
+                }
+                auto result = processing::decode_one_layer(source, previous_chain);
+                return async::success(token.canceled()
+                    ? processing::DecodeResult{} : std::move(result));
+            } catch (const std::exception& exception) {
+                return async::failure<processing::DecodeResult>(exception.what());
+            } catch (...) {
+                return async::failure<processing::DecodeResult>(
+                    "Unknown background decoding error");
+            }
         },
         [](const async::Result<processing::DecodeResult>& completed) {
-            if (!completed.ok || completed.value.source != app_state.result.value) return;
+            if (!completed.ok) {
+                app_state.result.issue = tr(i18n::Text::Invalid);
+                app_state.result.issue_detail = completed.error.empty()
+                    ? "Background decoding failed" : completed.error;
+                app_state.result.status = tr(i18n::Text::Invalid);
+                request_full_repaint();
+                return;
+            }
+            if (completed.value.source != app_state.result.value) return;
             const processing::DecodeResult& payload = completed.value;
             if (!payload.process.ok || !payload.document) {
                 app_state.result.issue = compact_issue(payload.process.error_message);
@@ -466,12 +556,28 @@ void compute_crypto_output(zeus::DigestAlgorithm algorithm) {
     const bool use_result = app_state.crypto.message_source_index == 1 &&
         !app_state.result.value.empty();
     const std::string& message = use_result ? app_state.result.value : app_state.input_text;
-    const zeus::CryptoResult result = app_state.crypto.hmac
-        ? zeus::compute_hmac_encoded(message, app_state.crypto.hmac_key, hmac_key_encoding(), algorithm)
-        : zeus::compute_digest(message, algorithm);
     const std::string name = app_state.crypto.hmac
         ? "HMAC-" + std::string(zeus::digest_algorithm_name(algorithm))
         : zeus::digest_algorithm_name(algorithm);
+    zeus::CryptoResult result;
+    try {
+        result = app_state.crypto.hmac
+            ? zeus::compute_hmac_encoded(
+                  message, app_state.crypto.hmac_key, hmac_key_encoding(), algorithm)
+            : zeus::compute_digest(message, algorithm);
+    } catch (const std::exception& exception) {
+        app_state.result.issue = tr(i18n::Text::Invalid);
+        app_state.result.issue_detail = exception.what();
+        app_state.result.status = name;
+        request_full_repaint();
+        return;
+    } catch (...) {
+        app_state.result.issue = tr(i18n::Text::Invalid);
+        app_state.result.issue_detail = "Unknown crypto processing error";
+        app_state.result.status = name;
+        request_full_repaint();
+        return;
+    }
     if (!result.ok) {
         app_state.result.issue = compact_issue(result.error);
         app_state.result.issue_detail = result.error;

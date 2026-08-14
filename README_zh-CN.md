@@ -48,6 +48,10 @@ Windows。
   </tr>
 </table>
 
+### JWT 查看
+
+![Zeus Tools 解码 JWT Header 与 Payload](docs/assets/jwt-inspect.jpg)
+
 截图使用合成数据，展示的是当前 macOS Alpha 界面。Windows 上的字体渲染
 可能有所不同。
 

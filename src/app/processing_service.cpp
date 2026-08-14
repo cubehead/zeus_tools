@@ -109,19 +109,40 @@ AnalysisResult analyze(const AnalysisRequest& request) {
     output.process = action_mode == zeus::ProcessingMode::Auto
         ? base_result : zeus::process_text(request.input, action_mode);
 
-    if (output.process.tabular) {
-        const std::string& table_source = output.process.value.empty()
-            ? request.input : output.process.value;
-        const char delimiter = request.action_index == 15
+    const bool csv_requested = override_mode == zeus::ProcessingMode::Csv ||
+        action_mode == zeus::ProcessingMode::Csv;
+    const bool converted_to_csv = action_mode == zeus::ProcessingMode::JsonToCsv;
+    if (csv_requested || output.process.tabular) {
+        // Parse user CSV from the original text. process_text normalizes a
+        // detected CSV to TSV, so parsing output.process.value with the user's
+        // comma/semicolon choice would incorrectly reject a valid table.
+        const std::string& table_source = converted_to_csv
+            ? output.process.value : request.input;
+        const char delimiter = converted_to_csv
             ? ',' : csv_delimiter_for(request.csv_delimiter_index);
         const auto parsed = zeus::parse_csv(table_source, delimiter, true);
         if (parsed.ok) {
             output.csv = std::make_shared<zeus::CsvDocument>(parsed.document);
+            output.detected = zeus::ContentKind::Csv;
+            output.process.ok = true;
+            output.process.detected = zeus::ContentKind::Csv;
+            output.process.label = converted_to_csv ? "JSON → CSV" : "CSV";
+            output.process.value = parsed.document.to_tsv();
+            output.process.error_code.clear();
+            output.process.error_message.clear();
+            output.process.error_line = 0;
+            output.process.error_column = 0;
+            output.process.structured = false;
+            output.process.tabular = true;
         } else {
             output.process.ok = false;
+            output.process.detected = zeus::ContentKind::Csv;
             output.process.label = "CSV";
             output.process.error_code = "CSV_PARSE_ERROR";
             output.process.error_message = parsed.error;
+            output.process.value = request.input;
+            output.process.structured = false;
+            output.process.tabular = false;
         }
     }
 

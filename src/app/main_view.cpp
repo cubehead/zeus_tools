@@ -23,6 +23,7 @@ AppState& app_state = controller::state();
 } // namespace
 
 void compose(eui::Ui& ui, const eui::Screen& screen) {
+    controller::initialize_documentation_scenario();
     if (!app_state.result.document) {
         app_state.result.document = std::make_shared<zeus::HighlightedDocument>(
             zeus::HighlightedDocument::plain(""));
