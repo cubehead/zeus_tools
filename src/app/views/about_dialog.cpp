@@ -145,11 +145,16 @@ void build_about_dialog(eui::Ui& ui, const ViewContext& context) {
                 .position(28.0f, dialog_height - 72.0f)
                 .size(190.0f, 42.0f)
                 .text(controller::tr(i18n::Text::ProjectWebsite))
-                .icon(0xF0C1)
-                .iconSize(17.0f)
                 .fontSize(17.0f)
                 .theme(tokens, true)
                 .onClick([] { eui::platform::openUrl(kProjectUrl); })
+                .build();
+
+            ui.image("about.project.github")
+                .position(45.0f, dialog_height - 60.0f)
+                .size(18.0f, 18.0f)
+                .source("assets/github-mark.svg")
+                .contain()
                 .build();
 
             ui.text("about.license")

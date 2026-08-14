@@ -216,7 +216,12 @@ if(ZEUS_BUILD_APP)
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
                 "${CMAKE_CURRENT_SOURCE_DIR}/resources/icons/zeus-tools-1024.png"
                 "$<TARGET_FILE_DIR:zeus_tools>/assets/zeus-tools-1024.png"
-        DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/resources/icons/zeus-tools-1024.png"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                "${CMAKE_CURRENT_SOURCE_DIR}/resources/icons/github-mark.svg"
+                "$<TARGET_FILE_DIR:zeus_tools>/assets/github-mark.svg"
+        DEPENDS
+                "${CMAKE_CURRENT_SOURCE_DIR}/resources/icons/zeus-tools-1024.png"
+                "${CMAKE_CURRENT_SOURCE_DIR}/resources/icons/github-mark.svg"
         VERBATIM
         COMMENT "Updating Zeus Tools runtime icon"
     )
@@ -263,6 +268,8 @@ if(ZEUS_ENABLE_PACKAGING)
         install(FILES "${ZEUS_EUI_SOURCE_ROOT}/assets/Font Awesome 7 Free-Solid-900.otf"
                 DESTINATION assets)
         install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/resources/icons/zeus-tools-1024.png"
+                DESTINATION assets)
+        install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/resources/icons/github-mark.svg"
                 DESTINATION assets)
     endif()
     install(FILES
