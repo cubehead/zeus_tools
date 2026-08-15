@@ -1,8 +1,8 @@
 # Zeus Tools 当前开发计划
 
-> 状态：0.1 Alpha 发布收尾
+> 状态：v0.1.0 已发布，进入 0.1.x 稳定化
 >
-> 更新日期：2026-08-14
+> 更新日期：2026-08-15
 >
 > 产品基线：[产品需求](./product-requirements.md)
 >
@@ -43,6 +43,10 @@
 - 应用图标、README 截图、隐私/安全/贡献文档和 GitHub Issue/PR 模板。
 - 项目许可证、第三方声明及 11 份完整第三方许可证随包安装。
 - macOS arm64 DMG 已通过 SHA-256、磁盘映像及包内文件检查。
+- Windows x64 Portable ZIP 已通过 MinGW-w64 交叉构建、压缩包完整性、
+  PE/VersionInfo、运行时资源和系统 DLL 依赖检查。
+- `v0.1.0` 标签、双平台产物、SHA-256 文件及双语发布说明已发布到
+  GitHub Releases。
 
 ## 2. 当前未完成
 
@@ -53,17 +57,17 @@
 | P0 | 10 MB UI 端到端验收 | 记录粘贴到首屏、滚动、搜索、清空、内存峰值和稳定性数据。 |
 | P1 | 键盘与可访问性 | 补齐搜索聚焦快捷键并完成键盘导航、焦点和屏幕阅读器检查。 |
 | P1 | 检测质量数据集 | 建立可版本化的合法、非法、冲突和误判样例，记录准确率。 |
-| P1 | 签名与公证策略 | 明确 macOS notarization 与 Windows 代码签名是否进入首个公开版本。 |
+| P1 | 签名与公证 | v0.1.0 已明确采用未签名 Alpha 包；后续版本评估 macOS notarization 与 Windows Authenticode。 |
 
 ## 3. 当前里程碑
 
 | 里程碑 | 状态 | 退出条件 |
 | --- | --- | --- |
 | 0.1 Alpha 功能闭环 | 已完成 | 核心格式、编码、CSV、搜索、选择、主题、语言和 crypto 可用。 |
-| 0.1 Release Candidate | 进行中 | 剩余平台、IME 和 10 MB UI 验收完成，双平台人工冒烟与发布清单通过。 |
-| 0.1 公开发布 | 未开始 | 创建版本提交和标签，手工上传双平台产物、校验值与发布说明。 |
+| v0.1.0 公开 Alpha | 已发布 | `v0.1.0` 标签和 GitHub Release 包含 macOS arm64 DMG、Windows x64 Portable ZIP、校验值与发布说明。 |
+| 0.1.x 稳定化 | 进行中 | 完成 Windows 原生、双平台 IME、10 MB UI 端到端及键盘可访问性验收。 |
 
-## 4. 发布前验证
+## 4. 后续版本发布门禁
 
 - `./scripts/check-repository.sh` 通过。
 - `cmake --build --preset core` 与 `ctest --preset core` 通过。

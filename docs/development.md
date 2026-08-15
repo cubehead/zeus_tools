@@ -2,7 +2,7 @@
 
 ## 当前阶段
 
-项目处于 0.1 Alpha 发布收尾阶段。当前已实现：
+项目已发布 `v0.1.0` Alpha，当前进入 0.1.x 稳定化阶段。已落地能力如下：
 
 当前实现与完整产品基线之间的差距统一记录在根目录 README 的
 “Alpha limitations”及[发布检查清单](./release-checklist.md)，本节只描述已落地能力。
@@ -54,7 +54,7 @@
 
 同一开发机新增 10 MB CSV 基准（98,103 行、7 列）：解析约 46 ms，遍历全部单元格搜索约 10 ms。该结果验证核心解析和搜索余量，仍不包含输入控件、内存峰值与 GPU 交互耗时。
 
-CSV 大数据虚拟滚动、精确搜索定位以及 XML、YAML、摘要/HMAC、Base64、URL Decode 已完成首个可用版本。Windows 原生构建验证、签名/公证和 10 MB UI 端到端性能验收仍按发布清单推进。
+CSV 大数据虚拟滚动、精确搜索定位以及 XML、YAML、摘要/HMAC、Base64、URL Decode 已完成首个可用版本。`v0.1.0` 已提供 macOS arm64 DMG 和通过 MinGW-w64 交叉构建的 Windows x64 Portable ZIP。Windows 原生运行验证、签名/公证和 10 MB UI 端到端性能验收仍按发布清单推进。
 
 ## 依赖
 

@@ -9,6 +9,11 @@
 
 版本来自顶层 `project(... VERSION ...)`，平台构建号来自 `ZEUS_BUILD_NUMBER`。正式发布前应同时更新两者，并复核仓库根目录的 `LICENSE` 与 `THIRD_PARTY_NOTICES.md`。
 
+`v0.1.0` 已发布 macOS arm64 DMG 和 Windows x64 Portable ZIP。macOS 产物在
+本机完成构建与磁盘映像验证；Windows 产物使用 MinGW-w64 交叉构建，并完成
+ZIP、PE 架构、GUI 子系统、VersionInfo、资源和系统 DLL 依赖检查，但尚未
+替代 Windows 10/11 原生运行与 IME 验证。两个产物均未签名。
+
 两个平台的发布包都必须包含项目许可证、隐私说明、第三方声明，以及
 `docs/licenses/` 中与锁定依赖和实际运行时资源对应的完整许可证文本。
 
