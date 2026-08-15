@@ -133,6 +133,7 @@ void build_header_bar(eui::Ui& ui, const ViewContext& context) {
                 .theme(tokens, false)
                 .onClick([&ui] {
                     app_state.input_text.clear();
+                    app_state.oversized_input_approved = false;
                     app_state.search.query.clear();
                     app_state.crypto.hmac_key.clear();
                     app_state.processing_action_id = "auto";

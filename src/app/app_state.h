@@ -79,6 +79,7 @@ struct AppState {
     std::string processing_action_id = "auto";
     std::string input_type_id = "auto";
     bool input_type_dropdown_open = false;
+    bool oversized_input_approved = false;
     bool language_dropdown_open = false;
     bool about_dialog_open = false;
     std::size_t full_repaint_revision = 0;

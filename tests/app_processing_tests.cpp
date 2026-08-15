@@ -144,6 +144,15 @@ void test_decode_one_layer() {
            "decoded JSON should be formatted");
 }
 
+void test_recommended_input_size_boundary() {
+    expect(!app::processing::exceeds_recommended_input_size(
+               app::processing::kRecommendedMaxInputBytes),
+           "exactly 10 MiB should remain within the recommended desktop limit");
+    expect(app::processing::exceeds_recommended_input_size(
+               app::processing::kRecommendedMaxInputBytes + 1),
+           "input above 10 MiB should require explicit desktop approval");
+}
+
 void test_processing_registry() {
     for (int index = 0; index < static_cast<int>(zeus::ContentKind::Count); ++index) {
         const auto kind = static_cast<zeus::ContentKind>(index);
@@ -218,6 +227,7 @@ int main() {
     test_toml_analysis();
     test_ini_analysis();
     test_decode_one_layer();
+    test_recommended_input_size_boundary();
     test_processing_registry();
     std::cout << "All app processing tests passed.\n";
     return 0;

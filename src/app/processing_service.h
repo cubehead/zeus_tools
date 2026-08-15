@@ -4,11 +4,18 @@
 #include "zeus/text_document.h"
 #include "zeus/text_processor.h"
 
+#include <cstddef>
 #include <cstdint>
 #include <memory>
 #include <string>
 
 namespace app::processing {
+
+inline constexpr std::size_t kRecommendedMaxInputBytes = 10U * 1024U * 1024U;
+
+constexpr bool exceeds_recommended_input_size(std::size_t bytes) noexcept {
+    return bytes > kRecommendedMaxInputBytes;
+}
 
 struct AnalysisRequest {
     std::string input;

@@ -72,6 +72,8 @@ const std::array<Translation, static_cast<std::size_t>(Text::Count)> translation
     {"打开文件", "開啟檔案", "Open file", "ファイルを開く", "파일 열기", "Abrir archivo", "Ouvrir un fichier", "Datei öffnen", "Abrir arquivo", "Открыть файл"},
     {"导出结果", "匯出結果", "Export result", "結果を書き出す", "결과 내보내기", "Exportar resultado", "Exporter le résultat", "Ergebnis exportieren", "Exportar resultado", "Экспортировать результат"},
     {"关闭", "關閉", "Close", "閉じる", "닫기", "Cerrar", "Fermer", "Schließen", "Fechar", "Закрыть"},
+    {"输入超过 10 MiB", "輸入超過 10 MiB", "Input exceeds 10 MiB", "入力が 10 MiB を超えています", "입력이 10 MiB를 초과했습니다", "La entrada supera 10 MiB", "L’entrée dépasse 10 Mio", "Eingabe überschreitet 10 MiB", "A entrada excede 10 MiB", "Ввод превышает 10 МиБ"},
+    {"仍然处理", "仍然處理", "Process anyway", "そのまま処理", "계속 처리", "Procesar de todos modos", "Traiter quand même", "Trotzdem verarbeiten", "Processar mesmo assim", "Всё равно обработать"},
 }};
 
 const char* get(Text text, zeus::LocalePreference locale) {

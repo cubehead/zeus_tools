@@ -18,7 +18,8 @@ enum class Text {
     WeakAlgorithm, PreviewingFirst, Rows, RowsCopyTsv, TablePreviewCopyTsv,
     SearchResult, InvalidRegex, CopyAll, CopySelected, Selected, LocalOnly,
     About, Version, Build, AboutDescription, PrivacySummary, SpecialThanks,
-    OpenSourceThanks, ProjectWebsite, License, OpenFile, ExportResult, Close, Count,
+    OpenSourceThanks, ProjectWebsite, License, OpenFile, ExportResult, Close,
+    InputTooLarge, ProcessAnyway, Count,
 };
 
 struct Translation {

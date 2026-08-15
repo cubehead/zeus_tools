@@ -102,6 +102,18 @@ void build_action_bar(eui::Ui& ui, const ViewContext& context) {
                 })
                 .build();
 
+            if (oversized_input_paused()) {
+                components::button(ui, "actions.process.oversized")
+                    .size(148.0f, 30.0f)
+                    .text(tr(i18n::Text::ProcessAnyway))
+                    .fontSize(18.0f)
+                    .theme(tokens, false)
+                    .radius(5.0f)
+                    .onClick([] { process_oversized_input(); })
+                    .build();
+                return;
+            }
+
             const auto action = [&](const processing::ActionDefinition& definition) {
                 const std::string_view stable_id = processing::action_id(definition);
                 const bool active = app_state.processing_action_id == stable_id;

@@ -94,6 +94,8 @@ void initialize_documentation_scenario() {
         compute_crypto_output(zeus::DigestAlgorithm::Sha256);
     } else if (scenario == "about") {
         app_state.about_dialog_open = true;
+    } else if (scenario == "oversized") {
+        app_state.input_text.assign(processing::kRecommendedMaxInputBytes + 1, 'x');
     }
 #endif
 }
@@ -271,6 +273,14 @@ void reset_result_interaction_state() {
     app_state.result.selection.clear();
 }
 
+static void report_operation_failure(const char* summary, const char* detail) {
+    app_state.result.status = tr(i18n::Text::Invalid);
+    app_state.result.issue = summary;
+    app_state.result.issue_detail = detail == nullptr || detail[0] == '\0'
+        ? "The operation could not be completed" : detail;
+    request_full_repaint();
+}
+
 void reveal_result_line(std::size_t line) {
     if (!app_state.result.document) return;
     app_state.result.folds.ensure_document(*app_state.result.document);
@@ -353,14 +363,8 @@ void update_search() {
 }
 
 void analyze_input(bool debounce) {
-    processing::AnalysisRequest request;
-    request.input = app_state.input_text;
-    request.action_id = app_state.processing_action_id;
-    request.input_type_id = app_state.input_type_id;
-    request.csv_delimiter_index = app_state.csv.delimiter_index;
-    request.first_row_header = app_state.csv.first_row_header;
-
-    if (request.input.empty()) {
+    if (app_state.input_text.empty()) {
+        app_state.oversized_input_approved = false;
         async::cancel("zeus.process.input");
         async::cancel("zeus.search.result");
         reset_result_interaction_state();
@@ -382,6 +386,38 @@ void analyze_input(bool debounce) {
         request_full_repaint();
         return;
     }
+
+    if (!processing::exceeds_recommended_input_size(app_state.input_text.size())) {
+        app_state.oversized_input_approved = false;
+    } else if (!app_state.oversized_input_approved) {
+        async::cancel("zeus.process.input");
+        async::cancel("zeus.search.result");
+        reset_result_interaction_state();
+        app_state.result.detected_input_kind = zeus::ContentKind::Text;
+        app_state.result.output_kind = zeus::ContentKind::Text;
+        app_state.result.document = std::make_shared<zeus::HighlightedDocument>(
+            zeus::HighlightedDocument::plain(""));
+        app_state.result.csv.reset();
+        app_state.result.decode_chain.clear();
+        app_state.result.can_continue_decode = false;
+        app_state.result.status = tr(i18n::Text::Invalid);
+        app_state.result.issue = tr(i18n::Text::InputTooLarge);
+        app_state.result.issue_detail = app_state.result.issue;
+        app_state.search.active_match = 0;
+        app_state.search.document_matches.clear();
+        app_state.search.csv_matches.clear();
+        app_state.search.issue.clear();
+        app_state.search.issue_detail.clear();
+        request_full_repaint();
+        return;
+    }
+
+    processing::AnalysisRequest request;
+    request.input = app_state.input_text;
+    request.action_id = app_state.processing_action_id;
+    request.input_type_id = app_state.input_type_id;
+    request.csv_delimiter_index = app_state.csv.delimiter_index;
+    request.first_row_header = app_state.csv.first_row_header;
 
     app_state.result.status = debounce ? tr(i18n::Text::WaitingForInput) : tr(i18n::Text::Processing);
     app_state.result.issue.clear();
@@ -462,6 +498,22 @@ void analyze_input(bool debounce) {
             update_search();
             request_full_repaint();
         });
+}
+
+bool oversized_input_paused() {
+    return oversized_input() &&
+        !app_state.oversized_input_approved;
+}
+
+bool oversized_input() {
+    return processing::exceeds_recommended_input_size(app_state.input_text.size());
+}
+
+void process_oversized_input() {
+    if (!processing::exceeds_recommended_input_size(app_state.input_text.size())) return;
+    app_state.oversized_input_approved = true;
+    request_full_repaint();
+    analyze_input(false);
 }
 
 void continue_decode_one_layer() {
@@ -546,38 +598,52 @@ void move_match(int direction) {
     core::platform::requestUiUpdate();
 }
 
-void copy_result(bool selection_only) {
+static void copy_result_impl(bool selection_only) {
     if (app_state.result.csv) {
         const bool selected = app_state.result.selected_csv_row < app_state.result.csv->rows.size() &&
             app_state.result.selected_csv_column < app_state.result.csv->rows[app_state.result.selected_csv_row].size();
         if (selection_only && !selected) return;
-        const std::string value = selected
-            ? app_state.result.csv->rows[app_state.result.selected_csv_row][app_state.result.selected_csv_column]
-            : app_state.result.csv->to_tsv();
-        if (value.empty() && selection_only) return;
-        core::window::setClipboardText(value);
+        std::string table_value;
+        const std::string* value = nullptr;
+        if (selected) {
+            value = &app_state.result.csv->rows[app_state.result.selected_csv_row]
+                [app_state.result.selected_csv_column];
+        } else {
+            table_value = app_state.result.csv->to_tsv();
+            value = &table_value;
+        }
+        if (value->empty() && selection_only) return;
+        core::window::setClipboardText(*value);
         app_state.result.status = std::string(tr(i18n::Text::Copied)) + " " +
-                      std::to_string(value.size()) + " " + tr(i18n::Text::Bytes);
+                      std::to_string(value->size()) + " " + tr(i18n::Text::Bytes);
         core::platform::requestUiUpdate();
         return;
     }
     if (!app_state.result.document) {
         return;
     }
-    std::string value = app_state.result.selection.selected_text(*app_state.result.document);
-    if (value.empty() && !selection_only) {
-        value = app_state.result.document->text();
-    }
-    if (value.empty()) {
-        return;
-    }
-    core::window::setClipboardText(value);
+    std::string selection =
+        app_state.result.selection.selected_text(*app_state.result.document);
+    const std::string* value = selection.empty() && !selection_only
+        ? &app_state.result.document->text() : &selection;
+    if (value->empty()) return;
+    core::window::setClipboardText(*value);
     app_state.result.status = std::string(tr(i18n::Text::Copied)) + " " +
-                  std::to_string(value.size()) + " " + tr(i18n::Text::Bytes);
+                  std::to_string(value->size()) + " " + tr(i18n::Text::Bytes);
     core::platform::requestUiUpdate();
 }
 
-void load_input_file(const std::string& path) {
+void copy_result(bool selection_only) {
+    try {
+        copy_result_impl(selection_only);
+    } catch (const std::exception& exception) {
+        report_operation_failure("Unable to copy result", exception.what());
+    } catch (...) {
+        report_operation_failure("Unable to copy result", "Unknown clipboard error");
+    }
+}
+
+static void load_input_file_impl(const std::string& path) {
     if (path.empty()) return;
     constexpr std::uintmax_t max_file_bytes = 10U * 1024U * 1024U;
     std::error_code size_error;
@@ -613,6 +679,7 @@ void load_input_file(const std::string& path) {
     }
 
     app_state.input_text = std::move(value);
+    app_state.oversized_input_approved = false;
     app_state.processing_action_id = "auto";
     app_state.input_type_id = "auto";
     app_state.input_type_dropdown_open = false;
@@ -622,21 +689,42 @@ void load_input_file(const std::string& path) {
     analyze_input(false);
 }
 
-void open_input_file() {
-    load_input_file(platform::choose_input_file());
+void load_input_file(const std::string& path) {
+    try {
+        load_input_file_impl(path);
+    } catch (const std::exception& exception) {
+        report_operation_failure("Unable to read file", exception.what());
+    } catch (...) {
+        report_operation_failure("Unable to read file", "Unknown file read error");
+    }
 }
 
-void export_result() {
+void open_input_file() {
+    try {
+        load_input_file(platform::choose_input_file());
+    } catch (const std::exception& exception) {
+        report_operation_failure("Unable to open file", exception.what());
+    } catch (...) {
+        report_operation_failure("Unable to open file", "Unknown file dialog error");
+    }
+}
+
+static void export_result_impl() {
     if (!app_state.result.document && !app_state.result.csv) return;
     const std::string extension(
         processing::content_definition(app_state.result.output_kind).export_extension);
     const std::string path = platform::choose_export_file("zeus-result" + extension);
     if (path.empty()) return;
-    const std::string value = app_state.result.csv
-        ? app_state.result.csv->to_tsv()
-        : app_state.result.document->text();
+    std::string table_value;
+    const std::string* value = nullptr;
+    if (app_state.result.csv) {
+        table_value = app_state.result.csv->to_tsv();
+        value = &table_value;
+    } else {
+        value = &app_state.result.document->text();
+    }
     std::ofstream output(path, std::ios::binary | std::ios::trunc);
-    output.write(value.data(), static_cast<std::streamsize>(value.size()));
+    output.write(value->data(), static_cast<std::streamsize>(value->size()));
     if (!output) {
         app_state.result.status = tr(i18n::Text::Invalid);
         app_state.result.issue = "Unable to export result";
@@ -645,9 +733,19 @@ void export_result() {
         app_state.result.issue.clear();
         app_state.result.issue_detail.clear();
         app_state.result.status = std::string(tr(i18n::Text::ExportResult)) + " · " +
-            std::to_string(value.size()) + " " + tr(i18n::Text::Bytes);
+            std::to_string(value->size()) + " " + tr(i18n::Text::Bytes);
     }
     request_full_repaint();
+}
+
+void export_result() {
+    try {
+        export_result_impl();
+    } catch (const std::exception& exception) {
+        report_operation_failure("Unable to export result", exception.what());
+    } catch (...) {
+        report_operation_failure("Unable to export result", "Unknown file write error");
+    }
 }
 
 void compute_crypto_output(zeus::DigestAlgorithm algorithm) {

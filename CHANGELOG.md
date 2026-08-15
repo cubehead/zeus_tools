@@ -52,6 +52,11 @@ semantic versioning after the first stable release.
   the virtualized table is now the only presentation model retained.
 - Reduced large-result peak memory by moving processing/CSV models and removing
   the duplicate result string retained beside the read-only document.
+- Prevented synchronous clipboard and file operations from propagating allocation,
+  dialog or I/O exceptions through the desktop main loop.
+- Avoided copying the complete read-only document before clipboard copy or export.
+- Paused automatic processing above 10 MiB, replacing the expensive editable input
+  surface with a lightweight size notice and an explicit "Process anyway" action.
 - Preserved source content kinds across format conversions, including JSON-to-CSV
   table presentation, instead of overwriting them with the output kind.
 - Kept the common Base64 Encode action as encoding even when the source already
