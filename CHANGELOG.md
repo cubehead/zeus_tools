@@ -16,6 +16,8 @@ semantic versioning after the first stable release.
   complete registered metadata for every content kind.
 - Separated detected source kinds from result output kinds so decoded JSON and JWT inspection
   use JSON highlighting and export metadata without losing their source classification.
+- Removed redundant structured/tabular result flags; registered output kinds now determine
+  syntax highlighting and CSV table presentation without conflicting state combinations.
 - Added bilingual README release/download/star/license/platform badges, quick
   links, project support links and direct open-source component acknowledgements.
 - Added a versioned automatic-detection regression corpus covering valid,

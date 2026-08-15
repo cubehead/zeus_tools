@@ -70,8 +70,6 @@ struct ProcessResult {
     std::size_t error_line = 0;
     std::size_t error_column = 0;
     bool decoded = false;
-    bool structured = false;
-    bool tabular = false;
 };
 
 ProcessResult process_text(const std::string& input, ProcessingMode mode = ProcessingMode::Auto);

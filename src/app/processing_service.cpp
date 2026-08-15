@@ -35,7 +35,7 @@ std::shared_ptr<zeus::HighlightedDocument> make_document(
             zeus::HighlightedDocument::toml(display));
     }
     return std::make_shared<zeus::HighlightedDocument>(
-        syntax == DocumentSyntax::Json || result.structured
+        syntax == DocumentSyntax::Json
             ? zeus::HighlightedDocument::json(display)
             : zeus::HighlightedDocument::plain(display));
 }
@@ -65,7 +65,7 @@ AnalysisResult analyze(const AnalysisRequest& request) {
     const bool csv_requested = override_mode == zeus::ProcessingMode::Csv ||
         action_mode == zeus::ProcessingMode::Csv;
     const bool converted_to_csv = action_mode == zeus::ProcessingMode::JsonToCsv;
-    if (csv_requested || output.process.tabular) {
+    if (csv_requested || output.process.output_kind == zeus::ContentKind::Csv) {
         // Parse user CSV from the original text. process_text normalizes a
         // detected CSV to TSV, so parsing output.process.value with the user's
         // comma/semicolon choice would incorrectly reject a valid table.
@@ -86,8 +86,6 @@ AnalysisResult analyze(const AnalysisRequest& request) {
             output.process.error_message.clear();
             output.process.error_line = 0;
             output.process.error_column = 0;
-            output.process.structured = false;
-            output.process.tabular = true;
         } else {
             output.process.ok = false;
             output.process.detected = zeus::ContentKind::Csv;
@@ -96,8 +94,6 @@ AnalysisResult analyze(const AnalysisRequest& request) {
             output.process.error_code = "CSV_PARSE_ERROR";
             output.process.error_message = parsed.error;
             output.process.value = request.input;
-            output.process.structured = false;
-            output.process.tabular = false;
         }
     }
 

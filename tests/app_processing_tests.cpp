@@ -21,7 +21,8 @@ void test_json_analysis() {
 
     expect(result.process.ok, "JSON analysis should succeed");
     expect(result.detected == zeus::ContentKind::Json, "JSON should be detected");
-    expect(result.process.structured, "JSON result should be structured");
+    expect(result.process.output_kind == zeus::ContentKind::Json,
+           "JSON result should expose JSON as its output kind");
     expect(result.document != nullptr, "JSON should create a highlighted document");
     expect(result.document->text() == result.process.value,
            "highlighted JSON should match the processed value");

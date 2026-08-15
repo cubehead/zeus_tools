@@ -54,6 +54,9 @@ handler to construct arbitrary UI.
 - `ProcessResult` keeps the detected source kind separate from the output kind. This allows a
   Base64 or URL source that decodes to JSON, and a JWT inspection that produces JSON, to retain
   source-aware actions while selecting JSON highlighting and export metadata for the result.
+- Result presentation is derived from the registered output kind. Redundant `structured` and
+  `tabular` flags are intentionally omitted so a result cannot claim conflicting presentation
+  states; JSON/XML/YAML/TOML syntax and CSV tables follow their content definitions.
 - CSV controls, decode-again, and digest/HMAC remain explicit UI features because they carry
   state or interaction beyond a single text transformation.
 

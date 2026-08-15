@@ -321,7 +321,6 @@ ProcessResult decoded_result(ContentKind source_kind, const char* source_label, 
         result.output_kind = ContentKind::Json;
         result.label = std::string(source_label) + " → JSON";
         result.value = json.value;
-        result.structured = true;
     } else if (is_displayable_text(decoded)) {
         result.output_kind = ContentKind::Text;
         result.label = std::string(source_label) + " → Text";
@@ -423,7 +422,6 @@ ProcessResult run_json_processor(
         result.label = "JSON Unescape";
         result.value = std::move(unescaped);
         result.decoded = true;
-        result.structured = true;
         return result;
     }
 
@@ -434,7 +432,6 @@ ProcessResult run_json_processor(
     result.output_kind = ContentKind::Json;
     result.label = mode == ProcessingMode::JsonMinify ? "JSON Minify" : "JSON";
     result.value = mode == ProcessingMode::JsonMinify ? minify_json(input) : json.value;
-    result.structured = true;
     return result;
 }
 
@@ -446,7 +443,6 @@ ProcessResult run_conversion_processor(
     ContentKind source = ContentKind::Json;
     ContentKind target = ContentKind::Json;
     const char* label = "JSON";
-    bool tabular = false;
     switch (mode) {
     case ProcessingMode::JsonToYaml:
         converted = json_to_yaml(input, 2);
@@ -462,7 +458,6 @@ ProcessResult run_conversion_processor(
         converted = json_to_csv(input);
         target = ContentKind::Csv;
         label = "JSON → CSV";
-        tabular = true;
         break;
     case ProcessingMode::XmlToJson:
         converted = xml_to_json(input, 2);
@@ -499,8 +494,6 @@ ProcessResult run_conversion_processor(
     result.output_kind = target;
     result.label = label;
     result.value = converted.value;
-    result.structured = !tabular;
-    result.tabular = tabular;
     return result;
 }
 
@@ -520,7 +513,6 @@ ProcessResult run_format_processor(
         result.output_kind = ContentKind::Csv;
         result.label = "CSV";
         result.value = csv.document.to_tsv();
-        result.tabular = true;
         return result;
     }
 
@@ -558,7 +550,6 @@ ProcessResult run_format_processor(
     result.output_kind = kind;
     result.label = label;
     result.value = formatted.value;
-    result.structured = true;
     return result;
 }
 
@@ -575,7 +566,6 @@ ProcessResult run_codec_processor(
             result.label = "JSON Unescape";
             result.value = std::move(unescaped);
             result.decoded = true;
-            result.structured = true;
             return result;
         }
         const auto html = decode_html_entities(input);
@@ -701,7 +691,6 @@ ProcessResult detect_automatically(const std::string& input, const std::string& 
             result.label = "JSON String → JSON";
             result.value = std::move(unescaped);
             result.decoded = true;
-            result.structured = true;
             return result;
         }
         ProcessResult result;
@@ -709,7 +698,6 @@ ProcessResult detect_automatically(const std::string& input, const std::string& 
         result.output_kind = ContentKind::Json;
         result.label = "JSON";
         result.value = json.value;
-        result.structured = true;
         return result;
     }
 
@@ -721,7 +709,6 @@ ProcessResult detect_automatically(const std::string& input, const std::string& 
         result.label = "Escaped JSON → JSON";
         result.value = std::move(unescaped);
         result.decoded = true;
-        result.structured = true;
         return result;
     }
 
@@ -733,7 +720,6 @@ ProcessResult detect_automatically(const std::string& input, const std::string& 
         result.output_kind = ContentKind::Xml;
         result.label = "XML";
         result.value = xml.value;
-        result.structured = true;
         return result;
     }
 
@@ -748,7 +734,6 @@ ProcessResult detect_automatically(const std::string& input, const std::string& 
         result.label = "JWT · Unverified";
         result.value = std::move(inspected);
         result.decoded = true;
-        result.structured = true;
         return result;
     }
 
@@ -760,7 +745,6 @@ ProcessResult detect_automatically(const std::string& input, const std::string& 
             result.output_kind = ContentKind::Yaml;
             result.label = "YAML";
             result.value = yaml.value;
-            result.structured = true;
             return result;
         }
     }
@@ -772,7 +756,6 @@ ProcessResult detect_automatically(const std::string& input, const std::string& 
         result.output_kind = ContentKind::Csv;
         result.label = "CSV";
         result.value = csv.document.to_tsv();
-        result.tabular = true;
         return result;
     }
 

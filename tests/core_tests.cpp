@@ -327,7 +327,8 @@ int main() {
     const auto detected_json = zeus::process_text(R"({"answer":42})");
     require(detected_json.ok && detected_json.detected == zeus::ContentKind::Json,
             "auto mode should detect JSON");
-    require(detected_json.structured, "detected JSON should be marked structured");
+    require(detected_json.output_kind == zeus::ContentKind::Json,
+            "detected JSON should expose JSON as its output kind");
 
     const auto escaped_json_string = zeus::process_text(R"("{\"name\":\"Zeus\",\"enabled\":true}")");
     require(escaped_json_string.ok && escaped_json_string.detected == zeus::ContentKind::JsonEscaped &&
@@ -361,7 +362,8 @@ int main() {
     require(!unsafe_xml.ok && unsafe_xml.issue.code == "XML_UNSAFE_DECLARATION",
             "XML parser must reject DTD and entity declarations before parsing");
     const auto detected_xml = zeus::process_text("<root><item value=\"1\" /></root>");
-    require(detected_xml.ok && detected_xml.detected == zeus::ContentKind::Xml && detected_xml.structured,
+    require(detected_xml.ok && detected_xml.detected == zeus::ContentKind::Xml &&
+                detected_xml.output_kind == zeus::ContentKind::Xml,
             "auto mode should detect and format XML");
     const auto xml_document = zeus::HighlightedDocument::xml(detected_xml.value);
     require(!xml_document.lines().empty() && !xml_document.lines().front().spans.empty(),
@@ -375,7 +377,8 @@ int main() {
             "common single-document YAML should parse and normalize");
     const auto detected_yaml = zeus::process_text(
         "name: Zeus Tools\nenabled: true\nitems:\n  - json\n  - xml\n");
-    require(detected_yaml.ok && detected_yaml.detected == zeus::ContentKind::Yaml && detected_yaml.structured,
+    require(detected_yaml.ok && detected_yaml.detected == zeus::ContentKind::Yaml &&
+                detected_yaml.output_kind == zeus::ContentKind::Yaml,
             "auto mode should conservatively detect multi-line YAML mappings");
     const auto yaml_document = zeus::HighlightedDocument::yaml(detected_yaml.value);
     require(!yaml_document.lines().empty() && !yaml_document.lines().front().spans.empty(),
@@ -484,12 +487,12 @@ int main() {
         R"(<user id="1"><name>Zeus</name></user>)", zeus::ProcessingMode::XmlToJson);
     require(processed_xml_json_conversion.ok &&
                 processed_xml_json_conversion.detected == zeus::ContentKind::Json &&
-                processed_xml_json_conversion.structured,
+                processed_xml_json_conversion.output_kind == zeus::ContentKind::Json,
             "XML to JSON processing should select JSON result highlighting");
     const auto processed_csv_conversion = zeus::process_text(
         R"([{"name":"Zeus"},{"name":"Tools"}])", zeus::ProcessingMode::JsonToCsv);
     require(processed_csv_conversion.ok && processed_csv_conversion.detected == zeus::ContentKind::Csv &&
-                processed_csv_conversion.tabular,
+                processed_csv_conversion.output_kind == zeus::ContentKind::Csv,
             "JSON to CSV processing should select the table result view");
     const auto processed_json_conversion = zeus::process_text(
         "name: Zeus\nenabled: true\n", zeus::ProcessingMode::YamlToJson);
@@ -517,7 +520,7 @@ int main() {
             "auto mode should detect high-confidence Base64");
     require(decoded_base64.output_kind == zeus::ContentKind::Json,
             "Base64 JSON should retain Base64 as its source and JSON as its output");
-    require(decoded_base64.decoded && decoded_base64.structured,
+    require(decoded_base64.decoded && decoded_base64.output_kind == zeus::ContentKind::Json,
             "Base64 JSON should decode once and format as JSON");
     require(decoded_base64.value.find("\"answer\": 42") != std::string::npos,
             "decoded JSON should be formatted");
@@ -538,7 +541,8 @@ int main() {
         "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9."
         "eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9."
         "TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ");
-    require(jwt.ok && jwt.detected == zeus::ContentKind::Jwt && jwt.structured,
+    require(jwt.ok && jwt.detected == zeus::ContentKind::Jwt &&
+                jwt.output_kind == zeus::ContentKind::Json,
             "auto mode should detect a valid three-part JWT");
     require(jwt.output_kind == zeus::ContentKind::Json,
             "JWT inspection should expose JSON as its presentation output");
@@ -601,7 +605,8 @@ int main() {
             "CSV parser should reject a forced delimiter that does not produce a table");
 
     const auto detected_csv = zeus::process_text("name,age\nAlice,30\nBob,28");
-    require(detected_csv.ok && detected_csv.detected == zeus::ContentKind::Csv && detected_csv.tabular,
+    require(detected_csv.ok && detected_csv.detected == zeus::ContentKind::Csv &&
+                detected_csv.output_kind == zeus::ContentKind::Csv,
             "auto mode should detect consistent CSV content");
 
     const auto multiline_csv = zeus::parse_csv("id,note\n1,\"line one\nline two\"");
@@ -621,10 +626,10 @@ int main() {
                 zeus::ProcessingMode::Ini).detected == zeus::ContentKind::Ini,
             "registered INI formatter should execute through the core registry");
     require(zeus::process_text("name,value\nZeus,1",
-                zeus::ProcessingMode::Csv).tabular,
+                zeus::ProcessingMode::Csv).output_kind == zeus::ContentKind::Csv,
             "registered CSV processor should execute through the core registry");
     require(zeus::process_text("{\\\"name\\\":\\\"Zeus\\\"}",
-                zeus::ProcessingMode::JsonUnescape).structured,
+                zeus::ProcessingMode::JsonUnescape).output_kind == zeus::ContentKind::Json,
             "registered JSON unescape processor should execute through the core registry");
     require(zeus::process_text("Zeus & Tools",
                 zeus::ProcessingMode::HtmlEntityEncode).value == "Zeus &amp; Tools",
