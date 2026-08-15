@@ -116,6 +116,16 @@ if(ZEUS_BUILD_APP)
         message(FATAL_ERROR "Failed to add vertical-resize cursor support to EUI-NEO")
     endif()
 
+    execute_process(
+        COMMAND ${CMAKE_COMMAND}
+                -DSOURCE_DIR=${ZEUS_EUI_SOURCE_ROOT}
+                -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/patch_eui_find_shortcut.cmake
+        RESULT_VARIABLE ZEUS_EUI_FIND_PATCH_RESULT
+    )
+    if(NOT ZEUS_EUI_FIND_PATCH_RESULT EQUAL 0)
+        message(FATAL_ERROR "Failed to add find-shortcut support to EUI-NEO")
+    endif()
+
     set(ZEUS_APP_SOURCES
         "${ZEUS_EUI_APP_MAIN}"
         src/app/app.cpp
@@ -242,6 +252,8 @@ if(ZEUS_BUILD_TESTS)
     enable_testing()
     add_executable(zeus_core_tests tests/core_tests.cpp)
     target_link_libraries(zeus_core_tests PRIVATE zeus_core)
+    target_compile_definitions(zeus_core_tests PRIVATE
+        ZEUS_TEST_FIXTURE_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tests/fixtures")
     add_test(NAME zeus_core_tests COMMAND zeus_core_tests)
 
     add_executable(zeus_app_processing_tests tests/app_processing_tests.cpp)

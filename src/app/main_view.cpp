@@ -73,6 +73,33 @@ void compose(eui::Ui& ui, const eui::Screen& screen) {
     context.about_button_center_x =
         context.margin + 407.0f + context.header_spacer_width;
 
+    ui.setFindShortcutTarget("bottom.search.hit");
+    ui.setEscapeShortcut([&ui] {
+        if (app_state.about_dialog_open) {
+            app_state.about_dialog_open = false;
+        } else if (app_state.language_dropdown_open) {
+            app_state.language_dropdown_open = false;
+        } else if (app_state.input_type_dropdown_open) {
+            app_state.input_type_dropdown_open = false;
+        } else if (app_state.csv.delimiter_dropdown_open) {
+            app_state.csv.delimiter_dropdown_open = false;
+        } else if (app_state.crypto.message_dropdown_open) {
+            app_state.crypto.message_dropdown_open = false;
+        } else if (app_state.crypto.key_encoding_dropdown_open) {
+            app_state.crypto.key_encoding_dropdown_open = false;
+        } else if (app_state.crypto.panel_open) {
+            app_state.crypto.panel_open = false;
+            app_state.crypto.hmac = false;
+            app_state.crypto.message_source_index = 0;
+            controller::clear_hmac_key();
+            controller::clear_hmac_input_state(ui);
+        } else {
+            return false;
+        }
+        controller::request_full_repaint();
+        return true;
+    });
+
     ui.stack("root")
         .size(screen.width, screen.height)
         .content([&] {

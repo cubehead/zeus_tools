@@ -9,7 +9,9 @@
 #include "zeus/yaml_formatter.h"
 
 #include <cstdlib>
+#include <fstream>
 #include <iostream>
+#include <sstream>
 #include <string>
 
 namespace {
@@ -21,9 +23,73 @@ void require(bool condition, const char* message) {
     }
 }
 
+std::string unescape_fixture(const std::string& value) {
+    std::string output;
+    output.reserve(value.size());
+    for (std::size_t index = 0; index < value.size(); ++index) {
+        if (value[index] != '\\' || index + 1 >= value.size()) {
+            output.push_back(value[index]);
+            continue;
+        }
+        const char escaped = value[++index];
+        switch (escaped) {
+        case 'n': output.push_back('\n'); break;
+        case 'r': output.push_back('\r'); break;
+        case 't': output.push_back('\t'); break;
+        case '\\': output.push_back('\\'); break;
+        default:
+            output.push_back('\\');
+            output.push_back(escaped);
+            break;
+        }
+    }
+    return output;
+}
+
+void verify_detection_corpus() {
+    const std::string path = std::string(ZEUS_TEST_FIXTURE_DIR) + "/detection-v1.tsv";
+    std::ifstream input(path);
+    if (!input) {
+        std::cerr << "FAILED: cannot open detection corpus: " << path << '\n';
+        std::exit(1);
+    }
+
+    std::size_t cases = 0;
+    std::string line;
+    while (std::getline(input, line)) {
+        if (line.empty() || line.front() == '#') continue;
+        const std::size_t first = line.find('\t');
+        const std::size_t second = first == std::string::npos
+            ? std::string::npos : line.find('\t', first + 1);
+        const std::size_t third = second == std::string::npos
+            ? std::string::npos : line.find('\t', second + 1);
+        if (first == std::string::npos || second == std::string::npos ||
+            third == std::string::npos) {
+            std::cerr << "FAILED: malformed detection corpus row: " << line << '\n';
+            std::exit(1);
+        }
+
+        const std::string name = line.substr(0, first);
+        const std::string expected_kind = line.substr(first + 1, second - first - 1);
+        const bool expected_ok = line.substr(second + 1, third - second - 1) == "true";
+        const auto result = zeus::process_text(unescape_fixture(line.substr(third + 1)));
+        if (result.ok != expected_ok ||
+            std::string(zeus::content_kind_name(result.detected)) != expected_kind) {
+            std::cerr << "FAILED: detection corpus case '" << name << "' expected "
+                      << expected_kind << " (ok=" << expected_ok << ") but got "
+                      << zeus::content_kind_name(result.detected) << " (ok="
+                      << result.ok << ")\n";
+            std::exit(1);
+        }
+        ++cases;
+    }
+    require(cases >= 25, "detection corpus should retain broad boundary coverage");
+}
+
 } // namespace
 
 int main() {
+    verify_detection_corpus();
     require(zeus::compute_digest("", zeus::DigestAlgorithm::Md5).hex ==
                 "d41d8cd98f00b204e9800998ecf8427e",
             "MD5 should match its standard empty-string vector");

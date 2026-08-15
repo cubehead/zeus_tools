@@ -1,0 +1,29 @@
+# Zeus Tools automatic-detection corpus v1
+# name<TAB>expected ContentKind name<TAB>expected ok (true/false)<TAB>input with C-style escapes
+empty	Empty	true	
+json-object	JSON	true	{"name":"Zeus Tools","active":true}
+json-array	JSON	true	[1,2,3]
+json-string	JSON	true	"plain JSON string"
+xml-document	XML	true	<?xml version="1.0"?><root><item id="1"/></root>
+xml-invalid-structure	XML	false	<root><item></root>
+yaml-mapping	YAML	true	name: Zeus Tools\nenabled: true\nitems:\n  - json\n  - xml
+yaml-sequence	YAML	true	- name: Zeus\n  active: true\n- name: Tools\n  active: false
+jwt	JWT	true	eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIn0.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ
+escaped-json	JSON String	true	{\"name\":\"Zeus\",\"enabled\":true}
+base64-json	Base64	true	eyJuYW1lIjoiWmV1cyBUb29scyIsImFjdGl2ZSI6dHJ1ZX0=
+base64-text	Base64	true	SGVsbG8gV29ybGQh
+url-encoded	URL Encode	true	message%3D%E4%BD%A0%E5%A5%BD%26active%3Dtrue
+csv-comma	CSV	true	name,age\nAlice,30\nBob,28
+csv-semicolon	CSV	true	name;age\nAlice;30\nBob;28
+csv-tab	CSV	true	name\tage\nAlice\t30\nBob\t28
+plain-sentence	Text	true	Hello from Zeus Tools
+plain-chinese	Text	true	这是一段普通中文文本
+plain-dotted	Text	true	hello.world.token
+plain-email	Text	true	developer@example.com
+plain-url	Text	true	https://github.com/cubehead/zeus_tools
+plain-plus	Text	true	a+b is not automatically URL decoded
+plain-percent	Text	true	100% local processing
+plain-hex	Text	true	deadbeefcafebabe
+short-base64	Text	true	dGVzdA==
+single-csv-row	Text	true	name,age
+single-yaml-like	Text	true	name: Zeus Tools

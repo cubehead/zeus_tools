@@ -62,6 +62,13 @@ void build_search_bar(eui::Ui& ui, const ViewContext& context) {
     const float bottom_inner_width = content_width - 12.0f;
     const float search_width = std::clamp(content_width * 0.35f, 150.0f, 380.0f);
     const float status_width = std::max(52.0f, bottom_inner_width - search_width - 361.0f);
+#if defined(__APPLE__)
+    const std::string search_placeholder =
+        std::string(tr(i18n::Text::SearchResult)) + "  ·  ⌘F";
+#else
+    const std::string search_placeholder =
+        std::string(tr(i18n::Text::SearchResult)) + "  ·  Ctrl+F";
+#endif
 
     ui.rect("bottom.background")
         .position(margin, bottom_bar_y)
@@ -96,7 +103,7 @@ void build_search_bar(eui::Ui& ui, const ViewContext& context) {
             components::input(ui, "bottom.search")
                 .size(search_width, 34.0f)
                 .value(app_state.search.query)
-                .placeholder(tr(i18n::Text::SearchResult))
+                .placeholder(search_placeholder)
                 .fontFamily(fonts::ui())
                 .theme(tokens)
                 .onChange([](const std::string& value) {

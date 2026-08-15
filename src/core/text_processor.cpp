@@ -242,6 +242,13 @@ std::string binary_summary(const std::string& value) {
 }
 
 bool inspect_escaped_json(const std::string& input, std::string& output) {
+    const std::size_t first = input.find_first_not_of(" \t\r\n");
+    const std::size_t last = input.find_last_not_of(" \t\r\n");
+    const bool quoted_json_string = first != std::string::npos &&
+        last != std::string::npos && input[first] == '"' && input[last] == '"';
+    if (!quoted_json_string && input.find("\\\"") == std::string::npos) {
+        return false;
+    }
     const auto unescaped = unescape_json_string(input);
     if (!unescaped.ok) return false;
     const auto nested = format_json(unescaped.value, 2);
