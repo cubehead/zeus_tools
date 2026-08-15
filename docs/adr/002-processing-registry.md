@@ -15,13 +15,16 @@ dylib, script, or third-party plugins.
 
 ## Decision
 
-Zeus Tools uses a statically linked processing registry. Each registered action has:
+Zeus Tools uses a statically linked processing registry. The core processor definition owns
+the stable ID for each processing mode. Each application action references that mode and has:
 
-- a stable string ID, such as `json.to_toml` or `base64.encode`;
 - its applicable input kind;
-- its processing mode;
 - presentation metadata for the compact action bar;
 - optional applicability and behavior flags.
+
+The application derives stable IDs such as `json.to_toml` and `base64.encode` from the core
+mode registration instead of storing a second copy. Context-sensitive automatic actions share
+the reserved `auto` ID and remain distinguishable by input kind.
 
 Input overrides are also registered under stable IDs. Application state and background
 processing requests store these IDs instead of positional indexes. The action bar and the
@@ -45,7 +48,7 @@ handler to construct arbitrary UI.
 - Automatic detection remains a separate ordered pipeline because detector priority and
   conservative fall-through are different concerns from explicit action dispatch.
 - Compile-time validation requires every non-Auto `ProcessingMode` to be registered exactly
-  once; a missing or duplicate handler fails the build.
+  once with a unique, non-empty ID; a missing or duplicate handler or ID fails the build.
 - Application content metadata registers the full name, compact action-bar name, result
   syntax, and default export extension for every `ContentKind`. Input-type labels, result
   document construction, and export suggestions use this single definition.

@@ -73,6 +73,7 @@ struct ProcessResult {
 };
 
 ProcessResult process_text(const std::string& input, ProcessingMode mode = ProcessingMode::Auto);
+const char* processing_mode_id(ProcessingMode mode);
 const char* content_kind_name(ContentKind kind);
 
 } // namespace zeus

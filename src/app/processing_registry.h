@@ -47,7 +47,6 @@ struct ContentDefinition {
 };
 
 struct ActionDefinition {
-    std::string_view id;
     zeus::ProcessingMode mode = zeus::ProcessingMode::Auto;
     zeus::ContentKind input_kind = zeus::ContentKind::Text;
     ActionLabel label = ActionLabel::Format;
@@ -66,6 +65,7 @@ struct InputTypeDefinition {
 const std::vector<ActionDefinition>& registered_actions();
 const std::vector<InputTypeDefinition>& registered_input_types();
 const ContentDefinition& content_definition(zeus::ContentKind kind);
+std::string_view action_id(const ActionDefinition& action);
 
 bool action_applies(
     const ActionDefinition& action,

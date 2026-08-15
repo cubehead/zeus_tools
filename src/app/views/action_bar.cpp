@@ -102,9 +102,10 @@ void build_action_bar(eui::Ui& ui, const ViewContext& context) {
                 .build();
 
             const auto action = [&](const processing::ActionDefinition& definition) {
-                const bool active = app_state.processing_action_id == definition.id;
-                std::string component_id = "actions." + std::string(definition.id);
-                if (definition.id == "auto") {
+                const std::string_view stable_id = processing::action_id(definition);
+                const bool active = app_state.processing_action_id == stable_id;
+                std::string component_id = "actions." + std::string(stable_id);
+                if (stable_id == "auto") {
                     component_id += "." +
                         std::to_string(static_cast<int>(definition.input_kind));
                 }
@@ -120,7 +121,8 @@ void build_action_bar(eui::Ui& ui, const ViewContext& context) {
                             app_state.csv.delimiter_index = 0;
                             app_state.csv.first_row_header = true;
                         }
-                        app_state.processing_action_id = std::string(definition.id);
+                        app_state.processing_action_id =
+                            std::string(processing::action_id(definition));
                         analyze_input();
                     });
                 if (!active) {

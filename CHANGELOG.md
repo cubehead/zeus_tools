@@ -12,6 +12,8 @@ semantic versioning after the first stable release.
   replacing positional UI/dispatch indexes without introducing runtime plugins.
 - Registered all explicit core processing modes by functional handler boundary, with
   compile-time completeness checks and a separate ordered auto-detection pipeline.
+- Made core processing registrations the single source of stable action IDs, with compile-time
+  uniqueness checks and application actions deriving IDs from their processing modes.
 - Centralized content labels, compact labels, result syntax, and export extensions in
   complete registered metadata for every content kind.
 - Separated detected source kinds from result output kinds so decoded JSON and JWT inspection

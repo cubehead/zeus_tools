@@ -127,7 +127,11 @@ void test_processing_registry() {
 
     std::set<std::string> action_keys;
     for (const auto& action : app::processing::registered_actions()) {
-        const std::string key = std::string(action.id) + ":" +
+        const std::string_view id = app::processing::action_id(action);
+        expect(!id.empty(), "every registered action should resolve a stable core ID");
+        expect(id == zeus::processing_mode_id(action.mode),
+               "application actions should derive IDs from their processing modes");
+        const std::string key = std::string(id) + ":" +
             (action.common ? "common" : std::to_string(static_cast<int>(action.input_kind)));
         expect(action_keys.insert(key).second,
                "registered action IDs should be unique within their applicability scope");
@@ -146,7 +150,8 @@ void test_processing_registry() {
 
     bool found_toml = false;
     for (const auto& action : app::processing::registered_actions()) {
-        if (action.id == "json.to_toml" && app::processing::action_applies(
+        if (app::processing::action_id(action) == "json.to_toml" &&
+            app::processing::action_applies(
                 action, zeus::ContentKind::Json, R"({"name":"Zeus"})")) {
             found_toml = true;
         }

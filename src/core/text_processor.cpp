@@ -677,8 +677,27 @@ constexpr bool processor_modes_are_complete() {
     return true;
 }
 
+constexpr bool c_strings_equal(const char* lhs, const char* rhs) {
+    while (*lhs != '\0' && *rhs != '\0') {
+        if (*lhs++ != *rhs++) return false;
+    }
+    return *lhs == *rhs;
+}
+
+constexpr bool processor_ids_are_valid() {
+    for (std::size_t index = 0; index < kProcessors.size(); ++index) {
+        if (kProcessors[index].id == nullptr || kProcessors[index].id[0] == '\0') return false;
+        for (std::size_t other = index + 1; other < kProcessors.size(); ++other) {
+            if (c_strings_equal(kProcessors[index].id, kProcessors[other].id)) return false;
+        }
+    }
+    return true;
+}
+
 static_assert(processor_modes_are_complete(),
               "Each explicit processing mode must have exactly one registered handler");
+static_assert(processor_ids_are_valid(),
+              "Each explicit processing mode must have a unique non-empty stable ID");
 
 ProcessResult detect_automatically(const std::string& input, const std::string& trimmed) {
     const auto json = format_json(input, 2);
@@ -791,6 +810,13 @@ ProcessResult detect_automatically(const std::string& input, const std::string& 
 }
 
 } // namespace
+
+const char* processing_mode_id(ProcessingMode mode) {
+    if (mode == ProcessingMode::Auto) return "auto";
+    const auto processor = std::find_if(kProcessors.begin(), kProcessors.end(),
+        [mode](const ProcessorRegistration& candidate) { return candidate.mode == mode; });
+    return processor == kProcessors.end() ? "" : processor->id;
+}
 
 const char* content_kind_name(ContentKind kind) {
     switch (kind) {

@@ -15,35 +15,35 @@ using Kind = zeus::ContentKind;
 using Mode = zeus::ProcessingMode;
 
 const std::vector<Action> kActions = {
-    {"auto", Mode::Auto, Kind::JsonEscaped, Label::Unescape, 76.0f},
-    {"auto", Mode::Auto, Kind::Json, Label::Format, 64.0f},
-    {"json.minify", Mode::JsonMinify, Kind::Json, Label::Minify, 62.0f},
-    {"json.escape", Mode::JsonEscape, Kind::Json, Label::Escape, 62.0f},
-    {"json.to_yaml", Mode::JsonToYaml, Kind::Json, Label::ToYaml, 68.0f},
-    {"json.to_xml", Mode::JsonToXml, Kind::Json, Label::ToXml, 62.0f},
-    {"json.to_csv", Mode::JsonToCsv, Kind::Json, Label::ToCsv, 62.0f, false, false, true},
-    {"json.to_toml", Mode::JsonToToml, Kind::Json, Label::ToToml, 72.0f},
-    {"auto", Mode::Auto, Kind::Xml, Label::Format, 64.0f},
-    {"xml.to_json", Mode::XmlToJson, Kind::Xml, Label::ToJson, 68.0f},
-    {"auto", Mode::Auto, Kind::Yaml, Label::Format, 64.0f},
-    {"yaml.to_json", Mode::YamlToJson, Kind::Yaml, Label::ToJson, 68.0f},
-    {"auto", Mode::Auto, Kind::Toml, Label::Format, 64.0f},
-    {"toml.to_json", Mode::TomlToJson, Kind::Toml, Label::ToJson, 68.0f},
-    {"auto", Mode::Auto, Kind::Ini, Label::Format, 64.0f},
-    {"ini.to_json", Mode::IniToJson, Kind::Ini, Label::ToJson, 68.0f},
-    {"auto", Mode::Auto, Kind::Csv, Label::Table, 60.0f},
-    {"auto", Mode::Auto, Kind::Base64, Label::Decode, 64.0f},
-    {"auto", Mode::Auto, Kind::UrlEncoded, Label::Decode, 64.0f},
-    {"auto", Mode::Auto, Kind::Jwt, Label::Inspect, 64.0f},
-    {"html.decode", Mode::HtmlEntityDecode, Kind::HtmlEntity, Label::Decode, 64.0f},
-    {"hex.decode", Mode::HexDecode, Kind::HexEncoded, Label::Decode, 64.0f},
-    {"timestamp.inspect", Mode::Timestamp, Kind::Text, Label::UnixTime, 56.0f, false, true},
-    {"base64.encode", Mode::Base64Encode, Kind::Text, Label::Base64Encode, 104.0f, true},
-    {"url.encode", Mode::UrlEncode, Kind::Text, Label::UrlEncode, 98.0f, true},
-    {"html.encode", Mode::HtmlEntityEncode, Kind::Text, Label::HtmlEncode, 94.0f, true},
-    {"hex.encode", Mode::HexEncode, Kind::Text, Label::HexEncode, 82.0f, true},
-    {"text.upper", Mode::Upper, Kind::Text, Label::Upper, 56.0f, true},
-    {"text.lower", Mode::Lower, Kind::Text, Label::Lower, 56.0f, true},
+    {Mode::Auto, Kind::JsonEscaped, Label::Unescape, 76.0f},
+    {Mode::Auto, Kind::Json, Label::Format, 64.0f},
+    {Mode::JsonMinify, Kind::Json, Label::Minify, 62.0f},
+    {Mode::JsonEscape, Kind::Json, Label::Escape, 62.0f},
+    {Mode::JsonToYaml, Kind::Json, Label::ToYaml, 68.0f},
+    {Mode::JsonToXml, Kind::Json, Label::ToXml, 62.0f},
+    {Mode::JsonToCsv, Kind::Json, Label::ToCsv, 62.0f, false, false, true},
+    {Mode::JsonToToml, Kind::Json, Label::ToToml, 72.0f},
+    {Mode::Auto, Kind::Xml, Label::Format, 64.0f},
+    {Mode::XmlToJson, Kind::Xml, Label::ToJson, 68.0f},
+    {Mode::Auto, Kind::Yaml, Label::Format, 64.0f},
+    {Mode::YamlToJson, Kind::Yaml, Label::ToJson, 68.0f},
+    {Mode::Auto, Kind::Toml, Label::Format, 64.0f},
+    {Mode::TomlToJson, Kind::Toml, Label::ToJson, 68.0f},
+    {Mode::Auto, Kind::Ini, Label::Format, 64.0f},
+    {Mode::IniToJson, Kind::Ini, Label::ToJson, 68.0f},
+    {Mode::Auto, Kind::Csv, Label::Table, 60.0f},
+    {Mode::Auto, Kind::Base64, Label::Decode, 64.0f},
+    {Mode::Auto, Kind::UrlEncoded, Label::Decode, 64.0f},
+    {Mode::Auto, Kind::Jwt, Label::Inspect, 64.0f},
+    {Mode::HtmlEntityDecode, Kind::HtmlEntity, Label::Decode, 64.0f},
+    {Mode::HexDecode, Kind::HexEncoded, Label::Decode, 64.0f},
+    {Mode::Timestamp, Kind::Text, Label::UnixTime, 56.0f, false, true},
+    {Mode::Base64Encode, Kind::Text, Label::Base64Encode, 104.0f, true},
+    {Mode::UrlEncode, Kind::Text, Label::UrlEncode, 98.0f, true},
+    {Mode::HtmlEntityEncode, Kind::Text, Label::HtmlEncode, 94.0f, true},
+    {Mode::HexEncode, Kind::Text, Label::HexEncode, 82.0f, true},
+    {Mode::Upper, Kind::Text, Label::Upper, 56.0f, true},
+    {Mode::Lower, Kind::Text, Label::Lower, 56.0f, true},
 };
 
 const std::vector<InputTypeDefinition> kInputTypes = {
@@ -99,6 +99,10 @@ bool action_applies(const Action& action, Kind kind, std::string_view input) {
 const std::vector<ActionDefinition>& registered_actions() { return kActions; }
 const std::vector<InputTypeDefinition>& registered_input_types() { return kInputTypes; }
 
+std::string_view action_id(const ActionDefinition& action) {
+    return zeus::processing_mode_id(action.mode);
+}
+
 const ContentDefinition& content_definition(Kind kind) {
     const auto index = static_cast<std::size_t>(kind);
     return index < kContentDefinitions.size()
@@ -108,7 +112,7 @@ const ContentDefinition& content_definition(Kind kind) {
 
 const ActionDefinition* find_action(std::string_view id, Kind kind, std::string_view input) {
     const auto found = std::find_if(kActions.begin(), kActions.end(), [&](const Action& action) {
-        return action.id == id && action_applies(action, kind, input);
+        return action_id(action) == id && action_applies(action, kind, input);
     });
     return found == kActions.end() ? nullptr : &*found;
 }

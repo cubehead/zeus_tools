@@ -14,6 +14,7 @@
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
+#include <set>
 #include <sstream>
 #include <string>
 
@@ -640,6 +641,17 @@ int main() {
     require(zeus::process_text("1786694400",
                 zeus::ProcessingMode::Timestamp).ok,
             "registered timestamp inspector should execute through the core registry");
+
+    std::set<std::string> processing_ids{"auto"};
+    require(std::string(zeus::processing_mode_id(zeus::ProcessingMode::Auto)) == "auto",
+            "automatic processing should expose its stable ID");
+    for (int index = 1; index < static_cast<int>(zeus::ProcessingMode::Count); ++index) {
+        const auto mode = static_cast<zeus::ProcessingMode>(index);
+        const std::string id = zeus::processing_mode_id(mode);
+        require(!id.empty(), "every explicit processing mode should expose a stable ID");
+        require(processing_ids.insert(id).second,
+                "processing mode IDs should remain globally unique");
+    }
 
     const auto unsafe_yaml_candidate = zeus::process_text(
         "- &anchor value\n- *anchor");
