@@ -14,6 +14,8 @@ semantic versioning after the first stable release.
   compile-time completeness checks and a separate ordered auto-detection pipeline.
 - Centralized content labels, compact labels, result syntax, and export extensions in
   complete registered metadata for every content kind.
+- Separated detected source kinds from result output kinds so decoded JSON and JWT inspection
+  use JSON highlighting and export metadata without losing their source classification.
 - Added bilingual README release/download/star/license/platform badges, quick
   links, project support links and direct open-source component acknowledgements.
 - Added a versioned automatic-detection regression corpus covering valid,

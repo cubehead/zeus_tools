@@ -515,6 +515,8 @@ int main() {
     const auto decoded_base64 = zeus::process_text("eyJhbnN3ZXIiOjQyfQ==");
     require(decoded_base64.ok && decoded_base64.detected == zeus::ContentKind::Base64,
             "auto mode should detect high-confidence Base64");
+    require(decoded_base64.output_kind == zeus::ContentKind::Json,
+            "Base64 JSON should retain Base64 as its source and JSON as its output");
     require(decoded_base64.decoded && decoded_base64.structured,
             "Base64 JSON should decode once and format as JSON");
     require(decoded_base64.value.find("\"answer\": 42") != std::string::npos,
@@ -528,6 +530,8 @@ int main() {
     const auto decoded_url = zeus::process_text("message%3D%E4%BD%A0%E5%A5%BD");
     require(decoded_url.ok && decoded_url.detected == zeus::ContentKind::UrlEncoded,
             "auto mode should detect URL encoding");
+    require(decoded_url.output_kind == zeus::ContentKind::Text,
+            "decoded URL text should expose Text as its output kind");
     require(decoded_url.value == "message=你好", "URL decoding should preserve UTF-8");
 
     const auto jwt = zeus::process_text(
@@ -536,6 +540,8 @@ int main() {
         "TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ");
     require(jwt.ok && jwt.detected == zeus::ContentKind::Jwt && jwt.structured,
             "auto mode should detect a valid three-part JWT");
+    require(jwt.output_kind == zeus::ContentKind::Json,
+            "JWT inspection should expose JSON as its presentation output");
     require(jwt.value.find("\"header\"") != std::string::npos &&
                 jwt.value.find("\"name\": \"John Doe\"") != std::string::npos &&
                 jwt.value.find("\"verification\": \"not verified\"") != std::string::npos,
@@ -565,10 +571,14 @@ int main() {
     const auto encoded_base64 = zeus::process_text("你好 Zeus", zeus::ProcessingMode::Base64Encode);
     require(encoded_base64.ok && encoded_base64.value == "5L2g5aW9IFpldXM=",
             "Base64 encode should support UTF-8 input and standard padding");
+    require(encoded_base64.output_kind == zeus::ContentKind::Base64,
+            "Base64 encode should expose Base64 as its output kind");
 
     const auto encoded_url = zeus::process_text("你好 Zeus/1", zeus::ProcessingMode::UrlEncode);
     require(encoded_url.ok && encoded_url.value == "%E4%BD%A0%E5%A5%BD%20Zeus%2F1",
             "URL encode should preserve unreserved characters and encode UTF-8 bytes");
+    require(encoded_url.output_kind == zeus::ContentKind::UrlEncoded,
+            "URL encode should expose URL encoding as its output kind");
 
     const auto binary_base64 = zeus::process_text("AAECAwQF", zeus::ProcessingMode::Base64);
     require(binary_base64.ok && binary_base64.label.find("Binary") != std::string::npos,

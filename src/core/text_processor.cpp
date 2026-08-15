@@ -318,13 +318,16 @@ ProcessResult decoded_result(ContentKind source_kind, const char* source_label, 
     result.decoded = true;
     const auto json = format_json(decoded, 2);
     if (json.ok) {
+        result.output_kind = ContentKind::Json;
         result.label = std::string(source_label) + " → JSON";
         result.value = json.value;
         result.structured = true;
     } else if (is_displayable_text(decoded)) {
+        result.output_kind = ContentKind::Text;
         result.label = std::string(source_label) + " → Text";
         result.value = std::move(decoded);
     } else {
+        result.output_kind = ContentKind::Text;
         result.label = std::string(source_label) + " → Binary";
         result.value = binary_summary(decoded);
     }
@@ -335,6 +338,7 @@ ProcessResult failure(ContentKind kind, const char* code, const char* message) {
     ProcessResult result;
     result.ok = false;
     result.detected = kind;
+    result.output_kind = kind;
     result.label = content_kind_name(kind);
     result.error_code = code;
     result.error_message = message;
@@ -357,19 +361,25 @@ ProcessResult run_text_transform(
     ProcessingMode mode) {
     ProcessResult result;
     result.detected = ContentKind::Text;
+    result.output_kind = ContentKind::Text;
     if (mode == ProcessingMode::Base64Encode) {
+        result.output_kind = ContentKind::Base64;
         result.label = "Base64 Encode";
         result.value = encode_base64(input);
     } else if (mode == ProcessingMode::HtmlEntityEncode) {
+        result.output_kind = ContentKind::HtmlEntity;
         result.label = "HTML Entity Encode";
         result.value = encode_html_entities(input);
     } else if (mode == ProcessingMode::HexEncode) {
+        result.output_kind = ContentKind::HexEncoded;
         result.label = "Hex Encode";
         result.value = encode_hex(input);
     } else if (mode == ProcessingMode::JsonEscape) {
+        result.output_kind = ContentKind::JsonEscaped;
         result.label = "JSON Escape";
         result.value = escape_json_text(input);
     } else if (mode == ProcessingMode::UrlEncode) {
+        result.output_kind = ContentKind::UrlEncoded;
         result.label = "URL Encode";
         result.value = encode_url(input);
     } else if (mode == ProcessingMode::Upper || mode == ProcessingMode::Lower) {
@@ -409,6 +419,7 @@ ProcessResult run_json_processor(
         }
         ProcessResult result;
         result.detected = ContentKind::Json;
+        result.output_kind = ContentKind::Json;
         result.label = "JSON Unescape";
         result.value = std::move(unescaped);
         result.decoded = true;
@@ -420,6 +431,7 @@ ProcessResult run_json_processor(
     if (!json.ok) return format_failure(ContentKind::Json, json, input);
     ProcessResult result;
     result.detected = ContentKind::Json;
+    result.output_kind = ContentKind::Json;
     result.label = mode == ProcessingMode::JsonMinify ? "JSON Minify" : "JSON";
     result.value = mode == ProcessingMode::JsonMinify ? minify_json(input) : json.value;
     result.structured = true;
@@ -484,6 +496,7 @@ ProcessResult run_conversion_processor(
     if (!converted.ok) return format_failure(source, converted, input);
     ProcessResult result;
     result.detected = target;
+    result.output_kind = target;
     result.label = label;
     result.value = converted.value;
     result.structured = !tabular;
@@ -504,6 +517,7 @@ ProcessResult run_format_processor(
         }
         ProcessResult result;
         result.detected = ContentKind::Csv;
+        result.output_kind = ContentKind::Csv;
         result.label = "CSV";
         result.value = csv.document.to_tsv();
         result.tabular = true;
@@ -541,6 +555,7 @@ ProcessResult run_format_processor(
     if (!formatted.ok) return format_failure(kind, formatted, input);
     ProcessResult result;
     result.detected = kind;
+    result.output_kind = kind;
     result.label = label;
     result.value = formatted.value;
     result.structured = true;
@@ -556,6 +571,7 @@ ProcessResult run_codec_processor(
         if (inspect_escaped_json(input, unescaped)) {
             ProcessResult result;
             result.detected = ContentKind::Json;
+            result.output_kind = ContentKind::Json;
             result.label = "JSON Unescape";
             result.value = std::move(unescaped);
             result.decoded = true;
@@ -681,6 +697,7 @@ ProcessResult detect_automatically(const std::string& input, const std::string& 
         if (inspect_escaped_json(input, unescaped)) {
             ProcessResult result;
             result.detected = ContentKind::JsonEscaped;
+            result.output_kind = ContentKind::Json;
             result.label = "JSON String → JSON";
             result.value = std::move(unescaped);
             result.decoded = true;
@@ -689,6 +706,7 @@ ProcessResult detect_automatically(const std::string& input, const std::string& 
         }
         ProcessResult result;
         result.detected = ContentKind::Json;
+        result.output_kind = ContentKind::Json;
         result.label = "JSON";
         result.value = json.value;
         result.structured = true;
@@ -699,6 +717,7 @@ ProcessResult detect_automatically(const std::string& input, const std::string& 
     if (inspect_escaped_json(trimmed, unescaped)) {
         ProcessResult result;
         result.detected = ContentKind::JsonEscaped;
+        result.output_kind = ContentKind::Json;
         result.label = "Escaped JSON → JSON";
         result.value = std::move(unescaped);
         result.decoded = true;
@@ -711,6 +730,7 @@ ProcessResult detect_automatically(const std::string& input, const std::string& 
         if (!xml.ok) return format_failure(ContentKind::Xml, xml, input);
         ProcessResult result;
         result.detected = ContentKind::Xml;
+        result.output_kind = ContentKind::Xml;
         result.label = "XML";
         result.value = xml.value;
         result.structured = true;
@@ -724,6 +744,7 @@ ProcessResult detect_automatically(const std::string& input, const std::string& 
     if (inspect_jwt(trimmed, inspected)) {
         ProcessResult result;
         result.detected = ContentKind::Jwt;
+        result.output_kind = ContentKind::Json;
         result.label = "JWT · Unverified";
         result.value = std::move(inspected);
         result.decoded = true;
@@ -736,6 +757,7 @@ ProcessResult detect_automatically(const std::string& input, const std::string& 
         if (yaml.ok) {
             ProcessResult result;
             result.detected = ContentKind::Yaml;
+            result.output_kind = ContentKind::Yaml;
             result.label = "YAML";
             result.value = yaml.value;
             result.structured = true;
@@ -747,6 +769,7 @@ ProcessResult detect_automatically(const std::string& input, const std::string& 
     if (csv.ok) {
         ProcessResult result;
         result.detected = ContentKind::Csv;
+        result.output_kind = ContentKind::Csv;
         result.label = "CSV";
         result.value = csv.document.to_tsv();
         result.tabular = true;
@@ -778,6 +801,7 @@ ProcessResult detect_automatically(const std::string& input, const std::string& 
 
     ProcessResult result;
     result.detected = ContentKind::Text;
+    result.output_kind = ContentKind::Text;
     result.label = "Text";
     result.value = input;
     return result;
@@ -811,6 +835,7 @@ ProcessResult process_text(const std::string& input, ProcessingMode mode) {
     if (trimmed.empty()) {
         ProcessResult result;
         result.detected = ContentKind::Empty;
+        result.output_kind = ContentKind::Empty;
         result.label = "Empty";
         return result;
     }

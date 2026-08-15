@@ -104,6 +104,8 @@ void test_decode_one_layer() {
            "Base64 should decode by one layer");
     expect(result.process.detected == zeus::ContentKind::Base64,
            "decode result should retain its source kind");
+    expect(result.process.output_kind == zeus::ContentKind::Json,
+           "decode result should expose JSON as its output kind");
     expect(result.document != nullptr, "decoded JSON should create a document");
     expect(result.document->text().find("\"name\": \"Zeus\"") != std::string::npos,
            "decoded JSON should be formatted");

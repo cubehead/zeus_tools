@@ -423,7 +423,7 @@ void analyze_input(bool debounce) {
             if (!completed.value.document) return;
             const processing::AnalysisResult& payload = completed.value;
             app_state.result.detected_input_kind = payload.detected;
-            app_state.result.output_kind = payload.process.detected;
+            app_state.result.output_kind = payload.process.output_kind;
             reset_result_interaction_state();
             app_state.result.document = payload.document;
             app_state.result.csv = payload.csv;
@@ -512,7 +512,7 @@ void continue_decode_one_layer() {
                 return;
             }
             app_state.result.value = payload.process.value;
-            app_state.result.output_kind = payload.process.detected;
+            app_state.result.output_kind = payload.process.output_kind;
             app_state.result.decode_chain = payload.chain;
             app_state.result.can_continue_decode = payload.can_continue;
             reset_result_interaction_state();

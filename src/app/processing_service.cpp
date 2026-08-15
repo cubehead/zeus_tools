@@ -21,7 +21,7 @@ char csv_delimiter_for(int index) {
 std::shared_ptr<zeus::HighlightedDocument> make_document(
     const zeus::ProcessResult& result,
     const std::string& display) {
-    const DocumentSyntax syntax = content_definition(result.detected).syntax;
+    const DocumentSyntax syntax = content_definition(result.output_kind).syntax;
     if (syntax == DocumentSyntax::Xml) {
         return std::make_shared<zeus::HighlightedDocument>(
             zeus::HighlightedDocument::xml(display));
@@ -79,6 +79,7 @@ AnalysisResult analyze(const AnalysisRequest& request) {
             output.detected = zeus::ContentKind::Csv;
             output.process.ok = true;
             output.process.detected = zeus::ContentKind::Csv;
+            output.process.output_kind = zeus::ContentKind::Csv;
             output.process.label = converted_to_csv ? "JSON → CSV" : "CSV";
             output.process.value = parsed.document.to_tsv();
             output.process.error_code.clear();
@@ -90,6 +91,7 @@ AnalysisResult analyze(const AnalysisRequest& request) {
         } else {
             output.process.ok = false;
             output.process.detected = zeus::ContentKind::Csv;
+            output.process.output_kind = zeus::ContentKind::Csv;
             output.process.label = "CSV";
             output.process.error_code = "CSV_PARSE_ERROR";
             output.process.error_message = parsed.error;

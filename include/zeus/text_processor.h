@@ -60,7 +60,9 @@ enum class ContentKind {
 
 struct ProcessResult {
     bool ok = true;
+    // `detected` describes the source/input; `output_kind` describes `value`.
     ContentKind detected = ContentKind::Text;
+    ContentKind output_kind = ContentKind::Text;
     std::string label = "Text";
     std::string value;
     std::string error_code;

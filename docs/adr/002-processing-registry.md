@@ -51,6 +51,9 @@ handler to construct arbitrary UI.
   document construction, and export suggestions use this single definition.
 - Content metadata is also compile-time ordered and complete; adding a `ContentKind` without
   its definition fails the build.
+- `ProcessResult` keeps the detected source kind separate from the output kind. This allows a
+  Base64 or URL source that decodes to JSON, and a JWT inspection that produces JSON, to retain
+  source-aware actions while selecting JSON highlighting and export metadata for the result.
 - CSV controls, decode-again, and digest/HMAC remain explicit UI features because they carry
   state or interaction beyond a single text transformation.
 
