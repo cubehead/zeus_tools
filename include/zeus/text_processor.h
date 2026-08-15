@@ -37,6 +37,7 @@ enum class ProcessingMode {
     HexDecode,
     HexEncode,
     Timestamp,
+    Count,
 };
 
 enum class ContentKind {

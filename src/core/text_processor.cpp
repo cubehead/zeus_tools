@@ -10,6 +10,7 @@
 #include "zeus/yaml_formatter.h"
 
 #include <algorithm>
+#include <array>
 #include <cctype>
 #include <cstdint>
 #include <iomanip>
@@ -340,6 +341,448 @@ ProcessResult failure(ContentKind kind, const char* code, const char* message) {
     return result;
 }
 
+ProcessResult format_failure(ContentKind kind, const FormatResult& formatted,
+                             const std::string& input) {
+    ProcessResult result = failure(
+        kind, formatted.issue.code.c_str(), formatted.issue.message.c_str());
+    result.value = input;
+    result.error_line = formatted.issue.line;
+    result.error_column = formatted.issue.column;
+    return result;
+}
+
+ProcessResult run_text_transform(
+    const std::string& input,
+    const std::string&,
+    ProcessingMode mode) {
+    ProcessResult result;
+    result.detected = ContentKind::Text;
+    if (mode == ProcessingMode::Base64Encode) {
+        result.label = "Base64 Encode";
+        result.value = encode_base64(input);
+    } else if (mode == ProcessingMode::HtmlEntityEncode) {
+        result.label = "HTML Entity Encode";
+        result.value = encode_html_entities(input);
+    } else if (mode == ProcessingMode::HexEncode) {
+        result.label = "Hex Encode";
+        result.value = encode_hex(input);
+    } else if (mode == ProcessingMode::JsonEscape) {
+        result.label = "JSON Escape";
+        result.value = escape_json_text(input);
+    } else if (mode == ProcessingMode::UrlEncode) {
+        result.label = "URL Encode";
+        result.value = encode_url(input);
+    } else if (mode == ProcessingMode::Upper || mode == ProcessingMode::Lower) {
+        result.label = mode == ProcessingMode::Upper ? "Upper" : "Lower";
+        result.value = input;
+        std::transform(result.value.begin(), result.value.end(), result.value.begin(),
+            [mode](unsigned char ch) {
+                return static_cast<char>(mode == ProcessingMode::Upper
+                    ? std::toupper(ch) : std::tolower(ch));
+            });
+    } else if (mode == ProcessingMode::Timestamp) {
+        const auto converted = format_unix_timestamp(input);
+        if (!converted.ok) {
+            result = format_failure(ContentKind::Text, converted, input);
+        } else {
+            result.label = "Unix Time";
+            result.value = converted.value;
+        }
+    } else {
+        result.label = "Text";
+        result.value = input;
+    }
+    return result;
+}
+
+ProcessResult run_json_processor(
+    const std::string& input,
+    const std::string&,
+    ProcessingMode mode) {
+    if (mode == ProcessingMode::JsonUnescape) {
+        std::string unescaped;
+        if (!inspect_escaped_json(input, unescaped)) {
+            ProcessResult result = failure(ContentKind::JsonEscaped, "INVALID_ESCAPED_JSON",
+                "Input does not contain one layer of escaped JSON");
+            result.value = input;
+            return result;
+        }
+        ProcessResult result;
+        result.detected = ContentKind::Json;
+        result.label = "JSON Unescape";
+        result.value = std::move(unescaped);
+        result.decoded = true;
+        result.structured = true;
+        return result;
+    }
+
+    const auto json = format_json(input, 2);
+    if (!json.ok) return format_failure(ContentKind::Json, json, input);
+    ProcessResult result;
+    result.detected = ContentKind::Json;
+    result.label = mode == ProcessingMode::JsonMinify ? "JSON Minify" : "JSON";
+    result.value = mode == ProcessingMode::JsonMinify ? minify_json(input) : json.value;
+    result.structured = true;
+    return result;
+}
+
+ProcessResult run_conversion_processor(
+    const std::string& input,
+    const std::string&,
+    ProcessingMode mode) {
+    FormatResult converted;
+    ContentKind source = ContentKind::Json;
+    ContentKind target = ContentKind::Json;
+    const char* label = "JSON";
+    bool tabular = false;
+    switch (mode) {
+    case ProcessingMode::JsonToYaml:
+        converted = json_to_yaml(input, 2);
+        target = ContentKind::Yaml;
+        label = "JSON → YAML";
+        break;
+    case ProcessingMode::JsonToXml:
+        converted = json_to_xml(input, 2);
+        target = ContentKind::Xml;
+        label = "JSON → XML";
+        break;
+    case ProcessingMode::JsonToCsv:
+        converted = json_to_csv(input);
+        target = ContentKind::Csv;
+        label = "JSON → CSV";
+        tabular = true;
+        break;
+    case ProcessingMode::XmlToJson:
+        converted = xml_to_json(input, 2);
+        source = ContentKind::Xml;
+        label = "XML → JSON";
+        break;
+    case ProcessingMode::YamlToJson:
+        converted = yaml_to_json(input, 2);
+        source = ContentKind::Yaml;
+        label = "YAML → JSON";
+        break;
+    case ProcessingMode::TomlToJson:
+        converted = toml_to_json(input, 2);
+        source = ContentKind::Toml;
+        label = "TOML → JSON";
+        break;
+    case ProcessingMode::JsonToToml:
+        converted = json_to_toml(input);
+        target = ContentKind::Toml;
+        label = "JSON → TOML";
+        break;
+    case ProcessingMode::IniToJson:
+        converted = ini_to_json(input, 2);
+        source = ContentKind::Ini;
+        label = "INI → JSON";
+        break;
+    default:
+        return failure(ContentKind::Text, "UNREGISTERED_CONVERSION",
+                       "The requested conversion is not registered");
+    }
+    if (!converted.ok) return format_failure(source, converted, input);
+    ProcessResult result;
+    result.detected = target;
+    result.label = label;
+    result.value = converted.value;
+    result.structured = !tabular;
+    result.tabular = tabular;
+    return result;
+}
+
+ProcessResult run_format_processor(
+    const std::string& input,
+    const std::string&,
+    ProcessingMode mode) {
+    if (mode == ProcessingMode::Csv) {
+        const auto csv = parse_csv(input, '\0', true);
+        if (!csv.ok) {
+            ProcessResult result = failure(ContentKind::Csv, "INVALID_CSV", csv.error.c_str());
+            result.value = input;
+            return result;
+        }
+        ProcessResult result;
+        result.detected = ContentKind::Csv;
+        result.label = "CSV";
+        result.value = csv.document.to_tsv();
+        result.tabular = true;
+        return result;
+    }
+
+    FormatResult formatted;
+    ContentKind kind = ContentKind::Text;
+    const char* label = "Text";
+    switch (mode) {
+    case ProcessingMode::Xml:
+        formatted = format_xml(input, 2);
+        kind = ContentKind::Xml;
+        label = "XML";
+        break;
+    case ProcessingMode::Yaml:
+        formatted = format_yaml(input, 2);
+        kind = ContentKind::Yaml;
+        label = "YAML";
+        break;
+    case ProcessingMode::Toml:
+        formatted = format_toml(input);
+        kind = ContentKind::Toml;
+        label = "TOML";
+        break;
+    case ProcessingMode::Ini:
+        formatted = format_ini(input);
+        kind = ContentKind::Ini;
+        label = "INI / Properties";
+        break;
+    default:
+        return failure(ContentKind::Text, "UNREGISTERED_FORMAT",
+                       "The requested format processor is not registered");
+    }
+    if (!formatted.ok) return format_failure(kind, formatted, input);
+    ProcessResult result;
+    result.detected = kind;
+    result.label = label;
+    result.value = formatted.value;
+    result.structured = true;
+    return result;
+}
+
+ProcessResult run_codec_processor(
+    const std::string& input,
+    const std::string& trimmed,
+    ProcessingMode mode) {
+    if (mode == ProcessingMode::DecodeOneLayer) {
+        std::string unescaped;
+        if (inspect_escaped_json(input, unescaped)) {
+            ProcessResult result;
+            result.detected = ContentKind::Json;
+            result.label = "JSON Unescape";
+            result.value = std::move(unescaped);
+            result.decoded = true;
+            result.structured = true;
+            return result;
+        }
+        const auto html = decode_html_entities(input);
+        if (html.ok) return decoded_result(ContentKind::HtmlEntity, "HTML Entity", html.value);
+        if (looks_like_hex_encoding(input)) {
+            const auto hex = decode_hex(input);
+            if (hex.ok) return decoded_result(ContentKind::HexEncoded, "Hex", hex.value);
+        }
+        std::string decoded;
+        std::size_t encoded_count = 0;
+        if (decode_url(input, decoded, encoded_count) && encoded_count > 0 &&
+            is_displayable_text(decoded)) {
+            return decoded_result(ContentKind::UrlEncoded, "URL Decode", std::move(decoded));
+        }
+        decoded.clear();
+        if (decode_base64(trimmed, decoded)) {
+            return decoded_result(ContentKind::Base64, "Base64", std::move(decoded));
+        }
+        ProcessResult result = failure(ContentKind::Text, "NO_ENCODED_LAYER",
+            "Current result is not a supported encoded layer");
+        result.value = input;
+        return result;
+    }
+
+    if (mode == ProcessingMode::UrlDecode) {
+        std::string decoded;
+        std::size_t encoded_count = 0;
+        const bool valid = decode_url(input, decoded, encoded_count);
+        const bool has_encoding = encoded_count > 0 || input.find('+') != std::string::npos;
+        if (valid && has_encoding) {
+            return decoded_result(ContentKind::UrlEncoded, "URL Decode", std::move(decoded));
+        }
+        return failure(ContentKind::UrlEncoded, "INVALID_URL_ENCODING",
+                       "URL encoded input contains an invalid percent sequence");
+    }
+
+    if (mode == ProcessingMode::Base64) {
+        std::string decoded;
+        if (decode_base64(trimmed, decoded)) {
+            return decoded_result(ContentKind::Base64, "Base64", std::move(decoded));
+        }
+        return failure(ContentKind::Base64, "INVALID_BASE64",
+                       "Input is not valid standard or URL-safe Base64");
+    }
+
+    const bool html = mode == ProcessingMode::HtmlEntityDecode;
+    const auto decoded = html ? decode_html_entities(input) : decode_hex(input);
+    const ContentKind kind = html ? ContentKind::HtmlEntity : ContentKind::HexEncoded;
+    if (!decoded.ok) return format_failure(kind, decoded, input);
+    return decoded_result(kind, html ? "HTML Entity" : "Hex", decoded.value);
+}
+
+using ModeHandler = ProcessResult (*)(
+    const std::string&, const std::string&, ProcessingMode);
+
+struct ProcessorRegistration {
+    ProcessingMode mode;
+    const char* id;
+    ModeHandler handler;
+};
+
+constexpr std::array<ProcessorRegistration,
+    static_cast<std::size_t>(ProcessingMode::Count) - 1> kProcessors{{
+    {ProcessingMode::Json, "json.format", run_json_processor},
+    {ProcessingMode::JsonMinify, "json.minify", run_json_processor},
+    {ProcessingMode::JsonEscape, "json.escape", run_text_transform},
+    {ProcessingMode::JsonUnescape, "json.unescape", run_json_processor},
+    {ProcessingMode::JsonToYaml, "json.to_yaml", run_conversion_processor},
+    {ProcessingMode::JsonToXml, "json.to_xml", run_conversion_processor},
+    {ProcessingMode::JsonToCsv, "json.to_csv", run_conversion_processor},
+    {ProcessingMode::Xml, "xml.format", run_format_processor},
+    {ProcessingMode::XmlToJson, "xml.to_json", run_conversion_processor},
+    {ProcessingMode::Yaml, "yaml.format", run_format_processor},
+    {ProcessingMode::YamlToJson, "yaml.to_json", run_conversion_processor},
+    {ProcessingMode::Toml, "toml.format", run_format_processor},
+    {ProcessingMode::TomlToJson, "toml.to_json", run_conversion_processor},
+    {ProcessingMode::JsonToToml, "json.to_toml", run_conversion_processor},
+    {ProcessingMode::Ini, "ini.format", run_format_processor},
+    {ProcessingMode::IniToJson, "ini.to_json", run_conversion_processor},
+    {ProcessingMode::Base64, "base64.decode", run_codec_processor},
+    {ProcessingMode::Base64Encode, "base64.encode", run_text_transform},
+    {ProcessingMode::UrlDecode, "url.decode", run_codec_processor},
+    {ProcessingMode::UrlEncode, "url.encode", run_text_transform},
+    {ProcessingMode::DecodeOneLayer, "decode.one_layer", run_codec_processor},
+    {ProcessingMode::Csv, "csv.table", run_format_processor},
+    {ProcessingMode::Text, "text", run_text_transform},
+    {ProcessingMode::Upper, "text.upper", run_text_transform},
+    {ProcessingMode::Lower, "text.lower", run_text_transform},
+    {ProcessingMode::HtmlEntityDecode, "html.decode", run_codec_processor},
+    {ProcessingMode::HtmlEntityEncode, "html.encode", run_text_transform},
+    {ProcessingMode::HexDecode, "hex.decode", run_codec_processor},
+    {ProcessingMode::HexEncode, "hex.encode", run_text_transform},
+    {ProcessingMode::Timestamp, "timestamp.inspect", run_text_transform},
+}};
+
+constexpr bool processor_modes_are_complete() {
+    std::array<bool, static_cast<std::size_t>(ProcessingMode::Count)> seen{};
+    for (const auto& processor : kProcessors) {
+        const auto index = static_cast<std::size_t>(processor.mode);
+        if (processor.mode == ProcessingMode::Auto ||
+            processor.mode == ProcessingMode::Count || seen[index]) {
+            return false;
+        }
+        seen[index] = true;
+    }
+    for (std::size_t index = 1; index < seen.size(); ++index) {
+        if (!seen[index]) return false;
+    }
+    return true;
+}
+
+static_assert(processor_modes_are_complete(),
+              "Each explicit processing mode must have exactly one registered handler");
+
+ProcessResult detect_automatically(const std::string& input, const std::string& trimmed) {
+    const auto json = format_json(input, 2);
+    if (json.ok) {
+        std::string unescaped;
+        if (inspect_escaped_json(input, unescaped)) {
+            ProcessResult result;
+            result.detected = ContentKind::JsonEscaped;
+            result.label = "JSON String → JSON";
+            result.value = std::move(unescaped);
+            result.decoded = true;
+            result.structured = true;
+            return result;
+        }
+        ProcessResult result;
+        result.detected = ContentKind::Json;
+        result.label = "JSON";
+        result.value = json.value;
+        result.structured = true;
+        return result;
+    }
+
+    std::string unescaped;
+    if (inspect_escaped_json(trimmed, unescaped)) {
+        ProcessResult result;
+        result.detected = ContentKind::JsonEscaped;
+        result.label = "Escaped JSON → JSON";
+        result.value = std::move(unescaped);
+        result.decoded = true;
+        result.structured = true;
+        return result;
+    }
+
+    if (!trimmed.empty() && trimmed.front() == '<') {
+        const auto xml = format_xml(input, 2);
+        if (!xml.ok) return format_failure(ContentKind::Xml, xml, input);
+        ProcessResult result;
+        result.detected = ContentKind::Xml;
+        result.label = "XML";
+        result.value = xml.value;
+        result.structured = true;
+        return result;
+    }
+
+    if (looks_like_toml(input)) return run_format_processor(input, trimmed, ProcessingMode::Toml);
+    if (looks_like_ini(input)) return run_format_processor(input, trimmed, ProcessingMode::Ini);
+
+    std::string inspected;
+    if (inspect_jwt(trimmed, inspected)) {
+        ProcessResult result;
+        result.detected = ContentKind::Jwt;
+        result.label = "JWT · Unverified";
+        result.value = std::move(inspected);
+        result.decoded = true;
+        result.structured = true;
+        return result;
+    }
+
+    if (looks_like_yaml(input)) {
+        const auto yaml = format_yaml(input, 2);
+        if (yaml.ok) {
+            ProcessResult result;
+            result.detected = ContentKind::Yaml;
+            result.label = "YAML";
+            result.value = yaml.value;
+            result.structured = true;
+            return result;
+        }
+    }
+
+    const auto csv = parse_csv(input, '\0', true);
+    if (csv.ok) {
+        ProcessResult result;
+        result.detected = ContentKind::Csv;
+        result.label = "CSV";
+        result.value = csv.document.to_tsv();
+        result.tabular = true;
+        return result;
+    }
+
+    std::string decoded;
+    std::size_t encoded_count = 0;
+    if (decode_url(input, decoded, encoded_count) && encoded_count > 0 &&
+        is_displayable_text(decoded)) {
+        return decoded_result(ContentKind::UrlEncoded, "URL Decode", std::move(decoded));
+    }
+
+    const auto html = decode_html_entities(input);
+    if (html.ok) return decoded_result(ContentKind::HtmlEntity, "HTML Entity", html.value);
+
+    if (looks_like_hex_encoding(input)) {
+        const auto hex = decode_hex(input);
+        if (hex.ok && is_displayable_text(hex.value)) {
+            return decoded_result(ContentKind::HexEncoded, "Hex", hex.value);
+        }
+    }
+
+    decoded.clear();
+    if (decode_base64(trimmed, decoded) && trimmed.size() >= 12 &&
+        is_displayable_text(decoded)) {
+        return decoded_result(ContentKind::Base64, "Base64", std::move(decoded));
+    }
+
+    ProcessResult result;
+    result.detected = ContentKind::Text;
+    result.label = "Text";
+    result.value = input;
+    return result;
+}
+
 } // namespace
 
 const char* content_kind_name(ContentKind kind) {
@@ -371,434 +814,23 @@ ProcessResult process_text(const std::string& input, ProcessingMode mode) {
         return result;
     }
 
-    if (mode == ProcessingMode::Base64Encode) {
-        ProcessResult result;
-        result.detected = ContentKind::Text;
-        result.label = "Base64 Encode";
-        result.value = encode_base64(input);
-        return result;
+    if (mode == ProcessingMode::Auto) {
+        return detect_automatically(input, trimmed);
     }
 
-    if (mode == ProcessingMode::HtmlEntityEncode || mode == ProcessingMode::HexEncode) {
-        ProcessResult result;
-        result.detected = ContentKind::Text;
-        result.label = mode == ProcessingMode::HtmlEntityEncode
-            ? "HTML Entity Encode" : "Hex Encode";
-        result.value = mode == ProcessingMode::HtmlEntityEncode
-            ? encode_html_entities(input) : encode_hex(input);
-        return result;
-    }
-
-    if (mode == ProcessingMode::Timestamp) {
-        const auto converted = format_unix_timestamp(input);
-        if (!converted.ok) {
-            ProcessResult result = failure(ContentKind::Text,
-                converted.issue.code.c_str(), converted.issue.message.c_str());
-            result.value = input;
-            return result;
-        }
-        ProcessResult result;
-        result.detected = ContentKind::Text;
-        result.label = "Unix Time";
-        result.value = converted.value;
-        return result;
-    }
-
-    if (mode == ProcessingMode::JsonMinify) {
-        const auto json = format_json(input, 2);
-        if (!json.ok) {
-            ProcessResult result = failure(ContentKind::Json, json.issue.code.c_str(), json.issue.message.c_str());
-            result.value = input;
-            result.error_line = json.issue.line;
-            result.error_column = json.issue.column;
-            return result;
-        }
-        ProcessResult result;
-        result.detected = ContentKind::Json;
-        result.label = "JSON Minify";
-        result.value = minify_json(input);
-        result.structured = true;
-        return result;
-    }
-
-    if (mode == ProcessingMode::JsonEscape) {
-        ProcessResult result;
-        result.detected = ContentKind::Text;
-        result.label = "JSON Escape";
-        result.value = escape_json_text(input);
-        return result;
-    }
-
-    if (mode == ProcessingMode::JsonUnescape) {
-        std::string unescaped;
-        if (!inspect_escaped_json(input, unescaped)) {
-            ProcessResult result = failure(ContentKind::JsonEscaped, "INVALID_ESCAPED_JSON",
-                "Input does not contain one layer of escaped JSON");
-            result.value = input;
-            return result;
-        }
-        ProcessResult result;
-        result.detected = ContentKind::Json;
-        result.label = "JSON Unescape";
-        result.value = std::move(unescaped);
-        result.decoded = true;
-        result.structured = true;
-        return result;
-    }
-
-    if (mode == ProcessingMode::JsonToYaml || mode == ProcessingMode::JsonToXml ||
-        mode == ProcessingMode::XmlToJson ||
-        mode == ProcessingMode::JsonToCsv ||
-        mode == ProcessingMode::YamlToJson ||
-        mode == ProcessingMode::TomlToJson || mode == ProcessingMode::JsonToToml ||
-        mode == ProcessingMode::IniToJson) {
-        const auto converted = mode == ProcessingMode::JsonToYaml
-            ? json_to_yaml(input, 2)
-            : mode == ProcessingMode::JsonToXml
-                ? json_to_xml(input, 2)
-                : mode == ProcessingMode::XmlToJson
-                    ? xml_to_json(input, 2)
-                : mode == ProcessingMode::JsonToCsv
-                    ? json_to_csv(input)
-                : mode == ProcessingMode::YamlToJson
-                    ? yaml_to_json(input, 2)
-                : mode == ProcessingMode::TomlToJson
-                    ? toml_to_json(input, 2)
-                : mode == ProcessingMode::JsonToToml
-                    ? json_to_toml(input)
-                : ini_to_json(input, 2);
-        const ContentKind source = mode == ProcessingMode::YamlToJson
-            ? ContentKind::Yaml
-            : mode == ProcessingMode::TomlToJson ? ContentKind::Toml
-            : mode == ProcessingMode::IniToJson ? ContentKind::Ini
-            : mode == ProcessingMode::XmlToJson ? ContentKind::Xml : ContentKind::Json;
-        if (!converted.ok) {
-            ProcessResult result = failure(source, converted.issue.code.c_str(), converted.issue.message.c_str());
-            result.value = input;
-            result.error_line = converted.issue.line;
-            result.error_column = converted.issue.column;
-            return result;
-        }
-        ProcessResult result;
-        result.detected = mode == ProcessingMode::JsonToYaml ? ContentKind::Yaml
-            : mode == ProcessingMode::JsonToXml ? ContentKind::Xml
-            : mode == ProcessingMode::XmlToJson ? ContentKind::Json
-            : mode == ProcessingMode::JsonToCsv ? ContentKind::Csv : ContentKind::Json;
-        if (mode == ProcessingMode::JsonToToml) result.detected = ContentKind::Toml;
-        result.label = mode == ProcessingMode::JsonToYaml ? "JSON → YAML"
-            : mode == ProcessingMode::JsonToXml ? "JSON → XML"
-            : mode == ProcessingMode::XmlToJson ? "XML → JSON"
-            : mode == ProcessingMode::JsonToCsv ? "JSON → CSV"
-            : mode == ProcessingMode::YamlToJson ? "YAML → JSON"
-            : mode == ProcessingMode::TomlToJson ? "TOML → JSON" : "JSON → TOML";
-        if (mode == ProcessingMode::IniToJson) result.label = "INI → JSON";
-        result.value = converted.value;
-        result.structured = mode != ProcessingMode::JsonToCsv;
-        result.tabular = mode == ProcessingMode::JsonToCsv;
-        return result;
-    }
-
-    if (mode == ProcessingMode::HtmlEntityDecode || mode == ProcessingMode::HexDecode) {
-        const auto decoded = mode == ProcessingMode::HtmlEntityDecode
-            ? decode_html_entities(input) : decode_hex(input);
-        const ContentKind kind = mode == ProcessingMode::HtmlEntityDecode
-            ? ContentKind::HtmlEntity : ContentKind::HexEncoded;
-        if (!decoded.ok) {
-            ProcessResult result = failure(kind, decoded.issue.code.c_str(), decoded.issue.message.c_str());
-            result.value = input;
-            result.error_line = decoded.issue.line;
-            result.error_column = decoded.issue.column;
-            return result;
-        }
-        return decoded_result(kind,
-            mode == ProcessingMode::HtmlEntityDecode ? "HTML Entity" : "Hex",
-            decoded.value);
-    }
-
-    if (mode == ProcessingMode::Upper || mode == ProcessingMode::Lower) {
-        ProcessResult result;
-        result.detected = ContentKind::Text;
-        result.label = mode == ProcessingMode::Upper ? "Upper" : "Lower";
-        result.value = input;
-        std::transform(result.value.begin(), result.value.end(), result.value.begin(), [mode](unsigned char ch) {
-            return static_cast<char>(mode == ProcessingMode::Upper ? std::toupper(ch) : std::tolower(ch));
+    const auto registered = std::find_if(
+        kProcessors.begin(), kProcessors.end(),
+        [mode](const ProcessorRegistration& processor) {
+            return processor.mode == mode;
         });
-        return result;
+    if (registered != kProcessors.end()) {
+        return registered->handler(input, trimmed, mode);
     }
 
-    if (mode == ProcessingMode::UrlEncode) {
-        ProcessResult result;
-        result.detected = ContentKind::Text;
-        result.label = "URL Encode";
-        result.value = encode_url(input);
-        return result;
-    }
-
-    if (mode == ProcessingMode::DecodeOneLayer) {
-        std::string unescaped;
-        if (inspect_escaped_json(input, unescaped)) {
-            ProcessResult result;
-            result.detected = ContentKind::Json;
-            result.label = "JSON Unescape";
-            result.value = std::move(unescaped);
-            result.decoded = true;
-            result.structured = true;
-            return result;
-        }
-
-        const auto html = decode_html_entities(input);
-        if (html.ok) {
-            return decoded_result(ContentKind::HtmlEntity, "HTML Entity", html.value);
-        }
-
-        if (looks_like_hex_encoding(input)) {
-            const auto hex = decode_hex(input);
-            if (hex.ok) return decoded_result(ContentKind::HexEncoded, "Hex", hex.value);
-        }
-
-        std::string decoded;
-        std::size_t encoded_count = 0;
-        if (decode_url(input, decoded, encoded_count) && encoded_count > 0 &&
-            is_displayable_text(decoded)) {
-            return decoded_result(ContentKind::UrlEncoded, "URL Decode", std::move(decoded));
-        }
-
-        decoded.clear();
-        if (decode_base64(trimmed, decoded)) {
-            return decoded_result(ContentKind::Base64, "Base64", std::move(decoded));
-        }
-
-        ProcessResult result = failure(
-            ContentKind::Text,
-            "NO_ENCODED_LAYER",
-            "Current result is not a supported encoded layer");
-        result.value = input;
-        return result;
-    }
-
-    if (mode == ProcessingMode::Auto || mode == ProcessingMode::Json) {
-        const auto json = format_json(input, 2);
-        if (json.ok) {
-            if (mode == ProcessingMode::Auto) {
-                std::string unescaped;
-                if (inspect_escaped_json(input, unescaped)) {
-                    ProcessResult result;
-                    result.detected = ContentKind::JsonEscaped;
-                    result.label = "JSON String → JSON";
-                    result.value = std::move(unescaped);
-                    result.decoded = true;
-                    result.structured = true;
-                    return result;
-                }
-            }
-            ProcessResult result;
-            result.detected = ContentKind::Json;
-            result.label = "JSON";
-            result.value = json.value;
-            result.structured = true;
-            return result;
-        }
-        if (mode == ProcessingMode::Json) {
-            ProcessResult result = failure(ContentKind::Json, json.issue.code.c_str(), json.issue.message.c_str());
-            result.value = input;
-            result.error_line = json.issue.line;
-            result.error_column = json.issue.column;
-            return result;
-        }
-    }
-
-    if (mode == ProcessingMode::Auto) {
-        std::string unescaped;
-        if (inspect_escaped_json(trimmed, unescaped)) {
-            ProcessResult result;
-            result.detected = ContentKind::JsonEscaped;
-            result.label = "Escaped JSON → JSON";
-            result.value = std::move(unescaped);
-            result.decoded = true;
-            result.structured = true;
-            return result;
-        }
-    }
-
-    if (mode == ProcessingMode::Auto || mode == ProcessingMode::Xml) {
-        const bool looks_like_xml = !trimmed.empty() && trimmed.front() == '<';
-        if (looks_like_xml || mode == ProcessingMode::Xml) {
-            const auto xml = format_xml(input, 2);
-            if (xml.ok) {
-                ProcessResult result;
-                result.detected = ContentKind::Xml;
-                result.label = "XML";
-                result.value = xml.value;
-                result.structured = true;
-                return result;
-            }
-            if (mode == ProcessingMode::Xml || looks_like_xml) {
-                ProcessResult result = failure(ContentKind::Xml, xml.issue.code.c_str(), xml.issue.message.c_str());
-                result.value = input;
-                result.error_line = xml.issue.line;
-                result.error_column = xml.issue.column;
-                return result;
-            }
-        }
-    }
-
-    if (mode == ProcessingMode::Auto || mode == ProcessingMode::Toml) {
-        const bool candidate = looks_like_toml(input);
-        if (candidate || mode == ProcessingMode::Toml) {
-            const auto toml = format_toml(input);
-            if (toml.ok) {
-                ProcessResult result;
-                result.detected = ContentKind::Toml;
-                result.label = "TOML";
-                result.value = toml.value;
-                result.structured = true;
-                return result;
-            }
-            if (mode == ProcessingMode::Toml) {
-                ProcessResult result = failure(ContentKind::Toml,
-                    toml.issue.code.c_str(), toml.issue.message.c_str());
-                result.value = input;
-                result.error_line = toml.issue.line;
-                result.error_column = toml.issue.column;
-                return result;
-            }
-        }
-    }
-
-    if (mode == ProcessingMode::Auto || mode == ProcessingMode::Ini) {
-        const bool candidate = looks_like_ini(input);
-        if (candidate || mode == ProcessingMode::Ini) {
-            const auto ini = format_ini(input);
-            if (ini.ok) {
-                ProcessResult result;
-                result.detected = ContentKind::Ini;
-                result.label = "INI / Properties";
-                result.value = ini.value;
-                result.structured = true;
-                return result;
-            }
-            if (mode == ProcessingMode::Ini) {
-                ProcessResult result = failure(ContentKind::Ini,
-                    ini.issue.code.c_str(), ini.issue.message.c_str());
-                result.value = input;
-                result.error_line = ini.issue.line;
-                result.error_column = ini.issue.column;
-                return result;
-            }
-        }
-    }
-
-    if (mode == ProcessingMode::Auto) {
-        std::string inspected;
-        if (inspect_jwt(trimmed, inspected)) {
-            ProcessResult result;
-            result.detected = ContentKind::Jwt;
-            result.label = "JWT · Unverified";
-            result.value = std::move(inspected);
-            result.decoded = true;
-            result.structured = true;
-            return result;
-        }
-    }
-
-    if (mode == ProcessingMode::Auto || mode == ProcessingMode::Yaml) {
-        const bool candidate = looks_like_yaml(input);
-        if (candidate || mode == ProcessingMode::Yaml) {
-            const auto yaml = format_yaml(input, 2);
-            if (yaml.ok) {
-                ProcessResult result;
-                result.detected = ContentKind::Yaml;
-                result.label = "YAML";
-                result.value = yaml.value;
-                result.structured = true;
-                return result;
-            }
-            if (mode == ProcessingMode::Yaml) {
-                ProcessResult result = failure(ContentKind::Yaml, yaml.issue.code.c_str(), yaml.issue.message.c_str());
-                result.value = input;
-                result.error_line = yaml.issue.line;
-                result.error_column = yaml.issue.column;
-                return result;
-            }
-        }
-    }
-
-    if (mode == ProcessingMode::Auto || mode == ProcessingMode::Csv) {
-        const auto csv = parse_csv(input, '\0', true);
-        if (csv.ok) {
-            ProcessResult result;
-            result.detected = ContentKind::Csv;
-            result.label = "CSV";
-            result.value = csv.document.to_tsv();
-            result.tabular = true;
-            return result;
-        }
-        if (mode == ProcessingMode::Csv) {
-            ProcessResult result = failure(ContentKind::Csv, "INVALID_CSV", csv.error.c_str());
-            result.value = input;
-            return result;
-        }
-    }
-
-    if (mode == ProcessingMode::Auto || mode == ProcessingMode::UrlDecode) {
-        std::string decoded;
-        std::size_t encoded_count = 0;
-        const bool valid = decode_url(input, decoded, encoded_count);
-        const bool has_manual_encoding = encoded_count > 0 || input.find('+') != std::string::npos;
-        if (valid && ((mode == ProcessingMode::UrlDecode && has_manual_encoding) ||
-                      (encoded_count > 0 && is_displayable_text(decoded)))) {
-            return decoded_result(ContentKind::UrlEncoded, "URL Decode", std::move(decoded));
-        }
-        if (mode == ProcessingMode::UrlDecode) {
-            return failure(ContentKind::UrlEncoded, "INVALID_URL_ENCODING",
-                           "URL encoded input contains an invalid percent sequence");
-        }
-    }
-
-    if (mode == ProcessingMode::Auto || mode == ProcessingMode::HtmlEntityDecode) {
-        const auto decoded = decode_html_entities(input);
-        if (decoded.ok) {
-            return decoded_result(ContentKind::HtmlEntity, "HTML Entity", decoded.value);
-        }
-        if (mode == ProcessingMode::HtmlEntityDecode) {
-            ProcessResult result = failure(ContentKind::HtmlEntity,
-                decoded.issue.code.c_str(), decoded.issue.message.c_str());
-            result.value = input;
-            return result;
-        }
-    }
-
-    if (mode == ProcessingMode::Auto || mode == ProcessingMode::HexDecode) {
-        const bool candidate = looks_like_hex_encoding(input);
-        if (candidate || mode == ProcessingMode::HexDecode) {
-            const auto decoded = decode_hex(input);
-            if (decoded.ok && (mode == ProcessingMode::HexDecode || is_displayable_text(decoded.value))) {
-                return decoded_result(ContentKind::HexEncoded, "Hex", decoded.value);
-            }
-            if (mode == ProcessingMode::HexDecode) {
-                ProcessResult result = failure(ContentKind::HexEncoded,
-                    decoded.issue.code.c_str(), decoded.issue.message.c_str());
-                result.value = input;
-                return result;
-            }
-        }
-    }
-
-    if (mode == ProcessingMode::Auto || mode == ProcessingMode::Base64) {
-        std::string decoded;
-        const bool valid = decode_base64(trimmed, decoded);
-        const bool confident = trimmed.size() >= 12 && is_displayable_text(decoded);
-        if (valid && (mode == ProcessingMode::Base64 || confident)) {
-            return decoded_result(ContentKind::Base64, "Base64", std::move(decoded));
-        }
-        if (mode == ProcessingMode::Base64) {
-            return failure(ContentKind::Base64, "INVALID_BASE64", "Input is not valid standard or URL-safe Base64");
-        }
-    }
-
-    ProcessResult result;
-    result.detected = ContentKind::Text;
-    result.label = "Text";
+    ProcessResult result = failure(
+        ContentKind::Text,
+        "UNREGISTERED_PROCESSOR",
+        "The requested processing mode is not registered");
     result.value = input;
     return result;
 }

@@ -39,6 +39,13 @@ handler to construct arbitrary UI.
 - All handlers remain part of the executable and use the normal build, signing, and test flow.
 - `ProcessingMode` remains the internal compatibility contract for core execution; it is no
   longer exposed as a positional UI contract.
+- Core execution groups registered handlers by real behavior boundaries: structured-format
+  processing, format conversion, codecs, and text transforms. `process_text()` performs a
+  registry lookup instead of maintaining another global action switch.
+- Automatic detection remains a separate ordered pipeline because detector priority and
+  conservative fall-through are different concerns from explicit action dispatch.
+- Compile-time validation requires every non-Auto `ProcessingMode` to be registered exactly
+  once; a missing or duplicate handler fails the build.
 - CSV controls, decode-again, and digest/HMAC remain explicit UI features because they carry
   state or interaction beyond a single text transformation.
 

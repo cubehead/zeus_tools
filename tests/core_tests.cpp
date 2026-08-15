@@ -598,6 +598,40 @@ int main() {
     require(multiline_csv.ok && multiline_csv.document.rows[1][1].find('\n') != std::string::npos,
             "CSV parser should preserve newlines inside quoted fields");
 
+    require(zeus::process_text("<root><value>1</value></root>",
+                zeus::ProcessingMode::Xml).detected == zeus::ContentKind::Xml,
+            "registered XML formatter should execute through the core registry");
+    require(zeus::process_text("name: Zeus\nenabled: true",
+                zeus::ProcessingMode::Yaml).detected == zeus::ContentKind::Yaml,
+            "registered YAML formatter should execute through the core registry");
+    require(zeus::process_text("title = \"Zeus\"\n[window]\nwidth = 1200",
+                zeus::ProcessingMode::Toml).detected == zeus::ContentKind::Toml,
+            "registered TOML formatter should execute through the core registry");
+    require(zeus::process_text("[window]\nwidth=1200\ntheme=system",
+                zeus::ProcessingMode::Ini).detected == zeus::ContentKind::Ini,
+            "registered INI formatter should execute through the core registry");
+    require(zeus::process_text("name,value\nZeus,1",
+                zeus::ProcessingMode::Csv).tabular,
+            "registered CSV processor should execute through the core registry");
+    require(zeus::process_text("{\\\"name\\\":\\\"Zeus\\\"}",
+                zeus::ProcessingMode::JsonUnescape).structured,
+            "registered JSON unescape processor should execute through the core registry");
+    require(zeus::process_text("Zeus & Tools",
+                zeus::ProcessingMode::HtmlEntityEncode).value == "Zeus &amp; Tools",
+            "registered HTML Entity encoder should execute through the core registry");
+    require(zeus::process_text("0x4869",
+                zeus::ProcessingMode::HexDecode).value == "Hi",
+            "registered Hex decoder should execute through the core registry");
+    require(zeus::process_text("1786694400",
+                zeus::ProcessingMode::Timestamp).ok,
+            "registered timestamp inspector should execute through the core registry");
+
+    const auto unsafe_yaml_candidate = zeus::process_text(
+        "- &anchor value\n- *anchor");
+    require(unsafe_yaml_candidate.ok &&
+                unsafe_yaml_candidate.detected == zeus::ContentKind::Text,
+            "failed conservative YAML candidates should continue through auto detection");
+
     std::cout << "All Zeus core tests passed\n";
     return 0;
 }

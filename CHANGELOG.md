@@ -10,6 +10,8 @@ semantic versioning after the first stable release.
 
 - Added a statically linked processing registry with stable action and input IDs,
   replacing positional UI/dispatch indexes without introducing runtime plugins.
+- Registered all explicit core processing modes by functional handler boundary, with
+  compile-time completeness checks and a separate ordered auto-detection pipeline.
 - Added bilingual README release/download/star/license/platform badges, quick
   links, project support links and direct open-source component acknowledgements.
 - Added a versioned automatic-detection regression corpus covering valid,
