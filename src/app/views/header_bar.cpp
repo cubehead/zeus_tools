@@ -134,6 +134,8 @@ void build_header_bar(eui::Ui& ui, const ViewContext& context) {
                 .onClick([&ui] {
                     app_state.input_text.clear();
                     app_state.oversized_input_approved = false;
+                    app_state.large_input_page = 0;
+                    app_state.large_input_page_boundaries.clear();
                     app_state.search.query.clear();
                     app_state.crypto.hmac_key.clear();
                     app_state.processing_action_id = "auto";

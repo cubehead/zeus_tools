@@ -19,7 +19,7 @@ enum class Text {
     SearchResult, InvalidRegex, CopyAll, CopySelected, Selected, LocalOnly,
     About, Version, Build, AboutDescription, PrivacySummary, SpecialThanks,
     OpenSourceThanks, ProjectWebsite, License, OpenFile, ExportResult, Close,
-    InputTooLarge, LargeInputPreview, ProcessAnyway, Count,
+    InputTooLarge, LargeInputEditor, ProcessAnyway, Count,
 };
 
 struct Translation {

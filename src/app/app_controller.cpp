@@ -692,6 +692,8 @@ static void load_input_file_impl(const std::string& path) {
 
     app_state.input_text = std::move(value);
     app_state.oversized_input_approved = false;
+    app_state.large_input_page = 0;
+    app_state.large_input_page_boundaries.clear();
     app_state.processing_action_id = "auto";
     app_state.input_type_id = "auto";
     app_state.input_type_dropdown_open = false;

@@ -1,5 +1,6 @@
 #include "processing_service.h"
 #include "processing_registry.h"
+#include "large_input_paging.h"
 
 #include <cstdlib>
 #include <iostream>
@@ -159,6 +160,37 @@ void test_recommended_input_size_boundary() {
            "input above 1 MiB should use the lightweight input preview");
 }
 
+void test_large_input_pages_preserve_utf8_boundaries() {
+    std::string input(app::large_input::kPageBytes - 1, 'x');
+    input += "你好";
+    input.append(app::large_input::kPageBytes, 'y');
+    expect(app::large_input::page_count(input.size()) == 3,
+           "large input should expose deterministic fixed-size pages");
+    const auto first = app::large_input::page_range(input, 0);
+    const auto second = app::large_input::page_range(input, 1);
+    const auto third = app::large_input::page_range(input, 2);
+    const auto boundaries = app::large_input::page_boundaries(input);
+    expect(first.start == 0 && first.end == second.start,
+           "adjacent large-input pages should not overlap or leave gaps");
+    expect(second.end == third.start && third.end == input.size(),
+           "all large-input page ranges should cover the complete source");
+    expect((static_cast<unsigned char>(input[second.start]) & 0xC0U) != 0x80U,
+           "large-input pages should start on a UTF-8 code point boundary");
+    expect(boundaries.size() == 4 && boundaries[1] == first.end &&
+               boundaries[2] == second.end && boundaries[3] == input.size(),
+           "stored page boundaries should match direct UTF-8-safe page ranges");
+    auto resized = boundaries;
+    const std::size_t original_total = resized.back();
+    const std::size_t original_first = resized[1] - resized[0];
+    app::large_input::resize_page(resized, 0, original_first + 7);
+    expect(resized[0] == 0 && resized[1] == boundaries[1] + 7 &&
+               resized.back() == original_total + 7,
+           "growing a page should shift every following boundary");
+    app::large_input::resize_page(resized, 0, original_first);
+    expect(resized == boundaries,
+           "shrinking a page should restore all following boundaries");
+}
+
 void test_processing_registry() {
     for (int index = 0; index < static_cast<int>(zeus::ContentKind::Count); ++index) {
         const auto kind = static_cast<zeus::ContentKind>(index);
@@ -234,6 +266,7 @@ int main() {
     test_ini_analysis();
     test_decode_one_layer();
     test_recommended_input_size_boundary();
+    test_large_input_pages_preserve_utf8_boundaries();
     test_processing_registry();
     std::cout << "All app processing tests passed.\n";
     return 0;

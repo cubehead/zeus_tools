@@ -80,6 +80,8 @@ struct AppState {
     std::string input_type_id = "auto";
     bool input_type_dropdown_open = false;
     bool oversized_input_approved = false;
+    std::size_t large_input_page = 0;
+    std::vector<std::size_t> large_input_page_boundaries;
     bool language_dropdown_open = false;
     bool about_dialog_open = false;
     std::size_t full_repaint_revision = 0;
