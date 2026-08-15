@@ -288,11 +288,20 @@ endif()
 
 if(ZEUS_BUILD_TESTS)
     enable_testing()
+    add_library(zeus_test_support tests/detection_corpus.cpp)
+    target_include_directories(zeus_test_support PUBLIC tests)
+
     add_executable(zeus_core_tests tests/core_tests.cpp)
-    target_link_libraries(zeus_core_tests PRIVATE zeus_core)
+    target_link_libraries(zeus_core_tests PRIVATE zeus_core zeus_test_support)
     target_compile_definitions(zeus_core_tests PRIVATE
         ZEUS_TEST_FIXTURE_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tests/fixtures")
     add_test(NAME zeus_core_tests COMMAND zeus_core_tests)
+
+    add_executable(zeus_detection_report tests/detection_report.cpp)
+    target_link_libraries(zeus_detection_report PRIVATE zeus_core zeus_test_support)
+    target_compile_definitions(zeus_detection_report PRIVATE
+        ZEUS_TEST_FIXTURE_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tests/fixtures")
+    add_test(NAME zeus_detection_quality COMMAND zeus_detection_report)
 
     add_executable(zeus_app_processing_tests tests/app_processing_tests.cpp)
     target_link_libraries(zeus_app_processing_tests PRIVATE zeus_app_processing)

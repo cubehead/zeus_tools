@@ -9,6 +9,7 @@ This checklist is intentionally manual. The repository does not use GitHub CI.
 - [ ] `project(... VERSION ...)`, build number and `CHANGELOG.md` agree.
 - [ ] Core tests pass from a clean build directory.
 - [ ] Synthetic JSON and CSV benchmarks have no material regression.
+- [ ] `zeus_detection_report` passes its corpus coverage floors with no mismatch.
 - [ ] Dependency revisions and `THIRD_PARTY_NOTICES.md` are current.
 
 ## Functional smoke test

@@ -34,3 +34,24 @@ plain-hex	Text	true	deadbeefcafebabe
 short-base64	Text	true	dGVzdA==
 single-csv-row	Text	true	name,age
 single-yaml-like	Text	true	name: Zeus Tools
+plain-uuid	Text	true	550e8400-e29b-41d4-a716-446655440000
+plain-ipv4	Text	true	192.168.1.10
+plain-ipv6	Text	true	2001:db8::1
+plain-iso-datetime	Text	true	2026-08-16T10:15:30+08:00
+plain-git-sha	Text	true	4f3c2b1a0987654321fedcba0123456789abcdef
+plain-css-color	Text	true	#1a2b3c
+plain-semver	Text	true	v1.2.3-beta.1
+plain-windows-path	Text	true	C:\Users\dev\data.json
+plain-unix-path	Text	true	/var/log/zeus-tools/app.log
+plain-sql	Text	true	SELECT id, name FROM tools WHERE active = true;
+plain-log-line	Text	true	2026-08-16 10:15:30 INFO service started
+plain-env-assignment	Text	true	ZEUS_MODE=offline
+plain-http-header	Text	true	Content-Type: application/json
+plain-query-string	Text	true	name=zeus&active=true
+json-pretty	JSON	true	{\n  "name": "Zeus",\n  "items": [1, 2, 3]\n}
+xml-namespace	XML	true	<tools xmlns="urn:zeus"><item enabled="true">JSON</item></tools>
+toml-array	TOML	true	formats = ["json", "xml", "yaml"]\noffline = true
+ini-comment	INI	true	; Zeus Tools settings\nmode=offline\ntheme=system
+url-encoded-path	URL Encode	true	%2Fapi%2Fv1%2Ftools%3Factive%3Dtrue
+csv-quoted	CSV	true	name,notes\nZeus,"JSON, XML and YAML"\nTools,"offline, local"
+escaped-json-array	JSON String	true	[{\"name\":\"Zeus\"},{\"name\":\"Tools\"}]

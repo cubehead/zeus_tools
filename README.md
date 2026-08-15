@@ -188,6 +188,7 @@ provided; the built application itself does not require a network connection.
 cmake --preset core
 cmake --build --preset core
 ctest --preset core
+./build/core/zeus_detection_report
 ```
 
 Run the synthetic 10 MB benchmarks:

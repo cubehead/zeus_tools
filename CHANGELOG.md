@@ -30,6 +30,8 @@ semantic versioning after the first stable release.
   links, project support links and direct open-source component acknowledgements.
 - Added a versioned automatic-detection regression corpus covering valid,
   invalid, ambiguous and false-positive inputs.
+- Added a reproducible detection-quality report with coverage floors and expanded
+  the corpus to 55 cases, including common developer-text false-positive boundaries.
 - Added `Cmd/Ctrl+F` to focus result search and `Esc` to dismiss the topmost
   open dialog, dropdown or crypto panel.
 - Added `Cmd/Ctrl+O` for native file open and `Cmd/Ctrl+S` for result export.

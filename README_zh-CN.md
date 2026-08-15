@@ -179,6 +179,7 @@ zeus-tools-cli --list-actions
 cmake --preset core
 cmake --build --preset core
 ctest --preset core
+./build/core/zeus_detection_report
 ```
 
 运行使用 10 MB 合成数据的基准测试：
