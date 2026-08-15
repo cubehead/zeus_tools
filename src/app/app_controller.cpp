@@ -1,4 +1,5 @@
 #include "app_controller.h"
+#include "processing_registry.h"
 #include "processing_service.h"
 #include "../platform/file_dialog.h"
 
@@ -181,8 +182,11 @@ bool use_dark_theme() {
 }
 
 std::vector<std::string> input_type_items() {
-    return {tr(i18n::Text::Auto), "JSON", "XML", "YAML", "TOML", "INI",
-            "CSV", "Base64", "URL", "Text"};
+    std::vector<std::string> items;
+    for (const auto& type : processing::registered_input_types()) {
+        items.emplace_back(type.id == "auto" ? tr(i18n::Text::Auto) : type.label);
+    }
+    return items;
 }
 
 std::vector<std::string> csv_delimiter_items() {
@@ -349,8 +353,8 @@ void update_search() {
 void analyze_input(bool debounce) {
     processing::AnalysisRequest request;
     request.input = app_state.input_text;
-    request.action_index = app_state.processing_mode_index;
-    request.input_override_index = app_state.input_type_override_index;
+    request.action_id = app_state.processing_action_id;
+    request.input_type_id = app_state.input_type_id;
     request.csv_delimiter_index = app_state.csv.delimiter_index;
     request.first_row_header = app_state.csv.first_row_header;
 
@@ -609,8 +613,8 @@ void load_input_file(const std::string& path) {
     }
 
     app_state.input_text = std::move(value);
-    app_state.processing_mode_index = 0;
-    app_state.input_type_override_index = 0;
+    app_state.processing_action_id = "auto";
+    app_state.input_type_id = "auto";
     app_state.input_type_dropdown_open = false;
     app_state.csv.delimiter_index = 0;
     app_state.result.decode_chain.clear();

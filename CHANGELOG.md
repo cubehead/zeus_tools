@@ -8,6 +8,8 @@ semantic versioning after the first stable release.
 
 ### Added
 
+- Added a statically linked processing registry with stable action and input IDs,
+  replacing positional UI/dispatch indexes without introducing runtime plugins.
 - Added bilingual README release/download/star/license/platform badges, quick
   links, project support links and direct open-source component acknowledgements.
 - Added a versioned automatic-detection regression corpus covering valid,
@@ -25,6 +27,8 @@ semantic versioning after the first stable release.
 
 ### Fixed
 
+- Kept the common Base64 Encode action as encoding even when the source already
+  looks like Base64; the type-specific Decode action remains separate.
 - Prevented ordinary JSON arrays from being misclassified as escaped JSON.
 
 ## [0.1.0] - 2026-08-14

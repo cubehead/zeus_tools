@@ -79,6 +79,7 @@ target_link_libraries(zeus_core PUBLIC
     pugixml::pugixml yaml-cpp::yaml-cpp tomlplusplus::tomlplusplus)
 
 add_library(zeus_app_processing
+    src/app/processing_registry.cpp
     src/app/processing_service.cpp
 )
 target_include_directories(zeus_app_processing PUBLIC src/app)

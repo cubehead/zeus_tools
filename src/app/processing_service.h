@@ -12,8 +12,8 @@ namespace app::processing {
 
 struct AnalysisRequest {
     std::string input;
-    int action_index = 0;
-    int input_override_index = 0;
+    std::string action_id = "auto";
+    std::string input_type_id = "auto";
     int csv_delimiter_index = 0;
     bool first_row_header = true;
 };

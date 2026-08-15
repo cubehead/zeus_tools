@@ -39,7 +39,7 @@ void build_input_panel(eui::Ui& ui, const ViewContext& context) {
         .theme(tokens)
         .onChange([](const std::string& value) {
             app_state.input_text = value;
-            app_state.processing_mode_index = 0;
+            app_state.processing_action_id = "auto";
             analyze_input(true);
         })
         .build();

@@ -135,8 +135,8 @@ void build_header_bar(eui::Ui& ui, const ViewContext& context) {
                     app_state.input_text.clear();
                     app_state.search.query.clear();
                     app_state.crypto.hmac_key.clear();
-                    app_state.processing_mode_index = 0;
-                    app_state.input_type_override_index = 0;
+                    app_state.processing_action_id = "auto";
+                    app_state.input_type_id = "auto";
                     app_state.input_type_dropdown_open = false;
                     app_state.csv.delimiter_index = 0;
                     app_state.csv.delimiter_dropdown_open = false;

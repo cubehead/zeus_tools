@@ -1,4 +1,5 @@
 #include "processing_service.h"
+#include "processing_registry.h"
 
 #include <chrono>
 #include <utility>
@@ -6,76 +7,6 @@
 namespace app::processing {
 
 namespace {
-
-zeus::ProcessingMode action_mode_for(
-    int action_index,
-    zeus::ContentKind detected_kind) {
-    switch (action_index) {
-    case 1: return zeus::ProcessingMode::JsonMinify;
-    case 2: return detected_kind == zeus::ContentKind::Base64
-        ? zeus::ProcessingMode::Base64
-        : zeus::ProcessingMode::Base64Encode;
-    case 3: return detected_kind == zeus::ContentKind::UrlEncoded
-        ? zeus::ProcessingMode::UrlDecode
-        : zeus::ProcessingMode::UrlEncode;
-    case 4: return zeus::ProcessingMode::Csv;
-    case 5: return zeus::ProcessingMode::Text;
-    case 6: return zeus::ProcessingMode::JsonEscape;
-    case 7: return zeus::ProcessingMode::Upper;
-    case 8: return zeus::ProcessingMode::Lower;
-    case 9: return zeus::ProcessingMode::Xml;
-    case 10: return zeus::ProcessingMode::Yaml;
-    case 11: return zeus::ProcessingMode::JsonToYaml;
-    case 12: return zeus::ProcessingMode::YamlToJson;
-    case 13: return zeus::ProcessingMode::JsonToXml;
-    case 14: return zeus::ProcessingMode::JsonUnescape;
-    case 15: return zeus::ProcessingMode::JsonToCsv;
-    case 16: return zeus::ProcessingMode::XmlToJson;
-    case 17: return zeus::ProcessingMode::Toml;
-    case 18: return zeus::ProcessingMode::TomlToJson;
-    case 19: return zeus::ProcessingMode::JsonToToml;
-    case 20: return zeus::ProcessingMode::HtmlEntityEncode;
-    case 21: return zeus::ProcessingMode::HexEncode;
-    case 22: return zeus::ProcessingMode::Timestamp;
-    case 23: return zeus::ProcessingMode::HtmlEntityDecode;
-    case 24: return zeus::ProcessingMode::HexDecode;
-    case 25: return zeus::ProcessingMode::Ini;
-    case 26: return zeus::ProcessingMode::IniToJson;
-    default: return zeus::ProcessingMode::Auto;
-    }
-}
-
-zeus::ProcessingMode input_override_mode_for(int override_index) {
-    switch (override_index) {
-    case 1: return zeus::ProcessingMode::Json;
-    case 2: return zeus::ProcessingMode::Xml;
-    case 3: return zeus::ProcessingMode::Yaml;
-    case 4: return zeus::ProcessingMode::Toml;
-    case 5: return zeus::ProcessingMode::Ini;
-    case 6: return zeus::ProcessingMode::Csv;
-    case 7: return zeus::ProcessingMode::Base64;
-    case 8: return zeus::ProcessingMode::UrlDecode;
-    case 9: return zeus::ProcessingMode::Text;
-    default: return zeus::ProcessingMode::Auto;
-    }
-}
-
-zeus::ContentKind input_override_kind_for(
-    int override_index,
-    zeus::ContentKind detected_kind) {
-    switch (override_index) {
-    case 1: return zeus::ContentKind::Json;
-    case 2: return zeus::ContentKind::Xml;
-    case 3: return zeus::ContentKind::Yaml;
-    case 4: return zeus::ContentKind::Toml;
-    case 5: return zeus::ContentKind::Ini;
-    case 6: return zeus::ContentKind::Csv;
-    case 7: return zeus::ContentKind::Base64;
-    case 8: return zeus::ContentKind::UrlEncoded;
-    case 9: return zeus::ContentKind::Text;
-    default: return detected_kind;
-    }
-}
 
 char csv_delimiter_for(int index) {
     switch (index) {
@@ -120,14 +51,16 @@ AnalysisResult analyze(const AnalysisRequest& request) {
 
     const zeus::ProcessResult detected = zeus::process_text(
         request.input, zeus::ProcessingMode::Auto);
-    output.detected = input_override_kind_for(
-        request.input_override_index, detected.detected);
-    const zeus::ProcessingMode override_mode = input_override_mode_for(
-        request.input_override_index);
+    const InputTypeDefinition& input_type = find_input_type(request.input_type_id);
+    const bool auto_input = input_type.mode == zeus::ProcessingMode::Auto;
+    output.detected = auto_input ? detected.detected : input_type.kind;
+    const zeus::ProcessingMode override_mode = input_type.mode;
     const zeus::ProcessResult base_result = override_mode == zeus::ProcessingMode::Auto
         ? detected : zeus::process_text(request.input, override_mode);
-    const zeus::ProcessingMode action_mode = action_mode_for(
-        request.action_index, output.detected);
+    const ActionDefinition* action = find_action(
+        request.action_id, output.detected, request.input);
+    const zeus::ProcessingMode action_mode = action
+        ? action->mode : zeus::ProcessingMode::Auto;
     output.process = action_mode == zeus::ProcessingMode::Auto
         ? base_result : zeus::process_text(request.input, action_mode);
 

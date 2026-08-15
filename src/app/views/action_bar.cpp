@@ -2,8 +2,7 @@
 
 #include "app_controller.h"
 #include "font_tokens.h"
-
-#include "zeus/developer_tools.h"
+#include "processing_registry.h"
 
 #include "components/components.h"
 #include "core/platform/platform.h"
@@ -20,6 +19,32 @@ namespace app::views {
 
 namespace {
 AppState& app_state = controller::state();
+
+std::string action_label(processing::ActionLabel label) {
+    using Label = processing::ActionLabel;
+    switch (label) {
+    case Label::Format: return controller::tr(i18n::Text::Format);
+    case Label::Minify: return controller::tr(i18n::Text::Minify);
+    case Label::Escape: return controller::tr(i18n::Text::Escape);
+    case Label::Unescape: return controller::tr(i18n::Text::Unescape);
+    case Label::ToYaml: return "→ YAML";
+    case Label::ToXml: return "→ XML";
+    case Label::ToCsv: return "→ CSV";
+    case Label::ToToml: return "→ TOML";
+    case Label::ToJson: return "→ JSON";
+    case Label::Table: return controller::tr(i18n::Text::Table);
+    case Label::Decode: return controller::tr(i18n::Text::Decode);
+    case Label::Inspect: return controller::tr(i18n::Text::Inspect);
+    case Label::UnixTime: return controller::tr(i18n::Text::UnixTime);
+    case Label::Base64Encode: return controller::tr(i18n::Text::Base64Encode);
+    case Label::UrlEncode: return controller::tr(i18n::Text::UrlEncode);
+    case Label::HtmlEncode: return controller::tr(i18n::Text::HtmlEncode);
+    case Label::HexEncode: return controller::tr(i18n::Text::HexEncode);
+    case Label::Upper: return controller::tr(i18n::Text::Upper);
+    case Label::Lower: return controller::tr(i18n::Text::Lower);
+    }
+    return {};
+}
 }
 
 using namespace controller;
@@ -55,7 +80,7 @@ void build_action_bar(eui::Ui& ui, const ViewContext& context) {
                     components::dropdown(ui, "actions.input.type")
                         .size(116.0f, 30.0f)
                         .items(input_type_items())
-                        .selected(app_state.input_type_override_index)
+                        .selected(processing::input_type_index(app_state.input_type_id))
                         .open(app_state.input_type_dropdown_open)
                         .itemHeight(30.0f)
                         .zIndex(100)
@@ -67,31 +92,35 @@ void build_action_bar(eui::Ui& ui, const ViewContext& context) {
                         })
                         .onChange([](int index) {
                             app_state.input_type_dropdown_open = false;
-                            app_state.input_type_override_index = index;
-                            app_state.processing_mode_index = 0;
+                            app_state.input_type_id =
+                                std::string(processing::input_type_at(index).id);
+                            app_state.processing_action_id = "auto";
                             analyze_input();
                         })
                         .build();
                 })
                 .build();
 
-            const auto action = [&](const std::string& id,
-                                    const std::string& label,
-                                    int index,
-                                    float width) {
-                const bool active = app_state.processing_mode_index == index;
-                auto button = components::button(ui, id)
-                    .size(width, 30.0f)
-                    .text(label)
+            const auto action = [&](const processing::ActionDefinition& definition) {
+                const bool active = app_state.processing_action_id == definition.id;
+                std::string component_id = "actions." + std::string(definition.id);
+                if (definition.id == "auto") {
+                    component_id += "." +
+                        std::to_string(static_cast<int>(definition.input_kind));
+                }
+                auto button = components::button(
+                        ui, component_id)
+                    .size(definition.width, 30.0f)
+                    .text(action_label(definition.label))
                     .fontSize(20.0f)
                     .theme(tokens, active)
                     .radius(5.0f)
-                    .onClick([index] {
-                        if (index == 15) {
+                    .onClick([definition] {
+                        if (definition.reset_csv_options) {
                             app_state.csv.delimiter_index = 0;
                             app_state.csv.first_row_header = true;
                         }
-                        app_state.processing_mode_index = index;
+                        app_state.processing_action_id = std::string(definition.id);
                         analyze_input();
                     });
                 if (!active) {
@@ -121,30 +150,16 @@ void build_action_bar(eui::Ui& ui, const ViewContext& context) {
                 .color(tokens.text)
                 .build();
 
-            if (app_state.result.detected_input_kind == zeus::ContentKind::JsonEscaped) {
-                action("actions.json.unescape", tr(i18n::Text::Unescape), 0, 76.0f);
-            } else if (app_state.result.detected_input_kind == zeus::ContentKind::Json) {
-                action("actions.format", tr(i18n::Text::Format), 0, 64.0f);
-                action("actions.minify", tr(i18n::Text::Minify), 1, 62.0f);
-                action("actions.escape", tr(i18n::Text::Escape), 6, 62.0f);
-                action("actions.json.to_yaml", "→ YAML", 11, 68.0f);
-                action("actions.json.to_xml", "→ XML", 13, 62.0f);
-                action("actions.json.to_csv", "→ CSV", 15, 62.0f);
-                action("actions.json.to_toml", "→ TOML", 19, 72.0f);
-            } else if (app_state.result.detected_input_kind == zeus::ContentKind::Xml) {
-                action("actions.xml.format", tr(i18n::Text::Format), 9, 64.0f);
-                action("actions.xml.to_json", "→ JSON", 16, 68.0f);
-            } else if (app_state.result.detected_input_kind == zeus::ContentKind::Yaml) {
-                action("actions.yaml.format", tr(i18n::Text::Format), 10, 64.0f);
-                action("actions.yaml.to_json", "→ JSON", 12, 68.0f);
-            } else if (app_state.result.detected_input_kind == zeus::ContentKind::Toml) {
-                action("actions.toml.format", tr(i18n::Text::Format), 17, 64.0f);
-                action("actions.toml.to_json", "→ JSON", 18, 68.0f);
-            } else if (app_state.result.detected_input_kind == zeus::ContentKind::Ini) {
-                action("actions.ini.format", tr(i18n::Text::Format), 25, 64.0f);
-                action("actions.ini.to_json", "→ JSON", 26, 68.0f);
-            } else if (app_state.result.detected_input_kind == zeus::ContentKind::Csv) {
-                action("actions.table", tr(i18n::Text::Table), 0, 60.0f);
+            for (const auto& definition : processing::registered_actions()) {
+                if (!definition.common && processing::action_applies(
+                        definition,
+                        app_state.result.detected_input_kind,
+                        app_state.input_text)) {
+                    action(definition);
+                }
+            }
+
+            if (app_state.result.detected_input_kind == zeus::ContentKind::Csv) {
                 ui.stack("actions.csv.delimiter.slot")
                     .size(118.0f, 30.0f)
                     .zIndex(110)
@@ -165,7 +180,7 @@ void build_action_bar(eui::Ui& ui, const ViewContext& context) {
                             .onChange([](int index) {
                                 app_state.csv.delimiter_dropdown_open = false;
                                 app_state.csv.delimiter_index = index;
-                                app_state.processing_mode_index = 0;
+                                app_state.processing_action_id = "auto";
                                 app_state.result.scroll = 0.0f;
                                 app_state.result.csv_horizontal_scroll = 0.0f;
                                 app_state.result.selected_csv_row = kNoCsvCell;
@@ -191,21 +206,6 @@ void build_action_bar(eui::Ui& ui, const ViewContext& context) {
                     })
                     .build();
             }
-            if (app_state.result.detected_input_kind == zeus::ContentKind::Base64) {
-                action("actions.base64.decode", tr(i18n::Text::Decode), 0, 64.0f);
-            } else if (app_state.result.detected_input_kind == zeus::ContentKind::UrlEncoded) {
-                action("actions.url.decode", tr(i18n::Text::Decode), 0, 64.0f);
-            } else if (app_state.result.detected_input_kind == zeus::ContentKind::Jwt) {
-                action("actions.jwt.inspect", tr(i18n::Text::Inspect), 0, 64.0f);
-            } else if (app_state.result.detected_input_kind == zeus::ContentKind::HtmlEntity) {
-                action("actions.html.decode", tr(i18n::Text::Decode), 23, 64.0f);
-            } else if (app_state.result.detected_input_kind == zeus::ContentKind::HexEncoded) {
-                action("actions.hex.decode", tr(i18n::Text::Decode), 24, 64.0f);
-            }
-
-            if (zeus::looks_like_unix_timestamp(app_state.input_text)) {
-                action("actions.timestamp", tr(i18n::Text::UnixTime), 22, 56.0f);
-            }
 
             if (app_state.result.can_continue_decode) {
                 components::button(ui, "actions.decode.again")
@@ -223,12 +223,9 @@ void build_action_bar(eui::Ui& ui, const ViewContext& context) {
                     .size(1.0f, 22.0f)
                     .color(tokens.border)
                     .build();
-                action("actions.base64.encode", tr(i18n::Text::Base64Encode), 2, 104.0f);
-                action("actions.url.encode", tr(i18n::Text::UrlEncode), 3, 98.0f);
-                action("actions.html.encode", tr(i18n::Text::HtmlEncode), 20, 94.0f);
-                action("actions.hex.encode", tr(i18n::Text::HexEncode), 21, 82.0f);
-                action("actions.upper", tr(i18n::Text::Upper), 7, 56.0f);
-                action("actions.lower", tr(i18n::Text::Lower), 8, 56.0f);
+                for (const auto& definition : processing::registered_actions()) {
+                    if (definition.common) action(definition);
+                }
                 components::button(ui, "actions.digest")
                     .size(90.0f, 30.0f)
                     .text(std::string(app_state.crypto.panel_open ? "▾ " : "▸ ") +

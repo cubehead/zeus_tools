@@ -1,7 +1,9 @@
 #include "processing_service.h"
+#include "processing_registry.h"
 
 #include <cstdlib>
 #include <iostream>
+#include <set>
 #include <string>
 
 namespace {
@@ -28,7 +30,7 @@ void test_json_analysis() {
 void test_csv_analysis() {
     app::processing::AnalysisRequest request;
     request.input = "name,value\nZeus,1\nHera,2";
-    request.action_index = 4;
+    request.input_type_id = "csv";
     const auto result = app::processing::analyze(request);
 
     expect(result.process.ok, "CSV analysis should succeed");
@@ -40,7 +42,7 @@ void test_csv_analysis() {
 void test_csv_manual_delimiters_use_original_input() {
     app::processing::AnalysisRequest comma_request;
     comma_request.input = "name,value\nZeus,1\nHera,2";
-    comma_request.action_index = 4;
+    comma_request.input_type_id = "csv";
     comma_request.csv_delimiter_index = 1;
     const auto comma = app::processing::analyze(comma_request);
     expect(comma.process.ok && comma.csv != nullptr,
@@ -50,7 +52,7 @@ void test_csv_manual_delimiters_use_original_input() {
 
     app::processing::AnalysisRequest semicolon_request;
     semicolon_request.input = "name;value\nZeus;1\nHera;2";
-    semicolon_request.input_override_index = 6;
+    semicolon_request.input_type_id = "csv";
     semicolon_request.csv_delimiter_index = 3;
     const auto semicolon = app::processing::analyze(semicolon_request);
     expect(semicolon.process.ok && semicolon.csv != nullptr,
@@ -62,7 +64,7 @@ void test_csv_manual_delimiters_use_original_input() {
 void test_input_override() {
     app::processing::AnalysisRequest request;
     request.input = "name: Zeus\nenabled: true";
-    request.input_override_index = 3;
+    request.input_type_id = "yaml";
     const auto result = app::processing::analyze(request);
 
     expect(result.process.ok, "YAML override should succeed");
@@ -73,7 +75,7 @@ void test_input_override() {
 void test_toml_analysis() {
     app::processing::AnalysisRequest request;
     request.input = "title = \"Zeus\"\n[window]\nwidth = 1200";
-    request.input_override_index = 4;
+    request.input_type_id = "toml";
     const auto result = app::processing::analyze(request);
 
     expect(result.process.ok, "TOML override should succeed");
@@ -86,7 +88,7 @@ void test_toml_analysis() {
 void test_ini_analysis() {
     app::processing::AnalysisRequest request;
     request.input = "[window]\nwidth=1200\ntheme=system";
-    request.input_override_index = 5;
+    request.input_type_id = "ini";
     const auto result = app::processing::analyze(request);
 
     expect(result.process.ok, "INI override should succeed");
@@ -107,6 +109,40 @@ void test_decode_one_layer() {
            "decoded JSON should be formatted");
 }
 
+void test_processing_registry() {
+    std::set<std::string> action_keys;
+    for (const auto& action : app::processing::registered_actions()) {
+        const std::string key = std::string(action.id) + ":" +
+            (action.common ? "common" : std::to_string(static_cast<int>(action.input_kind)));
+        expect(action_keys.insert(key).second,
+               "registered action IDs should be unique within their applicability scope");
+    }
+
+    std::set<std::string> input_ids;
+    for (const auto& type : app::processing::registered_input_types()) {
+        expect(input_ids.insert(std::string(type.id)).second,
+               "registered input type IDs should be unique");
+    }
+
+    const auto* encode = app::processing::find_action(
+        "base64.encode", zeus::ContentKind::Base64, "SGVsbG8=");
+    expect(encode != nullptr && encode->mode == zeus::ProcessingMode::Base64Encode,
+           "Base64 encode should remain an encode action for encoded input");
+
+    bool found_toml = false;
+    for (const auto& action : app::processing::registered_actions()) {
+        if (action.id == "json.to_toml" && app::processing::action_applies(
+                action, zeus::ContentKind::Json, R"({"name":"Zeus"})")) {
+            found_toml = true;
+        }
+    }
+    expect(found_toml, "JSON registry should expose its TOML conversion");
+    expect(app::processing::input_type_index("toml") == 4,
+           "input type lookup should use stable IDs");
+    expect(app::processing::find_input_type("missing").id == "auto",
+           "unknown input types should safely fall back to auto");
+}
+
 } // namespace
 
 int main() {
@@ -117,6 +153,7 @@ int main() {
     test_toml_analysis();
     test_ini_analysis();
     test_decode_one_layer();
+    test_processing_registry();
     std::cout << "All app processing tests passed.\n";
     return 0;
 }

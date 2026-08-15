@@ -77,8 +77,8 @@ struct AppState {
     CsvState csv;
     CryptoState crypto;
     LayoutState layout;
-    int processing_mode_index = 0;
-    int input_type_override_index = 0;
+    std::string processing_action_id = "auto";
+    std::string input_type_id = "auto";
     bool input_type_dropdown_open = false;
     bool language_dropdown_open = false;
     bool about_dialog_open = false;
