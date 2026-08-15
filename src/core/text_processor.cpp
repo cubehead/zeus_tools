@@ -801,6 +801,7 @@ const char* content_kind_name(ContentKind kind) {
     case ContentKind::HexEncoded: return "Hex";
     case ContentKind::Csv: return "CSV";
     case ContentKind::Text: return "Text";
+    case ContentKind::Count: return "Text";
     }
     return "Text";
 }

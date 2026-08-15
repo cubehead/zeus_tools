@@ -21,25 +21,23 @@ char csv_delimiter_for(int index) {
 std::shared_ptr<zeus::HighlightedDocument> make_document(
     const zeus::ProcessResult& result,
     const std::string& display) {
-    if (result.detected == zeus::ContentKind::Xml) {
+    const DocumentSyntax syntax = content_definition(result.detected).syntax;
+    if (syntax == DocumentSyntax::Xml) {
         return std::make_shared<zeus::HighlightedDocument>(
             zeus::HighlightedDocument::xml(display));
     }
-    if (result.detected == zeus::ContentKind::Yaml) {
+    if (syntax == DocumentSyntax::Yaml) {
         return std::make_shared<zeus::HighlightedDocument>(
             zeus::HighlightedDocument::yaml(display));
     }
-    if (result.detected == zeus::ContentKind::Toml) {
-        return std::make_shared<zeus::HighlightedDocument>(
-            zeus::HighlightedDocument::toml(display));
-    }
-    if (result.detected == zeus::ContentKind::Ini) {
+    if (syntax == DocumentSyntax::Toml) {
         return std::make_shared<zeus::HighlightedDocument>(
             zeus::HighlightedDocument::toml(display));
     }
     return std::make_shared<zeus::HighlightedDocument>(
-        result.structured ? zeus::HighlightedDocument::json(display)
-                          : zeus::HighlightedDocument::plain(display));
+        syntax == DocumentSyntax::Json || result.structured
+            ? zeus::HighlightedDocument::json(display)
+            : zeus::HighlightedDocument::plain(display));
 }
 
 } // namespace

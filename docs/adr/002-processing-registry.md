@@ -46,6 +46,11 @@ handler to construct arbitrary UI.
   conservative fall-through are different concerns from explicit action dispatch.
 - Compile-time validation requires every non-Auto `ProcessingMode` to be registered exactly
   once; a missing or duplicate handler fails the build.
+- Application content metadata registers the full name, compact action-bar name, result
+  syntax, and default export extension for every `ContentKind`. Input-type labels, result
+  document construction, and export suggestions use this single definition.
+- Content metadata is also compile-time ordered and complete; adding a `ContentKind` without
+  its definition fails the build.
 - CSV controls, decode-again, and digest/HMAC remain explicit UI features because they carry
   state or interaction beyond a single text transformation.
 

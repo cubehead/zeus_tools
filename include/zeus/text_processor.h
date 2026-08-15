@@ -55,6 +55,7 @@ enum class ContentKind {
     HexEncoded,
     Csv,
     Text,
+    Count,
 };
 
 struct ProcessResult {

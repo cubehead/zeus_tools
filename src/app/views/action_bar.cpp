@@ -134,12 +134,8 @@ void build_action_bar(eui::Ui& ui, const ViewContext& context) {
                 }
                 button.build();
             };
-            std::string detected_label = zeus::content_kind_name(app_state.result.detected_input_kind);
-            if (app_state.result.detected_input_kind == zeus::ContentKind::UrlEncoded) detected_label = "URL";
-            if (app_state.result.detected_input_kind == zeus::ContentKind::HtmlEntity) detected_label = "HTML Ent";
-            if (app_state.result.detected_input_kind == zeus::ContentKind::JsonEscaped) {
-                detected_label = "Esc JSON";
-            }
+            const std::string detected_label(processing::content_definition(
+                app_state.result.detected_input_kind).compact_label);
             ui.text("actions.detected")
                 .size(64.0f, 30.0f)
                 .text(detected_label)

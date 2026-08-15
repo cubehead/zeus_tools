@@ -184,7 +184,9 @@ bool use_dark_theme() {
 std::vector<std::string> input_type_items() {
     std::vector<std::string> items;
     for (const auto& type : processing::registered_input_types()) {
-        items.emplace_back(type.id == "auto" ? tr(i18n::Text::Auto) : type.label);
+        items.emplace_back(type.id == "auto"
+            ? tr(i18n::Text::Auto)
+            : processing::content_definition(type.kind).label);
     }
     return items;
 }
@@ -628,17 +630,8 @@ void open_input_file() {
 
 void export_result() {
     if (!app_state.result.document && !app_state.result.csv) return;
-    std::string extension = ".txt";
-    switch (app_state.result.output_kind) {
-    case zeus::ContentKind::Json:
-    case zeus::ContentKind::Jwt: extension = ".json"; break;
-    case zeus::ContentKind::Xml: extension = ".xml"; break;
-    case zeus::ContentKind::Yaml: extension = ".yaml"; break;
-    case zeus::ContentKind::Toml: extension = ".toml"; break;
-    case zeus::ContentKind::Ini: extension = ".ini"; break;
-    case zeus::ContentKind::Csv: extension = ".tsv"; break;
-    default: break;
-    }
+    const std::string extension(
+        processing::content_definition(app_state.result.output_kind).export_extension);
     const std::string path = platform::choose_export_file("zeus-result" + extension);
     if (path.empty()) return;
     const std::string value = app_state.result.csv

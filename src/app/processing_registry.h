@@ -30,6 +30,22 @@ enum class ActionLabel {
     Lower,
 };
 
+enum class DocumentSyntax {
+    Plain,
+    Json,
+    Xml,
+    Yaml,
+    Toml,
+};
+
+struct ContentDefinition {
+    zeus::ContentKind kind = zeus::ContentKind::Text;
+    std::string_view label;
+    std::string_view compact_label;
+    std::string_view export_extension = ".txt";
+    DocumentSyntax syntax = DocumentSyntax::Plain;
+};
+
 struct ActionDefinition {
     std::string_view id;
     zeus::ProcessingMode mode = zeus::ProcessingMode::Auto;
@@ -43,13 +59,13 @@ struct ActionDefinition {
 
 struct InputTypeDefinition {
     std::string_view id;
-    std::string_view label;
     zeus::ProcessingMode mode = zeus::ProcessingMode::Auto;
     zeus::ContentKind kind = zeus::ContentKind::Text;
 };
 
 const std::vector<ActionDefinition>& registered_actions();
 const std::vector<InputTypeDefinition>& registered_input_types();
+const ContentDefinition& content_definition(zeus::ContentKind kind);
 
 bool action_applies(
     const ActionDefinition& action,

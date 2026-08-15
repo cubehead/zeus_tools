@@ -110,6 +110,18 @@ void test_decode_one_layer() {
 }
 
 void test_processing_registry() {
+    for (int index = 0; index < static_cast<int>(zeus::ContentKind::Count); ++index) {
+        const auto kind = static_cast<zeus::ContentKind>(index);
+        expect(app::processing::content_definition(kind).kind == kind,
+               "every content kind should resolve to its registered metadata");
+    }
+    expect(app::processing::content_definition(zeus::ContentKind::Toml).export_extension ==
+               ".toml",
+           "TOML metadata should provide its export extension");
+    expect(app::processing::content_definition(zeus::ContentKind::Ini).syntax ==
+               app::processing::DocumentSyntax::Toml,
+           "INI metadata should select the key/value highlighter");
+
     std::set<std::string> action_keys;
     for (const auto& action : app::processing::registered_actions()) {
         const std::string key = std::string(action.id) + ":" +

@@ -3,6 +3,7 @@
 #include "zeus/developer_tools.h"
 
 #include <algorithm>
+#include <array>
 
 namespace app::processing {
 
@@ -46,17 +47,46 @@ const std::vector<Action> kActions = {
 };
 
 const std::vector<InputTypeDefinition> kInputTypes = {
-    {"auto", "Auto", Mode::Auto, Kind::Text},
-    {"json", "JSON", Mode::Json, Kind::Json},
-    {"xml", "XML", Mode::Xml, Kind::Xml},
-    {"yaml", "YAML", Mode::Yaml, Kind::Yaml},
-    {"toml", "TOML", Mode::Toml, Kind::Toml},
-    {"ini", "INI", Mode::Ini, Kind::Ini},
-    {"csv", "CSV", Mode::Csv, Kind::Csv},
-    {"base64", "Base64", Mode::Base64, Kind::Base64},
-    {"url", "URL", Mode::UrlDecode, Kind::UrlEncoded},
-    {"text", "Text", Mode::Text, Kind::Text},
+    {"auto", Mode::Auto, Kind::Text},
+    {"json", Mode::Json, Kind::Json},
+    {"xml", Mode::Xml, Kind::Xml},
+    {"yaml", Mode::Yaml, Kind::Yaml},
+    {"toml", Mode::Toml, Kind::Toml},
+    {"ini", Mode::Ini, Kind::Ini},
+    {"csv", Mode::Csv, Kind::Csv},
+    {"base64", Mode::Base64, Kind::Base64},
+    {"url", Mode::UrlDecode, Kind::UrlEncoded},
+    {"text", Mode::Text, Kind::Text},
 };
+
+using Syntax = DocumentSyntax;
+constexpr std::array<ContentDefinition, static_cast<std::size_t>(Kind::Count)>
+    kContentDefinitions{{
+        {Kind::Empty, "Empty", "Empty", ".txt", Syntax::Plain},
+        {Kind::Json, "JSON", "JSON", ".json", Syntax::Json},
+        {Kind::Xml, "XML", "XML", ".xml", Syntax::Xml},
+        {Kind::Yaml, "YAML", "YAML", ".yaml", Syntax::Yaml},
+        {Kind::Toml, "TOML", "TOML", ".toml", Syntax::Toml},
+        {Kind::Ini, "INI", "INI", ".ini", Syntax::Toml},
+        {Kind::Jwt, "JWT", "JWT", ".json", Syntax::Json},
+        {Kind::JsonEscaped, "JSON String", "Esc JSON", ".json", Syntax::Json},
+        {Kind::Base64, "Base64", "Base64", ".txt", Syntax::Plain},
+        {Kind::UrlEncoded, "URL", "URL", ".txt", Syntax::Plain},
+        {Kind::HtmlEntity, "HTML Entity", "HTML Ent", ".txt", Syntax::Plain},
+        {Kind::HexEncoded, "Hex", "Hex", ".txt", Syntax::Plain},
+        {Kind::Csv, "CSV", "CSV", ".tsv", Syntax::Plain},
+        {Kind::Text, "Text", "Text", ".txt", Syntax::Plain},
+    }};
+
+constexpr bool content_definitions_are_complete() {
+    for (std::size_t index = 0; index < kContentDefinitions.size(); ++index) {
+        if (static_cast<std::size_t>(kContentDefinitions[index].kind) != index) return false;
+    }
+    return true;
+}
+
+static_assert(content_definitions_are_complete(),
+              "Every content kind must have one ordered content definition");
 
 } // namespace
 
@@ -68,6 +98,13 @@ bool action_applies(const Action& action, Kind kind, std::string_view input) {
 
 const std::vector<ActionDefinition>& registered_actions() { return kActions; }
 const std::vector<InputTypeDefinition>& registered_input_types() { return kInputTypes; }
+
+const ContentDefinition& content_definition(Kind kind) {
+    const auto index = static_cast<std::size_t>(kind);
+    return index < kContentDefinitions.size()
+        ? kContentDefinitions[index]
+        : kContentDefinitions[static_cast<std::size_t>(Kind::Text)];
+}
 
 const ActionDefinition* find_action(std::string_view id, Kind kind, std::string_view input) {
     const auto found = std::find_if(kActions.begin(), kActions.end(), [&](const Action& action) {
