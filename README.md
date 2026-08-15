@@ -8,6 +8,23 @@
   <strong>English</strong> | <a href="README_zh-CN.md">简体中文</a>
 </p>
 
+<p align="center">
+  <a href="https://github.com/cubehead/zeus_tools/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/cubehead/zeus_tools?display_name=tag&amp;sort=semver"></a>
+  <a href="https://github.com/cubehead/zeus_tools/releases"><img alt="Release downloads" src="https://img.shields.io/github/downloads/cubehead/zeus_tools/total"></a>
+  <a href="https://github.com/cubehead/zeus_tools/stargazers"><img alt="GitHub stars" src="https://img.shields.io/github/stars/cubehead/zeus_tools?logo=github"></a>
+  <a href="LICENSE"><img alt="MIT License" src="https://img.shields.io/github/license/cubehead/zeus_tools"></a>
+  <img alt="Platforms: macOS and Windows" src="https://img.shields.io/badge/platform-macOS%20%7C%20Windows-4b74d8">
+  <img alt="C++17" src="https://img.shields.io/badge/C%2B%2B-17-00599C?logo=cplusplus&amp;logoColor=white">
+</p>
+
+<p align="center">
+  <a href="https://github.com/cubehead/zeus_tools/releases/latest">Download</a> ·
+  <a href="#highlights">Highlights</a> ·
+  <a href="#screenshots">Screenshots</a> ·
+  <a href="#build-prerequisites">Build</a> ·
+  <a href="docs/releases/v0.1.0.md">Release notes</a>
+</p>
+
 Zeus Tools is an offline, cross-platform developer toolbox for formatting,
 inspecting, converting, encoding and searching structured text. It is written
 in C++17 with [EUI-NEO](https://github.com/sudoevolve/EUI-NEO) and targets
@@ -186,6 +203,11 @@ docs/           Product, architecture, development and release documents
 ```
 
 ## Contributing and security
+
+If Zeus Tools is useful to you, consider giving the project a
+[star](https://github.com/cubehead/zeus_tools/stargazers). Bug reports and
+focused feature requests are welcome in
+[GitHub Issues](https://github.com/cubehead/zeus_tools/issues).
 
 Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request. Please
 report security issues privately according to [SECURITY.md](SECURITY.md), and

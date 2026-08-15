@@ -8,6 +8,23 @@
   <a href="README.md">English</a> | <strong>简体中文</strong>
 </p>
 
+<p align="center">
+  <a href="https://github.com/cubehead/zeus_tools/releases/latest"><img alt="最新版本" src="https://img.shields.io/github/v/release/cubehead/zeus_tools?display_name=tag&amp;sort=semver"></a>
+  <a href="https://github.com/cubehead/zeus_tools/releases"><img alt="发布下载量" src="https://img.shields.io/github/downloads/cubehead/zeus_tools/total"></a>
+  <a href="https://github.com/cubehead/zeus_tools/stargazers"><img alt="GitHub Stars" src="https://img.shields.io/github/stars/cubehead/zeus_tools?logo=github"></a>
+  <a href="LICENSE"><img alt="MIT 许可证" src="https://img.shields.io/github/license/cubehead/zeus_tools"></a>
+  <img alt="支持 macOS 和 Windows" src="https://img.shields.io/badge/platform-macOS%20%7C%20Windows-4b74d8">
+  <img alt="C++17" src="https://img.shields.io/badge/C%2B%2B-17-00599C?logo=cplusplus&amp;logoColor=white">
+</p>
+
+<p align="center">
+  <a href="https://github.com/cubehead/zeus_tools/releases/latest">下载</a> ·
+  <a href="#功能亮点">功能亮点</a> ·
+  <a href="#截图">截图</a> ·
+  <a href="#构建前置条件">构建</a> ·
+  <a href="docs/releases/v0.1.0.md">发布说明</a>
+</p>
+
 Zeus Tools 是一款离线、跨平台的开发者工具箱，用于格式化、检查、转换、
 编码和搜索结构化文本。项目使用 C++17 和
 [EUI-NEO](https://github.com/sudoevolve/EUI-NEO) 开发，支持 macOS 和
@@ -180,6 +197,10 @@ docs/           产品、架构、开发和发布文档
 ```
 
 ## 贡献与安全
+
+如果 Zeus Tools 对你有帮助，欢迎为项目点一个
+[Star](https://github.com/cubehead/zeus_tools/stargazers)。Bug 与明确的功能建议
+可以提交到 [GitHub Issues](https://github.com/cubehead/zeus_tools/issues)。
 
 提交 Pull Request 前请阅读 [CONTRIBUTING.md](CONTRIBUTING.md)。安全问题请按照
 [SECURITY.md](SECURITY.md) 私下报告，切勿在公开 Issue 中附上真实密钥或私有
