@@ -47,14 +47,11 @@ AnalysisResult analyze(const AnalysisRequest& request) {
     output.first_row_header = request.first_row_header;
     const auto started = std::chrono::steady_clock::now();
 
-    const zeus::ProcessResult detected = zeus::process_text(
-        request.input, zeus::ProcessingMode::Auto);
     const InputTypeDefinition& input_type = find_input_type(request.input_type_id);
     const bool auto_input = input_type.mode == zeus::ProcessingMode::Auto;
-    output.detected = auto_input ? detected.detected : input_type.kind;
     const zeus::ProcessingMode override_mode = input_type.mode;
-    const zeus::ProcessResult base_result = override_mode == zeus::ProcessingMode::Auto
-        ? detected : zeus::process_text(request.input, override_mode);
+    const zeus::ProcessResult base_result = zeus::process_text(request.input, override_mode);
+    output.detected = auto_input ? base_result.detected : input_type.kind;
     const ActionDefinition* action = find_action(
         request.action_id, output.detected, request.input);
     const zeus::ProcessingMode action_mode = action

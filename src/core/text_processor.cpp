@@ -699,6 +699,12 @@ static_assert(processor_modes_are_complete(),
 static_assert(processor_ids_are_valid(),
               "Each explicit processing mode must have a unique non-empty stable ID");
 
+const ProcessorRegistration* find_processor(ProcessingMode mode) {
+    const auto processor = std::find_if(kProcessors.begin(), kProcessors.end(),
+        [mode](const ProcessorRegistration& candidate) { return candidate.mode == mode; });
+    return processor == kProcessors.end() ? nullptr : &*processor;
+}
+
 ProcessResult detect_automatically(const std::string& input, const std::string& trimmed) {
     const auto json = format_json(input, 2);
     if (json.ok) {
@@ -813,9 +819,8 @@ ProcessResult detect_automatically(const std::string& input, const std::string& 
 
 const char* processing_mode_id(ProcessingMode mode) {
     if (mode == ProcessingMode::Auto) return "auto";
-    const auto processor = std::find_if(kProcessors.begin(), kProcessors.end(),
-        [mode](const ProcessorRegistration& candidate) { return candidate.mode == mode; });
-    return processor == kProcessors.end() ? "" : processor->id;
+    const ProcessorRegistration* processor = find_processor(mode);
+    return processor == nullptr ? "" : processor->id;
 }
 
 const char* content_kind_name(ContentKind kind) {
@@ -853,13 +858,8 @@ ProcessResult process_text(const std::string& input, ProcessingMode mode) {
         return detect_automatically(input, trimmed);
     }
 
-    const auto registered = std::find_if(
-        kProcessors.begin(), kProcessors.end(),
-        [mode](const ProcessorRegistration& processor) {
-            return processor.mode == mode;
-        });
-    if (registered != kProcessors.end()) {
-        return registered->handler(input, trimmed, mode);
+    if (const ProcessorRegistration* processor = find_processor(mode)) {
+        return processor->handler(input, trimmed, mode);
     }
 
     ProcessResult result = failure(

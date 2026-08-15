@@ -73,6 +73,21 @@ void test_input_override() {
            "input override should control the detected kind");
 }
 
+void test_text_override_wins_over_auto_detection() {
+    app::processing::AnalysisRequest request;
+    request.input = R"({"name":"Zeus","enabled":true})";
+    request.input_type_id = "text";
+    const auto result = app::processing::analyze(request);
+
+    expect(result.process.ok, "text override should succeed for JSON-looking input");
+    expect(result.detected == zeus::ContentKind::Text,
+           "manual text input should not inherit automatic JSON detection");
+    expect(result.process.output_kind == zeus::ContentKind::Text,
+           "manual text input should retain plain-text presentation");
+    expect(result.process.value == request.input,
+           "manual text input should preserve its original value");
+}
+
 void test_toml_analysis() {
     app::processing::AnalysisRequest request;
     request.input = "title = \"Zeus\"\n[window]\nwidth = 1200";
@@ -170,6 +185,7 @@ int main() {
     test_csv_analysis();
     test_csv_manual_delimiters_use_original_input();
     test_input_override();
+    test_text_override_wins_over_auto_detection();
     test_toml_analysis();
     test_ini_analysis();
     test_decode_one_layer();

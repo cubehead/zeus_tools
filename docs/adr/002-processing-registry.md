@@ -47,6 +47,8 @@ handler to construct arbitrary UI.
   registry lookup instead of maintaining another global action switch.
 - Automatic detection remains a separate ordered pipeline because detector priority and
   conservative fall-through are different concerns from explicit action dispatch.
+- A manual input override executes its registered processor directly. Automatic detection is
+  only run for the `auto` input type, avoiding a redundant full parse of large inputs.
 - Compile-time validation requires every non-Auto `ProcessingMode` to be registered exactly
   once with a unique, non-empty ID; a missing or duplicate handler or ID fails the build.
 - Application content metadata registers the full name, compact action-bar name, result
