@@ -655,6 +655,20 @@ void copy_result(bool selection_only) {
     }
 }
 
+void copy_input_text() {
+    if (app_state.input_text.empty()) return;
+    try {
+        core::window::setClipboardText(app_state.input_text);
+        app_state.result.status = std::string(tr(i18n::Text::Copied)) + " " +
+            std::to_string(app_state.input_text.size()) + " " + tr(i18n::Text::Bytes);
+        core::platform::requestUiUpdate();
+    } catch (const std::exception& exception) {
+        report_operation_failure("Unable to copy input", exception.what());
+    } catch (...) {
+        report_operation_failure("Unable to copy input", "Unknown clipboard error");
+    }
+}
+
 static void load_input_file_impl(const std::string& path) {
     if (path.empty()) return;
     constexpr std::uintmax_t max_file_bytes = 10U * 1024U * 1024U;

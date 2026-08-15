@@ -75,6 +75,9 @@ const std::array<Translation, static_cast<std::size_t>(Text::Count)> translation
     {"输入超过 10 MiB", "輸入超過 10 MiB", "Input exceeds 10 MiB", "入力が 10 MiB を超えています", "입력이 10 MiB를 초과했습니다", "La entrada supera 10 MiB", "L’entrée dépasse 10 Mio", "Eingabe überschreitet 10 MiB", "A entrada excede 10 MiB", "Ввод превышает 10 МиБ"},
     {"大输入分页编辑", "大型輸入分頁編輯", "Paged large-input editor", "大きな入力のページ編集", "대용량 입력 페이지 편집", "Editor paginado de entrada grande", "Éditeur paginé pour grande entrée", "Seiteneditor für große Eingaben", "Editor paginado de entrada grande", "Постраничный редактор большого ввода"},
     {"仍然处理", "仍然處理", "Process anyway", "そのまま処理", "계속 처리", "Procesar de todos modos", "Traiter quand même", "Trotzdem verarbeiten", "Processar mesmo assim", "Всё равно обработать"},
+    {"上一页", "上一頁", "Previous page", "前のページ", "이전 페이지", "Página anterior", "Page précédente", "Vorherige Seite", "Página anterior", "Предыдущая страница"},
+    {"下一页", "下一頁", "Next page", "次のページ", "다음 페이지", "Página siguiente", "Page suivante", "Nächste Seite", "Próxima página", "Следующая страница"},
+    {"复制完整输入", "複製完整輸入", "Copy full input", "入力全体をコピー", "전체 입력 복사", "Copiar entrada completa", "Copier toute l’entrée", "Gesamte Eingabe kopieren", "Copiar entrada completa", "Копировать весь ввод"},
 }};
 
 const char* get(Text text, zeus::LocalePreference locale) {

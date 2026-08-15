@@ -41,6 +41,7 @@ void process_oversized_input();
 void continue_decode_one_layer();
 void move_match(int direction);
 void copy_result(bool selection_only);
+void copy_input_text();
 void open_input_file();
 void load_input_file(const std::string& path);
 void export_result();

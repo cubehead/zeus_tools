@@ -59,6 +59,8 @@ semantic versioning after the first stable release.
   surface with a lightweight size notice and an explicit "Process anyway" action.
 - Kept 1-10 MiB desktop input responsive with a UTF-8-safe 16 KiB paged editor;
   each page retains native selection, IME and undo while processing uses all bytes.
+- Added a dedicated full-input copy action to the paged editor, keeping ordinary
+  selection copy explicitly page-local.
 - Bounded rich-text measurement and drawing for pathological multi-megabyte lines;
   the underlying document, search model and clipboard/export content remain complete.
 - Preserved source content kinds across format conversions, including JSON-to-CSV

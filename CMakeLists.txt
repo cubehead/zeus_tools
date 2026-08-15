@@ -171,6 +171,7 @@ if(ZEUS_BUILD_APP)
         src/app/views/crypto_panel.cpp
         src/app/views/header_bar.cpp
         src/app/views/input_panel.cpp
+        src/app/views/large_input_editor.cpp
         src/app/views/result_panel.cpp
         src/app/views/search_bar.cpp
     )
