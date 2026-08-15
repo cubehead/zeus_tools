@@ -369,7 +369,6 @@ void analyze_input(bool debounce) {
         app_state.result.document = std::make_shared<zeus::HighlightedDocument>(
             zeus::HighlightedDocument::plain(""));
         app_state.result.csv.reset();
-        app_state.result.value.clear();
         app_state.result.decode_chain.clear();
         app_state.result.can_continue_decode = false;
         app_state.result.status = tr(i18n::Text::WaitingForInput);
@@ -428,7 +427,6 @@ void analyze_input(bool debounce) {
             app_state.result.document = payload.document;
             app_state.result.csv = payload.csv;
             const auto& result = payload.process;
-            app_state.result.value = result.value.empty() ? app_state.input_text : result.value;
             app_state.result.decode_chain = payload.decode_chain;
             app_state.result.can_continue_decode = payload.can_continue_decode;
             if (!result.ok) {
@@ -467,8 +465,8 @@ void analyze_input(bool debounce) {
 }
 
 void continue_decode_one_layer() {
-    if (!app_state.result.can_continue_decode || app_state.result.value.empty()) return;
-    const std::string source = app_state.result.value;
+    if (!app_state.result.can_continue_decode || !app_state.result.document) return;
+    const std::string source = app_state.result.document->text();
     const std::string previous_chain = app_state.result.decode_chain;
     app_state.result.status = tr(i18n::Text::Processing);
     app_state.result.issue.clear();
@@ -501,7 +499,8 @@ void continue_decode_one_layer() {
                 request_full_repaint();
                 return;
             }
-            if (completed.value.source != app_state.result.value) return;
+            if (!app_state.result.document ||
+                completed.value.source != app_state.result.document->text()) return;
             const processing::DecodeResult& payload = completed.value;
             if (!payload.process.ok || !payload.document) {
                 app_state.result.issue = compact_issue(payload.process.error_message);
@@ -511,7 +510,6 @@ void continue_decode_one_layer() {
                 core::platform::requestUiUpdate();
                 return;
             }
-            app_state.result.value = payload.process.value;
             app_state.result.output_kind = payload.process.output_kind;
             app_state.result.decode_chain = payload.chain;
             app_state.result.can_continue_decode = payload.can_continue;
@@ -521,7 +519,7 @@ void continue_decode_one_layer() {
             app_state.result.issue.clear();
             app_state.result.issue_detail.clear();
             app_state.result.status = app_state.result.decode_chain + " · " +
-                std::to_string(app_state.result.value.size()) + " " +
+                std::to_string(payload.process.value.size()) + " " +
                 tr(i18n::Text::Bytes);
             update_search();
             request_full_repaint();
@@ -654,8 +652,15 @@ void export_result() {
 
 void compute_crypto_output(zeus::DigestAlgorithm algorithm) {
     const bool use_result = app_state.crypto.message_source_index == 1 &&
-        !app_state.result.value.empty();
-    const std::string& message = use_result ? app_state.result.value : app_state.input_text;
+        (app_state.result.document || app_state.result.csv);
+    std::string csv_message;
+    const std::string* message = &app_state.input_text;
+    if (use_result && app_state.result.document) {
+        message = &app_state.result.document->text();
+    } else if (use_result && app_state.result.csv) {
+        csv_message = app_state.result.csv->to_tsv();
+        message = &csv_message;
+    }
     const std::string name = app_state.crypto.hmac
         ? "HMAC-" + std::string(zeus::digest_algorithm_name(algorithm))
         : zeus::digest_algorithm_name(algorithm);
@@ -663,8 +668,8 @@ void compute_crypto_output(zeus::DigestAlgorithm algorithm) {
     try {
         result = app_state.crypto.hmac
             ? zeus::compute_hmac_encoded(
-                  message, app_state.crypto.hmac_key, hmac_key_encoding(), algorithm)
-            : zeus::compute_digest(message, algorithm);
+                  *message, app_state.crypto.hmac_key, hmac_key_encoding(), algorithm)
+            : zeus::compute_digest(*message, algorithm);
     } catch (const std::exception& exception) {
         app_state.result.issue = tr(i18n::Text::Invalid);
         app_state.result.issue_detail = exception.what();

@@ -47,7 +47,8 @@
 ### 工程与发布资源
 
 - C++17 核心测试和 1 MB/10 MB JSON、CSV 基准程序；10 MiB 应用处理服务基准覆盖
-  检测、格式化、展示模型构建和搜索，当前 Debug 峰值常驻内存约 299 MiB。
+  检测、格式化、展示模型构建和搜索，当前 Debug 峰值常驻内存约 269 MiB，较优化前
+  下降约 10%。
 - EUI-NEO、pugixml、yaml-cpp、toml++ 均固定到不可变提交。
 - macOS App/DMG 和 Windows Portable ZIP 配置；不生成 NSIS/MSI。
 - 应用图标、README 截图、隐私/安全/贡献文档和 GitHub Issue/PR 模板。

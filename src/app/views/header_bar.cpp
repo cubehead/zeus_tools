@@ -147,7 +147,6 @@ void build_header_bar(eui::Ui& ui, const ViewContext& context) {
                     app_state.crypto.message_dropdown_open = false;
                     clear_hmac_key();
                     clear_hmac_input_state(ui);
-                    app_state.result.value.clear();
                     app_state.result.decode_chain.clear();
                     app_state.result.can_continue_decode = false;
                     analyze_input();

@@ -48,6 +48,8 @@ semantic versioning after the first stable release.
 
 - Avoided building a redundant full highlighted text document for CSV results;
   the virtualized table is now the only presentation model retained.
+- Reduced large-result peak memory by moving processing/CSV models and removing
+  the duplicate result string retained beside the read-only document.
 - Preserved source content kinds across format conversions, including JSON-to-CSV
   table presentation, instead of overwriting them with the output kind.
 - Kept the common Base64 Encode action as encoding even when the source already

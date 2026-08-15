@@ -50,14 +50,14 @@ AnalysisResult analyze(const AnalysisRequest& request) {
     const InputTypeDefinition& input_type = find_input_type(request.input_type_id);
     const bool auto_input = input_type.mode == zeus::ProcessingMode::Auto;
     const zeus::ProcessingMode override_mode = input_type.mode;
-    const zeus::ProcessResult base_result = zeus::process_text(request.input, override_mode);
+    zeus::ProcessResult base_result = zeus::process_text(request.input, override_mode);
     output.detected = auto_input ? base_result.detected : input_type.kind;
     const ActionDefinition* action = find_action(
         request.action_id, output.detected, request.input);
     const zeus::ProcessingMode action_mode = action
         ? action->mode : zeus::ProcessingMode::Auto;
     output.process = action_mode == zeus::ProcessingMode::Auto
-        ? base_result : zeus::process_text(request.input, action_mode);
+        ? std::move(base_result) : zeus::process_text(request.input, action_mode);
 
     const bool csv_requested = override_mode == zeus::ProcessingMode::Csv ||
         action_mode == zeus::ProcessingMode::Csv;
@@ -70,9 +70,8 @@ AnalysisResult analyze(const AnalysisRequest& request) {
             ? output.process.value : request.input;
         const char delimiter = converted_to_csv
             ? ',' : csv_delimiter_for(request.csv_delimiter_index);
-        const auto parsed = zeus::parse_csv(table_source, delimiter, true);
+        auto parsed = zeus::parse_csv(table_source, delimiter, true);
         if (parsed.ok) {
-            output.csv = std::make_shared<zeus::CsvDocument>(parsed.document);
             output.process.ok = true;
             output.process.output_kind = zeus::ContentKind::Csv;
             if (!converted_to_csv) {
@@ -81,6 +80,7 @@ AnalysisResult analyze(const AnalysisRequest& request) {
             }
             output.process.label = converted_to_csv ? "JSON → CSV" : "CSV";
             output.process.value = parsed.document.to_tsv();
+            output.csv = std::make_shared<zeus::CsvDocument>(std::move(parsed.document));
             output.process.error_code.clear();
             output.process.error_message.clear();
             output.process.error_line = 0;
@@ -99,7 +99,7 @@ AnalysisResult analyze(const AnalysisRequest& request) {
         }
     }
 
-    const std::string display = output.process.value.empty()
+    const std::string& display = output.process.value.empty()
         ? request.input : output.process.value;
     if (request.build_presentation && output.process.decoded) {
         output.decode_chain = output.process.label;
@@ -125,7 +125,7 @@ DecodeResult decode_one_layer(std::string source, const std::string& previous_ch
         output.source, zeus::ProcessingMode::DecodeOneLayer);
     if (!output.process.ok) return output;
 
-    const std::string display = output.process.value.empty()
+    const std::string& display = output.process.value.empty()
         ? output.source : output.process.value;
     output.document = make_document(output.process, display);
     output.chain = previous_chain.empty()

@@ -40,7 +40,6 @@ struct ResultState {
     std::shared_ptr<zeus::CsvDocument> csv;
     zeus::TextSelection selection;
     zeus::TextFoldState folds;
-    std::string value;
     std::string decode_chain;
     bool can_continue_decode = false;
     zeus::ContentKind detected_input_kind = zeus::ContentKind::Text;
