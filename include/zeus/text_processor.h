@@ -18,6 +18,11 @@ enum class ProcessingMode {
     XmlToJson,
     Yaml,
     YamlToJson,
+    Toml,
+    TomlToJson,
+    JsonToToml,
+    Ini,
+    IniToJson,
     Base64,
     Base64Encode,
     UrlDecode,
@@ -27,6 +32,11 @@ enum class ProcessingMode {
     Text,
     Upper,
     Lower,
+    HtmlEntityDecode,
+    HtmlEntityEncode,
+    HexDecode,
+    HexEncode,
+    Timestamp,
 };
 
 enum class ContentKind {
@@ -34,10 +44,14 @@ enum class ContentKind {
     Json,
     Xml,
     Yaml,
+    Toml,
+    Ini,
     Jwt,
     JsonEscaped,
     Base64,
     UrlEncoded,
+    HtmlEntity,
+    HexEncoded,
     Csv,
     Text,
 };

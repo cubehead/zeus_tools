@@ -1,5 +1,6 @@
 #include "app_controller.h"
 #include "processing_service.h"
+#include "../platform/file_dialog.h"
 
 #include "components/input_model.h"
 #include "core/platform/platform.h"
@@ -21,6 +22,8 @@
 #include <cctype>
 #include <cstdint>
 #include <exception>
+#include <filesystem>
+#include <fstream>
 #include <memory>
 #include <string>
 #include <thread>
@@ -68,9 +71,21 @@ void initialize_documentation_scenario() {
             "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9."
             "eyJzdWIiOiJkb2NzLXVzZXIiLCJuYW1lIjoiWmV1cyBEZW1vIiwicm9sZXMiOlsiZGV2ZWxvcGVyIiwicmV2aWV3ZXIiXSwib2ZmbGluZSI6dHJ1ZSwiaWF0IjoxNzg2Njk0NDAwfQ."
             "docs-signature";
+    } else if (scenario == "toml") {
+        app_state.input_text =
+            "title = \"Zeus Tools\"\n"
+            "version = \"0.2.0\"\n"
+            "offline = true\n\n"
+            "[window]\n"
+            "width = 1280\n"
+            "height = 860\n"
+            "theme = \"system\"\n\n"
+            "[formats]\n"
+            "structured = [\"JSON\", \"XML\", \"YAML\", \"TOML\"]";
     } else if (scenario == "hmac") {
         app_state.input_text = "release=0.1.0&platform=desktop&offline=true";
         app_state.result.detected_input_kind = zeus::ContentKind::Text;
+        app_state.result.output_kind = zeus::ContentKind::Text;
         app_state.crypto.panel_open = true;
         app_state.crypto.hmac = true;
         app_state.crypto.hmac_key = "docs-demo-key";
@@ -166,7 +181,8 @@ bool use_dark_theme() {
 }
 
 std::vector<std::string> input_type_items() {
-    return {tr(i18n::Text::Auto), "JSON", "XML", "YAML", "CSV", "Base64", "URL", "Text"};
+    return {tr(i18n::Text::Auto), "JSON", "XML", "YAML", "TOML", "INI",
+            "CSV", "Base64", "URL", "Text"};
 }
 
 std::vector<std::string> csv_delimiter_items() {
@@ -343,6 +359,7 @@ void analyze_input(bool debounce) {
         async::cancel("zeus.search.result");
         reset_result_interaction_state();
         app_state.result.detected_input_kind = zeus::ContentKind::Text;
+        app_state.result.output_kind = zeus::ContentKind::Text;
         app_state.result.document = std::make_shared<zeus::HighlightedDocument>(
             zeus::HighlightedDocument::plain(""));
         app_state.result.csv.reset();
@@ -400,6 +417,7 @@ void analyze_input(bool debounce) {
             if (!completed.value.document) return;
             const processing::AnalysisResult& payload = completed.value;
             app_state.result.detected_input_kind = payload.detected;
+            app_state.result.output_kind = payload.process.detected;
             reset_result_interaction_state();
             app_state.result.document = payload.document;
             app_state.result.csv = payload.csv;
@@ -488,6 +506,7 @@ void continue_decode_one_layer() {
                 return;
             }
             app_state.result.value = payload.process.value;
+            app_state.result.output_kind = payload.process.detected;
             app_state.result.decode_chain = payload.chain;
             app_state.result.can_continue_decode = payload.can_continue;
             reset_result_interaction_state();
@@ -552,6 +571,88 @@ void copy_result(bool selection_only) {
     app_state.result.status = std::string(tr(i18n::Text::Copied)) + " " +
                   std::to_string(value.size()) + " " + tr(i18n::Text::Bytes);
     core::platform::requestUiUpdate();
+}
+
+void load_input_file(const std::string& path) {
+    if (path.empty()) return;
+    constexpr std::uintmax_t max_file_bytes = 10U * 1024U * 1024U;
+    std::error_code size_error;
+    const std::uintmax_t size = std::filesystem::file_size(path, size_error);
+    if (size_error || size > max_file_bytes) {
+        app_state.result.status = tr(i18n::Text::Invalid);
+        app_state.result.issue = size_error ? "File unavailable" : "File exceeds 10 MB";
+        app_state.result.issue_detail = size_error.message();
+        request_full_repaint();
+        return;
+    }
+
+    std::ifstream input(path, std::ios::binary);
+    std::string value(static_cast<std::size_t>(size), '\0');
+    if (!input || (size != 0 && !input.read(value.data(), static_cast<std::streamsize>(size)))) {
+        app_state.result.status = tr(i18n::Text::Invalid);
+        app_state.result.issue = "Unable to read file";
+        app_state.result.issue_detail = "The selected file could not be read";
+        request_full_repaint();
+        return;
+    }
+    if (value.size() >= 3 && static_cast<unsigned char>(value[0]) == 0xEFU &&
+        static_cast<unsigned char>(value[1]) == 0xBBU &&
+        static_cast<unsigned char>(value[2]) == 0xBFU) {
+        value.erase(0, 3);
+    }
+    if (value.find('\0') != std::string::npos) {
+        app_state.result.status = tr(i18n::Text::Invalid);
+        app_state.result.issue = "Binary file is not supported";
+        app_state.result.issue_detail = "Open a UTF-8 text or structured-data file";
+        request_full_repaint();
+        return;
+    }
+
+    app_state.input_text = std::move(value);
+    app_state.processing_mode_index = 0;
+    app_state.input_type_override_index = 0;
+    app_state.input_type_dropdown_open = false;
+    app_state.csv.delimiter_index = 0;
+    app_state.result.decode_chain.clear();
+    app_state.result.can_continue_decode = false;
+    analyze_input(false);
+}
+
+void open_input_file() {
+    load_input_file(platform::choose_input_file());
+}
+
+void export_result() {
+    if (!app_state.result.document && !app_state.result.csv) return;
+    std::string extension = ".txt";
+    switch (app_state.result.output_kind) {
+    case zeus::ContentKind::Json:
+    case zeus::ContentKind::Jwt: extension = ".json"; break;
+    case zeus::ContentKind::Xml: extension = ".xml"; break;
+    case zeus::ContentKind::Yaml: extension = ".yaml"; break;
+    case zeus::ContentKind::Toml: extension = ".toml"; break;
+    case zeus::ContentKind::Ini: extension = ".ini"; break;
+    case zeus::ContentKind::Csv: extension = ".tsv"; break;
+    default: break;
+    }
+    const std::string path = platform::choose_export_file("zeus-result" + extension);
+    if (path.empty()) return;
+    const std::string value = app_state.result.csv
+        ? app_state.result.csv->to_tsv()
+        : app_state.result.document->text();
+    std::ofstream output(path, std::ios::binary | std::ios::trunc);
+    output.write(value.data(), static_cast<std::streamsize>(value.size()));
+    if (!output) {
+        app_state.result.status = tr(i18n::Text::Invalid);
+        app_state.result.issue = "Unable to export result";
+        app_state.result.issue_detail = "The selected file could not be written";
+    } else {
+        app_state.result.issue.clear();
+        app_state.result.issue_detail.clear();
+        app_state.result.status = std::string(tr(i18n::Text::ExportResult)) + " · " +
+            std::to_string(value.size()) + " " + tr(i18n::Text::Bytes);
+    }
+    request_full_repaint();
 }
 
 void compute_crypto_output(zeus::DigestAlgorithm algorithm) {

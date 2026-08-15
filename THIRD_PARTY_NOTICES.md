@@ -8,6 +8,7 @@ and its complete license text remain authoritative.
 | [EUI-NEO](https://github.com/sudoevolve/EUI-NEO) | pinned commit `f2a3b72104bd946988f8ebe0a13dda956f3455ae` | Apache License 2.0 |
 | [pugixml](https://github.com/zeux/pugixml) | v1.15, commit `ee86beb30e4973f5feffe3ce63bfa4fbadf72f38` | MIT License |
 | [yaml-cpp](https://github.com/jbeder/yaml-cpp) | yaml-cpp-0.9.0, commit `56e3bb550c91fd7005566f19c079cb7a503223cf` | MIT License |
+| [toml++](https://github.com/marzer/tomlplusplus) | v3.4.0, commit `30172438cee64926dc41fdd9c11fb3ba5b2ba9de` | MIT License |
 | [Font Awesome Free](https://fontawesome.com/) | 7.2.0 desktop font, supplied by EUI-NEO | Font: SIL OFL 1.1 |
 | [Primer Octicons](https://github.com/primer/octicons) | `mark-github-24` | MIT License; GitHub mark subject to GitHub logo guidelines |
 

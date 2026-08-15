@@ -1,6 +1,11 @@
 #include "eui_neo.h"
 
+#include "app_controller.h"
+
 #include "zeus/system_ui_font.h"
+
+#include <string>
+#include <vector>
 
 namespace app {
 
@@ -18,6 +23,10 @@ const DslAppConfig& dslAppConfig() {
         .showDebugStatsInTitle(false)
         .fps(90.0);
     return config;
+}
+
+void onFilesDropped(const std::vector<std::string>& paths) {
+    if (!paths.empty()) controller::load_input_file(paths.front());
 }
 
 } // namespace app

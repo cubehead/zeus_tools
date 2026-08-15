@@ -67,11 +67,11 @@ void compose(eui::Ui& ui, const eui::Screen& screen) {
     context.result_height = std::max(
         220.0f, context.bottom_bar_y - context.result_y - 8.0f);
     context.header_spacer_width = std::max(
-        0.0f, context.content_width - 524.0f);
+        0.0f, context.content_width - 624.0f);
     context.theme_button_center_x =
-        context.margin + 197.0f + context.header_spacer_width;
+        context.margin + 297.0f + context.header_spacer_width;
     context.about_button_center_x =
-        context.margin + 407.0f + context.header_spacer_width;
+        context.margin + 507.0f + context.header_spacer_width;
 
     ui.setFindShortcutTarget("bottom.search.hit");
     ui.setEscapeShortcut([&ui] {

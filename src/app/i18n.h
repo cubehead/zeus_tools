@@ -12,12 +12,13 @@ enum class Text {
     PasteOrTypeJson, WaitingForInput, Processing, Invalid, Copied, Bytes,
     Format, Minify, Escape, Unescape, Table, DelimiterAuto, DelimiterComma,
     DelimiterSemicolon, DelimiterPipe, FirstRowHeader, On, Off, Decode, DecodeAgain,
-    Inspect, Base64Encode, UrlEncode, Upper, Lower, Digest, Hmac, HmacKey,
+    Inspect, Base64Encode, UrlEncode, Upper, Lower, HtmlEncode, HexEncode, UnixTime,
+    Digest, Hmac, HmacKey,
     MessageInput, MessageResult, KeyEncoding, ShowKey, HideKey,
     WeakAlgorithm, PreviewingFirst, Rows, RowsCopyTsv, TablePreviewCopyTsv,
     SearchResult, InvalidRegex, CopyAll, CopySelected, Selected, LocalOnly,
     About, Version, Build, AboutDescription, PrivacySummary, SpecialThanks,
-    OpenSourceThanks, ProjectWebsite, License, Close, Count,
+    OpenSourceThanks, ProjectWebsite, License, OpenFile, ExportResult, Close, Count,
 };
 
 struct Translation {

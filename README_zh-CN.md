@@ -42,10 +42,10 @@ Windows。
 
 ## 功能亮点
 
-- 自动识别 JSON、XML、YAML、CSV、JWT、Base64 和 URL 编码文本。
-- 格式化 JSON、XML 和 YAML，并以只读方式显示语法高亮。
+- 自动识别 JSON、XML、YAML、TOML、INI/Properties、CSV、JWT 和常见编码文本。
+- 格式化 JSON、XML、YAML、TOML 和 INI/Properties，并以只读方式显示语法高亮。
 - 支持折叠嵌套的 JSON 容器、XML 元素和按缩进划分的 YAML 块。
-- 支持 JSON ↔ YAML、JSON ↔ XML 和 JSON → CSV 转换。
+- 支持 JSON ↔ YAML/XML/TOML、TOML/INI → JSON 和 JSON → CSV 转换。
 - 支持 JSON 转义/反转义；Base64 或 URL 编码每次只解码一层，并可通过明确的
   继续操作手动处理嵌套内容。
 - 使用虚拟化表格显示 CSV，支持分隔符和表头设置。
@@ -53,6 +53,7 @@ Windows。
 - 可拖动水平分隔条调整输入区和结果区，且保留合理的最小显示比例。
 - 在本地计算 MD5、SHA-1、SHA-256、SHA-512 和 HMAC。
 - 支持跟随系统、亮色和暗色主题，以及十种界面语言。
+- 支持打开或拖入 UTF-8 文件并导出当前结果，不保存最近文件或内容历史。
 - 不上传也不保存正在处理的文本。
 
 ## 截图
@@ -83,13 +84,17 @@ Windows。
 
 | 输入或工具 | 自动/默认行为 | 其他操作 |
 | --- | --- | --- |
-| JSON | 美化格式、语法高亮和结构折叠 | 压缩、转义、转换为 YAML/XML/CSV |
+| JSON | 美化格式、语法高亮和结构折叠 | 压缩、转义、转换为 YAML/XML/TOML/CSV |
 | 已转义 JSON | 识别 JSON 字符串或已转义对象 | 只反转义一层 |
 | XML | 严格解析、安全格式化、高亮和元素折叠 | 转换为 JSON；拒绝 DTD/实体 |
 | YAML | 使用保守的安全子集解析、格式化和缩进折叠 | 转换为 JSON |
+| TOML | 严格解析、格式化、高亮和章节折叠 | 与 JSON 双向转换 |
+| INI/Properties | 保守解析赋值并格式化 | 转为 JSON，不擅自推断值类型 |
 | CSV | 识别逗号、Tab、分号或竖线 | 手动设置分隔符/表头、虚拟表格、复制 TSV |
 | Base64 | 高置信度时解码一层 | 支持标准和 URL 安全输入；二进制安全预览 |
 | URL 编码 | 高置信度时解码一层 | 编码任意 UTF-8 文本 |
+| HTML Entity / Hex | 只自动解码具有明确特征的内容 | 编码任意 UTF-8 文本 |
+| Unix 时间 | 对精确的 10/13 位数字提供候选操作 | 显示秒、毫秒、UTC 和本地时间 |
 | JWT | 解码并格式化 Header/Payload | 搜索/复制声明；不验证签名 |
 | 文本 | 只读结果和搜索 | 大小写转换、Base64/URL 编码 |
 | 摘要/HMAC | 手动在本地计算 | 输入/结果来源、UTF-8/Hex/Base64 密钥、密钥遮罩、Hex/Base64 输出 |
@@ -131,6 +136,7 @@ Windows。
 | [EUI-NEO](https://github.com/sudoevolve/EUI-NEO) | 跨平台桌面 UI 与渲染框架 |
 | [pugixml](https://github.com/zeux/pugixml) | 严格 XML 解析与序列化 |
 | [yaml-cpp](https://github.com/jbeder/yaml-cpp) | YAML 解析、格式化与转换 |
+| [toml++](https://github.com/marzer/tomlplusplus) | TOML 解析、格式化与 JSON 转换 |
 | [Font Awesome Free](https://fontawesome.com/) | 通用界面图标 |
 | [Primer Octicons](https://github.com/primer/octicons) | GitHub 项目链接图标 |
 
@@ -145,7 +151,7 @@ Windows。
 - macOS：Xcode Command Line Tools
 - Windows：安装“使用 C++ 的桌面开发”组件的 Visual Studio 2022
 
-依赖通过 CMake FetchContent 锁定，包括 EUI-NEO、pugixml 和 yaml-cpp。首次
+依赖通过 CMake FetchContent 锁定，包括 EUI-NEO、pugixml、yaml-cpp 和 toml++。首次
 配置需要网络连接，除非提供本地依赖源码；构建后的应用本身不需要网络连接。
 
 ## 构建并测试核心模块

@@ -48,6 +48,7 @@ public:
     static HighlightedDocument json(std::string text);
     static HighlightedDocument xml(std::string text);
     static HighlightedDocument yaml(std::string text);
+    static HighlightedDocument toml(std::string text);
     static HighlightedDocument plain(std::string text);
 
     const std::string& text() const { return text_; }

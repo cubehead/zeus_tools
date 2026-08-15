@@ -52,6 +52,24 @@ void build_header_bar(eui::Ui& ui, const ViewContext& context) {
                 .color({0.0f, 0.0f, 0.0f, 0.0f})
                 .build();
 
+            components::button(ui, "header.open")
+                .size(42.0f, 38.0f)
+                .text("")
+                .icon(0xF07C)
+                .iconSize(18.0f)
+                .theme(tokens, false)
+                .onClick([] { open_input_file(); })
+                .build();
+
+            components::button(ui, "header.export")
+                .size(42.0f, 38.0f)
+                .text("")
+                .icon(0xF56E)
+                .iconSize(18.0f)
+                .theme(tokens, false)
+                .onClick([] { export_result(); })
+                .build();
+
             components::button(ui, "header.theme")
                 .size(42.0f, 38.0f)
                 .text("")
@@ -143,6 +161,24 @@ void build_header_bar(eui::Ui& ui, const ViewContext& context) {
         .source("header.theme.bg")
         .value(theme_tooltip())
         .anchor(theme_button_center_x, margin + header_height - 2.0f)
+        .bounds(context.screen_width, context.screen_height)
+        .theme(tokens)
+        .zIndex(1000)
+        .build();
+
+    components::tooltip(ui, "header.open.tooltip")
+        .source("header.open.bg")
+        .value(tr(i18n::Text::OpenFile))
+        .anchor(theme_button_center_x - 100.0f, margin + header_height - 2.0f)
+        .bounds(context.screen_width, context.screen_height)
+        .theme(tokens)
+        .zIndex(1000)
+        .build();
+
+    components::tooltip(ui, "header.export.tooltip")
+        .source("header.export.bg")
+        .value(tr(i18n::Text::ExportResult))
+        .anchor(theme_button_center_x - 50.0f, margin + header_height - 2.0f)
         .bounds(context.screen_width, context.screen_height)
         .theme(tokens)
         .zIndex(1000)

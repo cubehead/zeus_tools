@@ -3,6 +3,8 @@
 #include "app_controller.h"
 #include "font_tokens.h"
 
+#include "zeus/developer_tools.h"
+
 #include "components/components.h"
 #include "core/platform/platform.h"
 
@@ -105,6 +107,7 @@ void build_action_bar(eui::Ui& ui, const ViewContext& context) {
             };
             std::string detected_label = zeus::content_kind_name(app_state.result.detected_input_kind);
             if (app_state.result.detected_input_kind == zeus::ContentKind::UrlEncoded) detected_label = "URL";
+            if (app_state.result.detected_input_kind == zeus::ContentKind::HtmlEntity) detected_label = "HTML Ent";
             if (app_state.result.detected_input_kind == zeus::ContentKind::JsonEscaped) {
                 detected_label = "Esc JSON";
             }
@@ -127,12 +130,19 @@ void build_action_bar(eui::Ui& ui, const ViewContext& context) {
                 action("actions.json.to_yaml", "→ YAML", 11, 68.0f);
                 action("actions.json.to_xml", "→ XML", 13, 62.0f);
                 action("actions.json.to_csv", "→ CSV", 15, 62.0f);
+                action("actions.json.to_toml", "→ TOML", 19, 72.0f);
             } else if (app_state.result.detected_input_kind == zeus::ContentKind::Xml) {
                 action("actions.xml.format", tr(i18n::Text::Format), 9, 64.0f);
                 action("actions.xml.to_json", "→ JSON", 16, 68.0f);
             } else if (app_state.result.detected_input_kind == zeus::ContentKind::Yaml) {
                 action("actions.yaml.format", tr(i18n::Text::Format), 10, 64.0f);
                 action("actions.yaml.to_json", "→ JSON", 12, 68.0f);
+            } else if (app_state.result.detected_input_kind == zeus::ContentKind::Toml) {
+                action("actions.toml.format", tr(i18n::Text::Format), 17, 64.0f);
+                action("actions.toml.to_json", "→ JSON", 18, 68.0f);
+            } else if (app_state.result.detected_input_kind == zeus::ContentKind::Ini) {
+                action("actions.ini.format", tr(i18n::Text::Format), 25, 64.0f);
+                action("actions.ini.to_json", "→ JSON", 26, 68.0f);
             } else if (app_state.result.detected_input_kind == zeus::ContentKind::Csv) {
                 action("actions.table", tr(i18n::Text::Table), 0, 60.0f);
                 ui.stack("actions.csv.delimiter.slot")
@@ -187,6 +197,14 @@ void build_action_bar(eui::Ui& ui, const ViewContext& context) {
                 action("actions.url.decode", tr(i18n::Text::Decode), 0, 64.0f);
             } else if (app_state.result.detected_input_kind == zeus::ContentKind::Jwt) {
                 action("actions.jwt.inspect", tr(i18n::Text::Inspect), 0, 64.0f);
+            } else if (app_state.result.detected_input_kind == zeus::ContentKind::HtmlEntity) {
+                action("actions.html.decode", tr(i18n::Text::Decode), 23, 64.0f);
+            } else if (app_state.result.detected_input_kind == zeus::ContentKind::HexEncoded) {
+                action("actions.hex.decode", tr(i18n::Text::Decode), 24, 64.0f);
+            }
+
+            if (zeus::looks_like_unix_timestamp(app_state.input_text)) {
+                action("actions.timestamp", tr(i18n::Text::UnixTime), 22, 56.0f);
             }
 
             if (app_state.result.can_continue_decode) {
@@ -207,6 +225,8 @@ void build_action_bar(eui::Ui& ui, const ViewContext& context) {
                     .build();
                 action("actions.base64.encode", tr(i18n::Text::Base64Encode), 2, 104.0f);
                 action("actions.url.encode", tr(i18n::Text::UrlEncode), 3, 98.0f);
+                action("actions.html.encode", tr(i18n::Text::HtmlEncode), 20, 94.0f);
+                action("actions.hex.encode", tr(i18n::Text::HexEncode), 21, 82.0f);
                 action("actions.upper", tr(i18n::Text::Upper), 7, 56.0f);
                 action("actions.lower", tr(i18n::Text::Lower), 8, 56.0f);
                 components::button(ui, "actions.digest")

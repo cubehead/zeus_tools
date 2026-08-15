@@ -24,8 +24,8 @@ EUI 相关代码限制在 `src/app/` 和 `src/platform/`。升级框架前必须
 - `src/app/app_controller.cpp`：状态变更、异步调度、搜索、复制与摘要/HMAC 操作。
 - `src/app/processing_service.cpp`：不依赖 EUI 的输入分析、转换结果组织和单层解码。
 - `src/app/` 自定义控件：`RichTextView`、CSV 视图与虚拟列表。
-- `src/platform/`：系统主题、平台字体和 Windows/macOS 差异实现。
-- CMake FetchContent：使用不可变提交获取 EUI-NEO、pugixml 和 yaml-cpp。
+- `src/platform/`：系统主题、平台字体、原生文件对话框和 Windows/macOS 差异实现。
+- CMake FetchContent：使用不可变提交获取 EUI-NEO、pugixml、yaml-cpp 和 toml++。
 - CPack：生成 macOS DMG 和 Windows Portable ZIP，不生成安装器。
 
 ## 已有证据
@@ -46,6 +46,7 @@ EUI 相关代码限制在 `src/app/` 和 `src/platform/`。升级框架前必须
 - Windows IME、键盘、可访问性和打包必须在 Windows 10/11 原生验证。
 - 10 MB 输入控件的编辑、撤销、选择、内存峰值和 GPU 首屏仍是发布门槛。
 - 发布包只能携带实际使用的字体、图标和完整第三方许可证。
+- 文件访问只能由用户主动打开、拖入或导出触发；不得记录内容、路径或最近文件。
 
 ## 必须继续执行
 

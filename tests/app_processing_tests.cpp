@@ -50,7 +50,7 @@ void test_csv_manual_delimiters_use_original_input() {
 
     app::processing::AnalysisRequest semicolon_request;
     semicolon_request.input = "name;value\nZeus;1\nHera;2";
-    semicolon_request.input_override_index = 4;
+    semicolon_request.input_override_index = 6;
     semicolon_request.csv_delimiter_index = 3;
     const auto semicolon = app::processing::analyze(semicolon_request);
     expect(semicolon.process.ok && semicolon.csv != nullptr,
@@ -68,6 +68,30 @@ void test_input_override() {
     expect(result.process.ok, "YAML override should succeed");
     expect(result.detected == zeus::ContentKind::Yaml,
            "input override should control the detected kind");
+}
+
+void test_toml_analysis() {
+    app::processing::AnalysisRequest request;
+    request.input = "title = \"Zeus\"\n[window]\nwidth = 1200";
+    request.input_override_index = 4;
+    const auto result = app::processing::analyze(request);
+
+    expect(result.process.ok, "TOML override should succeed");
+    expect(result.detected == zeus::ContentKind::Toml,
+           "TOML override should control the detected kind");
+    expect(result.document != nullptr && !result.document->lines().empty(),
+           "TOML should create a highlighted document");
+}
+
+void test_ini_analysis() {
+    app::processing::AnalysisRequest request;
+    request.input = "[window]\nwidth=1200\ntheme=system";
+    request.input_override_index = 5;
+    const auto result = app::processing::analyze(request);
+
+    expect(result.process.ok, "INI override should succeed");
+    expect(result.detected == zeus::ContentKind::Ini,
+           "INI override should control the detected kind");
 }
 
 void test_decode_one_layer() {
@@ -90,6 +114,8 @@ int main() {
     test_csv_analysis();
     test_csv_manual_delimiters_use_original_input();
     test_input_override();
+    test_toml_analysis();
+    test_ini_analysis();
     test_decode_one_layer();
     std::cout << "All app processing tests passed.\n";
     return 0;

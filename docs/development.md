@@ -12,6 +12,9 @@
 - 严格 JSON 格式化及行列错误信息。
 - XML 自动识别、严格解析、格式化、行列错误和 token 高亮；混合内容不注入语义空白，`DOCTYPE`/`ENTITY` 在解析前拒绝。
 - YAML 保守自动识别、规范化、错误行列和 token 高亮；首版采用单文档安全子集，限制 10 MB、128 层和 10 万节点，并拒绝 Directive、Tag、Anchor/Alias。
+- TOML 使用固定版本 toml++ 严格解析、规范化、行列错误、专用高亮和章节折叠，支持 JSON 双向转换；JSON `null` 等无 TOML 等价物会明确失败。
+- INI/Properties 保守识别和格式化，转换 JSON 时所有值保持字符串；重复键直接报错，避免静默覆盖。
+- HTML Entity 与 Hex 支持手动编码和明确特征下的自动解码；纯哈希不按 Hex 自动处理。Unix 时间只对完整 10/13 位数字显示候选操作。
 - JSON → YAML、YAML → JSON 类型安全转换，以及 JSON ↔ XML 转换。JSON → XML 使用固定映射：数组项使用 `<item>`，非法元素键名使用 `<entry key="…">`；XML → JSON 保留根节点，属性使用 `@` 前缀，元素文本使用 `#text`，同名子节点转为数组，混合内容按顺序写入 `#content`。
 - JSON Escape/Unescape 动态操作：普通 JSON 提供 Escape；合法 JSON 字符串内嵌 JSON，或 `{\"key\":...}` 原始转义形式会自动识别、仅反转义一层并格式化。
 - JSON → CSV：对象数组合并字段为表头，缺失值留空；嵌套结构以紧凑 JSON 单元格保存并按 CSV 规则转义，结果直接进入 Table 预览。
@@ -44,6 +47,7 @@
   冲突与常见误判边界；新增或修复检测规则时必须同时补充样例。
 - `Cmd/Ctrl+F` 可直接聚焦底部结果搜索，`Esc` 按“最上层优先”关闭关于窗口、
   下拉列表或摘要/HMAC 面板。
+- 顶部原生文件入口和 GLFW 单文件拖放只读取用户主动选择的 UTF-8 文本；支持 BOM、10 MB 上限和结果导出，不持久化路径或最近文件。
 
 ### 2026-08-13 基准结果
 
@@ -68,6 +72,7 @@ CSV 大数据虚拟滚动、精确搜索定位以及 XML、YAML、摘要/HMAC、
 - EUI-NEO v0.5.3（固定提交 `f2a3b721…`）
 - pugixml v1.15（固定提交 `ee86beb3…`；MIT）
 - yaml-cpp 0.9.0（固定提交 `56e3bb55…`；MIT）
+- toml++ v3.4.0（固定提交 `30172438…`；MIT）
 - macOS：Xcode Command Line Tools
 - Windows：Visual Studio 2022 C++ Desktop Workload
 
@@ -109,7 +114,7 @@ cmake --build --preset dev
 ./build/dev/zeus_tools
 ```
 
-不传 `ZEUS_EUI_NEO_SOURCE_DIR` 时，CMake FetchContent 会下载并锁定到 v0.5.3 对应提交。pugixml 与 yaml-cpp 分别锁定到 v1.15 和 0.9.0。完成依赖下载后，业务核心和运行时处理均不需要网络。
+不传 `ZEUS_EUI_NEO_SOURCE_DIR` 时，CMake FetchContent 会下载并锁定到 v0.5.3 对应提交。pugixml、yaml-cpp 与 toml++ 分别锁定到 v1.15、0.9.0 和 v3.4.0。完成依赖下载后，业务核心和运行时处理均不需要网络。
 
 ## 目录
 

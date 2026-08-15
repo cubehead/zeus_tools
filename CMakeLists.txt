@@ -41,13 +41,26 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(yaml-cpp)
 
+set(TOMLPLUSPLUS_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(TOMLPLUSPLUS_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+FetchContent_Declare(
+    tomlplusplus
+    GIT_REPOSITORY https://github.com/marzer/tomlplusplus.git
+    # v3.4.0; pin the immutable commit rather than the movable tag.
+    GIT_TAG 30172438cee64926dc41fdd9c11fb3ba5b2ba9de
+    GIT_SHALLOW TRUE
+)
+FetchContent_MakeAvailable(tomlplusplus)
+
 if(APPLE AND ZEUS_BUILD_APP)
-    enable_language(OBJC)
+    enable_language(OBJC OBJCXX)
 endif()
 
 add_library(zeus_core
     src/core/crypto_service.cpp
     src/core/csv_document.cpp
+    src/core/developer_tools.cpp
+    src/core/ini_formatter.cpp
     src/core/json_formatter.cpp
     src/core/locale_preference.cpp
     src/core/structured_converter.cpp
@@ -56,12 +69,14 @@ add_library(zeus_core
     src/core/text_document.cpp
     src/core/text_processor.cpp
     src/core/theme_preference.cpp
+    src/core/toml_formatter.cpp
     src/core/xml_formatter.cpp
     src/core/yaml_formatter.cpp
 )
 target_include_directories(zeus_core PUBLIC include)
 target_compile_features(zeus_core PUBLIC cxx_std_17)
-target_link_libraries(zeus_core PUBLIC pugixml::pugixml yaml-cpp::yaml-cpp)
+target_link_libraries(zeus_core PUBLIC
+    pugixml::pugixml yaml-cpp::yaml-cpp tomlplusplus::tomlplusplus)
 
 add_library(zeus_app_processing
     src/app/processing_service.cpp
@@ -126,6 +141,16 @@ if(ZEUS_BUILD_APP)
         message(FATAL_ERROR "Failed to add find-shortcut support to EUI-NEO")
     endif()
 
+    execute_process(
+        COMMAND ${CMAKE_COMMAND}
+                -DSOURCE_DIR=${ZEUS_EUI_SOURCE_ROOT}
+                -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/patch_eui_file_drop.cmake
+        RESULT_VARIABLE ZEUS_EUI_FILE_DROP_PATCH_RESULT
+    )
+    if(NOT ZEUS_EUI_FILE_DROP_PATCH_RESULT EQUAL 0)
+        message(FATAL_ERROR "Failed to add file-drop support to EUI-NEO")
+    endif()
+
     set(ZEUS_APP_SOURCES
         "${ZEUS_EUI_APP_MAIN}"
         src/app/app.cpp
@@ -142,16 +167,19 @@ if(ZEUS_BUILD_APP)
     )
     if(APPLE)
         list(APPEND ZEUS_APP_SOURCES
+            src/platform/file_dialog_macos.mm
             src/platform/system_theme_macos.m
             src/platform/system_ui_font_macos.m
         )
     elseif(WIN32)
         list(APPEND ZEUS_APP_SOURCES
+            src/platform/file_dialog_windows.cpp
             src/platform/system_theme_windows.cpp
             src/platform/system_ui_font_windows.cpp
         )
     else()
         list(APPEND ZEUS_APP_SOURCES
+            src/platform/file_dialog_fallback.cpp
             src/platform/system_theme_fallback.cpp
             src/platform/system_ui_font_fallback.cpp
         )
@@ -181,9 +209,10 @@ if(ZEUS_BUILD_APP)
     endif()
     target_link_libraries(zeus_tools PRIVATE zeus_app_processing)
     if(WIN32)
-        target_link_libraries(zeus_tools PRIVATE Advapi32)
+        target_link_libraries(zeus_tools PRIVATE Advapi32 Comdlg32)
     elseif(APPLE)
-        target_link_libraries(zeus_tools PRIVATE "-framework CoreText" "-framework CoreFoundation")
+        target_link_libraries(zeus_tools PRIVATE
+            "-framework AppKit" "-framework CoreText" "-framework CoreFoundation")
     endif()
     eui_neo_configure_app(zeus_tools)
     target_compile_definitions(zeus_tools PRIVATE

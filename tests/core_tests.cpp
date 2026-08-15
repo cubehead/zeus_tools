@@ -1,10 +1,13 @@
 #include "zeus/json_formatter.h"
 #include "zeus/crypto_service.h"
 #include "zeus/csv_document.h"
+#include "zeus/developer_tools.h"
+#include "zeus/ini_formatter.h"
 #include "zeus/text_document.h"
 #include "zeus/text_selection.h"
 #include "zeus/text_processor.h"
 #include "zeus/structured_converter.h"
+#include "zeus/toml_formatter.h"
 #include "zeus/xml_formatter.h"
 #include "zeus/yaml_formatter.h"
 
@@ -90,6 +93,53 @@ void verify_detection_corpus() {
 
 int main() {
     verify_detection_corpus();
+    const auto toml = zeus::format_toml(
+        "title=\"Zeus Tools\"\n[window]\nwidth=1200\ndark=true");
+    require(toml.ok && toml.value.find("[window]") != std::string::npos,
+            "valid TOML should format");
+    const auto toml_json = zeus::toml_to_json(toml.value);
+    require(toml_json.ok && toml_json.value.find("\"width\": 1200") != std::string::npos,
+            "TOML should convert to typed JSON");
+    const auto json_toml = zeus::json_to_toml(
+        R"({"title":"Zeus","window":{"width":1200,"dark":true},"ports":[80,443]})");
+    require(json_toml.ok && json_toml.value.find("[window]") != std::string::npos &&
+                json_toml.value.find("ports = [ 80, 443 ]") != std::string::npos,
+            "JSON objects should convert to TOML tables and arrays");
+    require(!zeus::json_to_toml(R"({"missing":null})").ok,
+            "JSON null should report its unsupported TOML mapping");
+
+    const auto ini = zeus::format_ini("[window]\nwidth=1200\ntheme: system");
+    require(ini.ok && ini.value.find("width = 1200") != std::string::npos,
+            "INI and Properties assignments should normalize conservatively");
+    const auto ini_json = zeus::ini_to_json(ini.value);
+    require(ini_json.ok && ini_json.value.find("\"width\": \"1200\"") != std::string::npos,
+            "INI conversion should preserve values as JSON strings");
+    require(!zeus::format_ini("name=one\nname=two").ok,
+            "duplicate INI keys should fail instead of losing data");
+
+    require(zeus::encode_html_entities("<Zeus & Tools>") ==
+                "&lt;Zeus &amp; Tools&gt;",
+            "HTML entity encoding should escape markup characters");
+    const auto html = zeus::decode_html_entities("Zeus &amp; &#x4F60;&#22909;");
+    require(html.ok && html.value == "Zeus & 你好",
+            "HTML entity decoding should support named and numeric Unicode entities");
+    require(!zeus::decode_html_entities("plain text").ok,
+            "HTML entity decoding should reject inputs with no entity");
+
+    require(zeus::encode_hex("Zeus") == "5a657573",
+            "Hex encoding should use UTF-8 bytes");
+    const auto hex = zeus::decode_hex("0x5a 65:75-73");
+    require(hex.ok && hex.value == "Zeus",
+            "Hex decoding should accept explicit prefixes and byte separators");
+    require(!zeus::looks_like_hex_encoding("deadbeefcafebabe"),
+            "plain hash-like text should not be automatically decoded as Hex");
+
+    const auto timestamp = zeus::format_unix_timestamp("1700000000");
+    require(timestamp.ok && timestamp.value.find("UTC: 2023-11-14T22:13:20.000Z") != std::string::npos,
+            "Unix seconds should convert to a stable UTC timestamp");
+    require(zeus::looks_like_unix_timestamp("1700000000000") &&
+                !zeus::looks_like_unix_timestamp("order-1700000000"),
+            "timestamp suggestions should require exact 10 or 13 digit input");
     require(zeus::compute_digest("", zeus::DigestAlgorithm::Md5).hex ==
                 "d41d8cd98f00b204e9800998ecf8427e",
             "MD5 should match its standard empty-string vector");

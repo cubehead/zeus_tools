@@ -44,6 +44,7 @@ struct ResultState {
     std::string decode_chain;
     bool can_continue_decode = false;
     zeus::ContentKind detected_input_kind = zeus::ContentKind::Text;
+    zeus::ContentKind output_kind = zeus::ContentKind::Text;
 };
 
 struct CsvState {

@@ -30,10 +30,11 @@ struct OpenSourceProject {
     const char* url;
 };
 
-constexpr std::array<OpenSourceProject, 5> kOpenSourceProjects{{
+constexpr std::array<OpenSourceProject, 6> kOpenSourceProjects{{
     {"EUI-NEO", "https://github.com/sudoevolve/EUI-NEO"},
     {"pugixml", "https://github.com/zeux/pugixml"},
     {"yaml-cpp", "https://github.com/jbeder/yaml-cpp"},
+    {"toml++", "https://github.com/marzer/tomlplusplus"},
     {"Font Awesome", "https://fontawesome.com"},
     {"Primer Octicons", "https://github.com/primer/octicons"},
 }};

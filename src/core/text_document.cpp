@@ -65,6 +65,22 @@ std::vector<FoldRegion> json_fold_regions(const std::vector<TextLine>& lines) {
     return regions;
 }
 
+std::vector<FoldRegion> toml_fold_regions(const std::vector<TextLine>& lines) {
+    std::vector<std::size_t> headers;
+    for (std::size_t line = 0; line < lines.size(); ++line) {
+        const std::string& text = lines[line].text;
+        const std::size_t first = text.find_first_not_of(" \t");
+        if (first != std::string::npos && text[first] == '[') headers.push_back(line);
+    }
+    std::vector<FoldRegion> regions;
+    for (std::size_t index = 0; index < headers.size(); ++index) {
+        const std::size_t end = index + 1 < headers.size()
+            ? headers[index + 1] - 1 : lines.size() - 1;
+        if (end > headers[index]) regions.push_back({headers[index], end});
+    }
+    return regions;
+}
+
 std::vector<FoldRegion> xml_fold_regions(const std::vector<TextLine>& lines) {
     struct OpenTag { std::string name; std::size_t line = 0; };
     std::vector<OpenTag> stack;
@@ -407,6 +423,77 @@ HighlightedDocument HighlightedDocument::yaml(std::string text) {
         line_start = line_end + 1;
     }
     document.fold_regions_ = yaml_fold_regions(document.lines_);
+    return document;
+}
+
+HighlightedDocument HighlightedDocument::toml(std::string text) {
+    HighlightedDocument document;
+    document.text_ = std::move(text);
+    std::size_t line_start = 0;
+    while (line_start <= document.text_.size()) {
+        document.line_starts_.push_back(line_start);
+        const std::size_t line_end = document.text_.find('\n', line_start);
+        const std::size_t end = line_end == std::string::npos ? document.text_.size() : line_end;
+        TextLine line;
+        line.text = document.text_.substr(line_start, end - line_start);
+
+        const std::size_t equals = line.text.find('=');
+        std::size_t index = 0;
+        while (index < line.text.size()) {
+            const unsigned char ch = static_cast<unsigned char>(line.text[index]);
+            if (std::isspace(ch)) {
+                const std::size_t start = index++;
+                while (index < line.text.size() &&
+                       std::isspace(static_cast<unsigned char>(line.text[index]))) ++index;
+                push_span(line, start, index - start, TokenKind::Plain);
+            } else if (line.text[index] == '#') {
+                push_span(line, index, line.text.size() - index, TokenKind::Comment);
+                index = line.text.size();
+            } else if (line.text[index] == '"' || line.text[index] == '\'') {
+                const char quote = line.text[index];
+                const bool triple = index + 2 < line.text.size() &&
+                    line.text[index + 1] == quote && line.text[index + 2] == quote;
+                const std::size_t start = index;
+                index += triple ? 3 : 1;
+                bool escaped = false;
+                while (index < line.text.size()) {
+                    if (triple && index + 2 < line.text.size() &&
+                        line.text[index] == quote && line.text[index + 1] == quote &&
+                        line.text[index + 2] == quote) {
+                        index += 3;
+                        break;
+                    }
+                    const char current = line.text[index++];
+                    if (quote == '"' && escaped) escaped = false;
+                    else if (quote == '"' && current == '\\') escaped = true;
+                    else if (!triple && current == quote) break;
+                }
+                push_span(line, start, index - start, TokenKind::String);
+            } else if (std::string("[]=,.{}").find(line.text[index]) != std::string::npos) {
+                push_span(line, index++, 1, TokenKind::Punctuation);
+            } else {
+                const std::size_t start = index++;
+                while (index < line.text.size() &&
+                       !std::isspace(static_cast<unsigned char>(line.text[index])) &&
+                       std::string("[]=,.{}#\"'").find(line.text[index]) == std::string::npos) ++index;
+                const std::string token = line.text.substr(start, index - start);
+                const std::string lowered = lower_ascii(token);
+                TokenKind kind = equals != std::string::npos && start < equals
+                    ? TokenKind::Key : TokenKind::String;
+                if (lowered == "true" || lowered == "false") kind = TokenKind::Boolean;
+                else {
+                    char* number_end = nullptr;
+                    std::strtod(token.c_str(), &number_end);
+                    if (number_end != token.c_str() && *number_end == '\0') kind = TokenKind::Number;
+                }
+                push_span(line, start, index - start, kind);
+            }
+        }
+        document.lines_.push_back(std::move(line));
+        if (line_end == std::string::npos) break;
+        line_start = line_end + 1;
+    }
+    document.fold_regions_ = toml_fold_regions(document.lines_);
     return document;
 }
 

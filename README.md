@@ -43,10 +43,11 @@ Windows uses a portable package and does not include an NSIS/MSI installer.
 
 ## Highlights
 
-- Automatically detects JSON, XML, YAML, CSV, JWT, Base64 and URL-encoded text.
-- Formats JSON, XML and YAML with read-only syntax highlighting.
+- Automatically detects JSON, XML, YAML, TOML, INI/Properties, CSV, JWT and
+  common encoded text.
+- Formats JSON, XML, YAML, TOML and INI/Properties with read-only syntax highlighting.
 - Folds nested JSON containers, XML elements and indented YAML blocks.
-- Converts JSON ↔ YAML, JSON ↔ XML and JSON → CSV.
+- Converts JSON ↔ YAML/XML/TOML, TOML/INI → JSON and JSON → CSV.
 - Escapes/unescapes JSON and decodes Base64 or URL encoding one layer at a
   time, with an explicit continuation action for nested content.
 - Shows CSV in a virtualized table with delimiter and header controls.
@@ -54,6 +55,8 @@ Windows uses a portable package and does not include an NSIS/MSI installer.
 - Resizes the input and result workspaces with a bounded horizontal splitter.
 - Calculates MD5, SHA-1, SHA-256, SHA-512 and HMAC locally.
 - Supports system/light/dark themes and ten interface languages.
+- Opens or drops UTF-8 files and exports the current result without keeping a
+  recent-file or content history.
 - Never uploads or saves the text being processed.
 
 ## Screenshots
@@ -84,13 +87,17 @@ font rendering may differ on Windows.
 
 | Input or tool | Automatic/default behavior | Additional actions |
 | --- | --- | --- |
-| JSON | Pretty format, syntax highlight and structural folding | Minify, escape, YAML/XML/CSV conversion |
+| JSON | Pretty format, syntax highlight and structural folding | Minify, escape, YAML/XML/TOML/CSV conversion |
 | Escaped JSON | Detect a JSON string or escaped object | Unescape exactly one layer |
 | XML | Strict parse, safe format, highlight and element folding | Convert to JSON; reject DTD/entities |
 | YAML | Conservative safe-subset parse, format and indentation folding | Convert to JSON |
+| TOML | Strict parse, format, highlight and section folding | Convert to/from JSON |
+| INI/Properties | Conservative assignment parsing and formatting | Convert to JSON without guessing value types |
 | CSV | Detect comma, Tab, semicolon or pipe | Override delimiter/header, virtual table, TSV copy |
 | Base64 | Decode one high-confidence layer | Standard and URL-safe input; binary-safe preview |
 | URL encoding | Decode one high-confidence layer | Encode arbitrary UTF-8 text |
+| HTML Entity / Hex | Decode only explicit encoded input | Encode arbitrary UTF-8 text |
+| Unix time | Suggest conversion for exact 10/13 digit input | Show seconds, milliseconds, UTC and local time |
 | JWT | Decode and format header/payload | Search/copy claims; signature is not verified |
 | Text | Read-only result and search | Upper/lower case, Base64/URL encode |
 | Digest/HMAC | Manual local calculation | Input/result source, UTF-8/Hex/Base64 keys, masked key, Hex/Base64 output |
@@ -135,6 +142,7 @@ The project intentionally does not create an NSIS/MSI installer.
 | [EUI-NEO](https://github.com/sudoevolve/EUI-NEO) | Cross-platform desktop UI and rendering framework |
 | [pugixml](https://github.com/zeux/pugixml) | Strict XML parsing and serialization |
 | [yaml-cpp](https://github.com/jbeder/yaml-cpp) | YAML parsing, formatting and conversion |
+| [toml++](https://github.com/marzer/tomlplusplus) | TOML parsing, formatting and JSON conversion |
 | [Font Awesome Free](https://fontawesome.com/) | General interface icons |
 | [Primer Octicons](https://github.com/primer/octicons) | GitHub project-link mark |
 
@@ -150,7 +158,7 @@ and the runtime components included through EUI-NEO.
 - macOS: Xcode Command Line Tools
 - Windows: Visual Studio 2022 with Desktop development with C++
 
-Dependencies are pinned by CMake FetchContent: EUI-NEO, pugixml and yaml-cpp.
+Dependencies are pinned by CMake FetchContent: EUI-NEO, pugixml, yaml-cpp and toml++.
 The first configure requires network access unless local dependency sources are
 provided; the built application itself does not require a network connection.
 

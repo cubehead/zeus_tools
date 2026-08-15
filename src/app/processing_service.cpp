@@ -31,6 +31,16 @@ zeus::ProcessingMode action_mode_for(
     case 14: return zeus::ProcessingMode::JsonUnescape;
     case 15: return zeus::ProcessingMode::JsonToCsv;
     case 16: return zeus::ProcessingMode::XmlToJson;
+    case 17: return zeus::ProcessingMode::Toml;
+    case 18: return zeus::ProcessingMode::TomlToJson;
+    case 19: return zeus::ProcessingMode::JsonToToml;
+    case 20: return zeus::ProcessingMode::HtmlEntityEncode;
+    case 21: return zeus::ProcessingMode::HexEncode;
+    case 22: return zeus::ProcessingMode::Timestamp;
+    case 23: return zeus::ProcessingMode::HtmlEntityDecode;
+    case 24: return zeus::ProcessingMode::HexDecode;
+    case 25: return zeus::ProcessingMode::Ini;
+    case 26: return zeus::ProcessingMode::IniToJson;
     default: return zeus::ProcessingMode::Auto;
     }
 }
@@ -40,10 +50,12 @@ zeus::ProcessingMode input_override_mode_for(int override_index) {
     case 1: return zeus::ProcessingMode::Json;
     case 2: return zeus::ProcessingMode::Xml;
     case 3: return zeus::ProcessingMode::Yaml;
-    case 4: return zeus::ProcessingMode::Csv;
-    case 5: return zeus::ProcessingMode::Base64;
-    case 6: return zeus::ProcessingMode::UrlDecode;
-    case 7: return zeus::ProcessingMode::Text;
+    case 4: return zeus::ProcessingMode::Toml;
+    case 5: return zeus::ProcessingMode::Ini;
+    case 6: return zeus::ProcessingMode::Csv;
+    case 7: return zeus::ProcessingMode::Base64;
+    case 8: return zeus::ProcessingMode::UrlDecode;
+    case 9: return zeus::ProcessingMode::Text;
     default: return zeus::ProcessingMode::Auto;
     }
 }
@@ -55,10 +67,12 @@ zeus::ContentKind input_override_kind_for(
     case 1: return zeus::ContentKind::Json;
     case 2: return zeus::ContentKind::Xml;
     case 3: return zeus::ContentKind::Yaml;
-    case 4: return zeus::ContentKind::Csv;
-    case 5: return zeus::ContentKind::Base64;
-    case 6: return zeus::ContentKind::UrlEncoded;
-    case 7: return zeus::ContentKind::Text;
+    case 4: return zeus::ContentKind::Toml;
+    case 5: return zeus::ContentKind::Ini;
+    case 6: return zeus::ContentKind::Csv;
+    case 7: return zeus::ContentKind::Base64;
+    case 8: return zeus::ContentKind::UrlEncoded;
+    case 9: return zeus::ContentKind::Text;
     default: return detected_kind;
     }
 }
@@ -83,6 +97,14 @@ std::shared_ptr<zeus::HighlightedDocument> make_document(
     if (result.detected == zeus::ContentKind::Yaml) {
         return std::make_shared<zeus::HighlightedDocument>(
             zeus::HighlightedDocument::yaml(display));
+    }
+    if (result.detected == zeus::ContentKind::Toml) {
+        return std::make_shared<zeus::HighlightedDocument>(
+            zeus::HighlightedDocument::toml(display));
+    }
+    if (result.detected == zeus::ContentKind::Ini) {
+        return std::make_shared<zeus::HighlightedDocument>(
+            zeus::HighlightedDocument::toml(display));
     }
     return std::make_shared<zeus::HighlightedDocument>(
         result.structured ? zeus::HighlightedDocument::json(display)

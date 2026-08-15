@@ -37,6 +37,9 @@ void analyze_input(bool debounce = false);
 void continue_decode_one_layer();
 void move_match(int direction);
 void copy_result(bool selection_only);
+void open_input_file();
+void load_input_file(const std::string& path);
+void export_result();
 void compute_crypto_output(zeus::DigestAlgorithm algorithm);
 
 } // namespace app::controller

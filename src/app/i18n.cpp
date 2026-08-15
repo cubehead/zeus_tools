@@ -37,6 +37,9 @@ const std::array<Translation, static_cast<std::size_t>(Text::Count)> translation
     {"URL 编码", "URL 編碼", "URL Encode", "URL エンコード", "URL 인코딩", "Codificar URL", "Encoder URL", "URL kodieren", "Codificar URL", "Кодировать URL"},
     {"大写", "大寫", "Upper", "大文字", "대문자", "Mayúsculas", "Majuscules", "Groß", "Maiúsculas", "Верхний регистр"},
     {"小写", "小寫", "Lower", "小文字", "소문자", "Minúsculas", "Minuscules", "Klein", "Minúsculas", "Нижний регистр"},
+    {"HTML 编码", "HTML 編碼", "HTML Encode", "HTML エンコード", "HTML 인코딩", "Codificar HTML", "Encoder HTML", "HTML kodieren", "Codificar HTML", "Кодировать HTML"},
+    {"Hex 编码", "Hex 編碼", "Hex Encode", "Hex エンコード", "Hex 인코딩", "Codificar Hex", "Encoder Hex", "Hex kodieren", "Codificar Hex", "Кодировать Hex"},
+    {"时间", "時間", "Time", "時刻", "시간", "Tiempo", "Heure", "Zeit", "Hora", "Время"},
     {"摘要", "摘要", "Digest", "ダイジェスト", "다이제스트", "Resumen", "Empreinte", "Hash", "Resumo", "Хеш"},
     {"HMAC", "HMAC", "HMAC", "HMAC", "HMAC", "HMAC", "HMAC", "HMAC", "HMAC", "HMAC"},
     {"HMAC 密钥（仅内存）", "HMAC 金鑰（僅記憶體）", "HMAC key (memory only)", "HMAC キー（メモリのみ）", "HMAC 키(메모리 전용)", "Clave HMAC (solo memoria)", "Clé HMAC (mémoire uniquement)", "HMAC-Schlüssel (nur Speicher)", "Chave HMAC (somente memória)", "Ключ HMAC (только в памяти)"},
@@ -65,6 +68,8 @@ const std::array<Translation, static_cast<std::size_t>(Text::Count)> translation
     {"感谢这些优秀的开源项目让 Zeus Tools 成为可能。", "感謝這些優秀的開源專案讓 Zeus Tools 成為可能。", "Zeus Tools is made possible by these open-source projects.", "これらのオープンソースプロジェクトに感謝します。", "Zeus Tools를 가능하게 한 오픈 소스 프로젝트에 감사드립니다.", "Zeus Tools es posible gracias a estos proyectos de código abierto.", "Zeus Tools existe grâce à ces projets open source.", "Diese Open-Source-Projekte machen Zeus Tools möglich.", "O Zeus Tools é possível graças a estes projetos de código aberto.", "Zeus Tools создан благодаря этим проектам с открытым исходным кодом."},
     {"项目主页", "專案首頁", "Project website", "プロジェクトサイト", "프로젝트 웹사이트", "Sitio del proyecto", "Site du projet", "Projektwebsite", "Site do projeto", "Сайт проекта"},
     {"MIT 许可证", "MIT 授權條款", "MIT License", "MIT ライセンス", "MIT 라이선스", "Licencia MIT", "Licence MIT", "MIT-Lizenz", "Licença MIT", "Лицензия MIT"},
+    {"打开文件", "開啟檔案", "Open file", "ファイルを開く", "파일 열기", "Abrir archivo", "Ouvrir un fichier", "Datei öffnen", "Abrir arquivo", "Открыть файл"},
+    {"导出结果", "匯出結果", "Export result", "結果を書き出す", "결과 내보내기", "Exportar resultado", "Exporter le résultat", "Ergebnis exportieren", "Exportar resultado", "Экспортировать результат"},
     {"关闭", "關閉", "Close", "閉じる", "닫기", "Cerrar", "Fermer", "Schließen", "Fechar", "Закрыть"},
 }};
 

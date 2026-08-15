@@ -14,6 +14,14 @@ semantic versioning after the first stable release.
   invalid, ambiguous and false-positive inputs.
 - Added `Cmd/Ctrl+F` to focus result search and `Esc` to dismiss the topmost
   open dialog, dropdown or crypto panel.
+- Added TOML detection, formatting, highlighting, section folding and JSON
+  conversion in both directions.
+- Added conservative INI/Properties detection, formatting and JSON conversion
+  that preserves all values as strings and rejects duplicate keys.
+- Added HTML Entity and Hex encode/decode tools plus guarded Unix timestamp
+  conversion for exact 10/13 digit candidates.
+- Added native file open/export actions and single-file drag-and-drop with a
+  10 MB text boundary, UTF-8 BOM handling and no recent-file history.
 
 ### Fixed
 

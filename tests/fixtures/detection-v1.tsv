@@ -8,11 +8,17 @@ xml-document	XML	true	<?xml version="1.0"?><root><item id="1"/></root>
 xml-invalid-structure	XML	false	<root><item></root>
 yaml-mapping	YAML	true	name: Zeus Tools\nenabled: true\nitems:\n  - json\n  - xml
 yaml-sequence	YAML	true	- name: Zeus\n  active: true\n- name: Tools\n  active: false
+toml-document	TOML	true	title = "Zeus Tools"\n[window]\nwidth = 1200\ndark = true
+ini-document	INI	true	[window]\nwidth=1200\ntheme=system
+properties-document	INI	true	app.name=Zeus Tools\napp.offline=true
 jwt	JWT	true	eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIn0.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ
 escaped-json	JSON String	true	{\"name\":\"Zeus\",\"enabled\":true}
 base64-json	Base64	true	eyJuYW1lIjoiWmV1cyBUb29scyIsImFjdGl2ZSI6dHJ1ZX0=
 base64-text	Base64	true	SGVsbG8gV29ybGQh
 url-encoded	URL Encode	true	message%3D%E4%BD%A0%E5%A5%BD%26active%3Dtrue
+html-entity	HTML Entity	true	Zeus &amp; Tools
+hex-prefixed	Hex	true	0x48656c6c6f
+hex-separated	Hex	true	48 65 6c 6c 6f
 csv-comma	CSV	true	name,age\nAlice,30\nBob,28
 csv-semicolon	CSV	true	name;age\nAlice;30\nBob;28
 csv-tab	CSV	true	name\tage\nAlice\t30\nBob\t28
