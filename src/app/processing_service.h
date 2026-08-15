@@ -12,9 +12,14 @@
 namespace app::processing {
 
 inline constexpr std::size_t kRecommendedMaxInputBytes = 10U * 1024U * 1024U;
+inline constexpr std::size_t kInteractiveEditorMaxBytes = 1U * 1024U * 1024U;
 
 constexpr bool exceeds_recommended_input_size(std::size_t bytes) noexcept {
     return bytes > kRecommendedMaxInputBytes;
+}
+
+constexpr bool requires_lightweight_input_preview(std::size_t bytes) noexcept {
+    return bytes > kInteractiveEditorMaxBytes;
 }
 
 struct AnalysisRequest {

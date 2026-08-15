@@ -31,6 +31,8 @@ This checklist is intentionally manual. The repository does not use GitHub CI.
 
 - [ ] 10 MB input paste, edit, undo, selection, search and clear complete without
       a crash or prolonged UI freeze.
+- [x] macOS exact 10 MiB single-line JSON reaches a responsive lightweight preview
+      and formatted result without measuring the complete line in either UI surface.
 - [ ] Peak memory is recorded for 10 MB JSON and CSV.
 - [ ] macOS IME/emoji/combining characters pass.
 - [ ] Windows 10 and Windows 11 IME/emoji/combining characters pass.

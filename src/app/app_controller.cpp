@@ -27,6 +27,7 @@
 #include <fstream>
 #include <memory>
 #include <string>
+#include <string_view>
 #include <thread>
 #include <utility>
 #include <vector>
@@ -96,6 +97,13 @@ void initialize_documentation_scenario() {
         app_state.about_dialog_open = true;
     } else if (scenario == "oversized") {
         app_state.input_text.assign(processing::kRecommendedMaxInputBytes + 1, 'x');
+    } else if (scenario == "large-json") {
+        constexpr std::string_view prefix = "{\"payload\":\"";
+        constexpr std::string_view suffix = "\"}";
+        app_state.input_text.assign(prefix);
+        app_state.input_text.append(
+            processing::kRecommendedMaxInputBytes - prefix.size() - suffix.size(), 'x');
+        app_state.input_text.append(suffix);
     }
 #endif
 }
@@ -507,6 +515,10 @@ bool oversized_input_paused() {
 
 bool oversized_input() {
     return processing::exceeds_recommended_input_size(app_state.input_text.size());
+}
+
+bool lightweight_input_preview() {
+    return processing::requires_lightweight_input_preview(app_state.input_text.size());
 }
 
 void process_oversized_input() {

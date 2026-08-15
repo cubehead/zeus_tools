@@ -151,6 +151,12 @@ void test_recommended_input_size_boundary() {
     expect(app::processing::exceeds_recommended_input_size(
                app::processing::kRecommendedMaxInputBytes + 1),
            "input above 10 MiB should require explicit desktop approval");
+    expect(!app::processing::requires_lightweight_input_preview(
+               app::processing::kInteractiveEditorMaxBytes),
+           "exactly 1 MiB should remain in the interactive input editor");
+    expect(app::processing::requires_lightweight_input_preview(
+               app::processing::kInteractiveEditorMaxBytes + 1),
+           "input above 1 MiB should use the lightweight input preview");
 }
 
 void test_processing_registry() {

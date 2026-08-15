@@ -36,6 +36,7 @@ void update_search();
 void analyze_input(bool debounce = false);
 bool oversized_input_paused();
 bool oversized_input();
+bool lightweight_input_preview();
 void process_oversized_input();
 void continue_decode_one_layer();
 void move_match(int direction);

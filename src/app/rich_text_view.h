@@ -144,8 +144,11 @@ public:
                 const auto& line = document->lines()[line_index];
                 const FoldRegion* fold_region = document->fold_region_at(line_index);
                 const bool collapsed = folds != nullptr && folds->is_collapsed(line_index);
+                const std::size_t rendered_length = std::min(
+                    line.text.size(), max_rendered_line_bytes_);
+                const std::string rendered_text = line.text.substr(0, rendered_length);
                 const auto metrics = core::TextPrimitive::measureTextMetrics(
-                    line.text, app::fonts::code(), 14.0f, 400);
+                    rendered_text, app::fonts::code(), 14.0f, 400);
                 if (search_matches != nullptr && !search_matches->empty()) {
                     const auto first = std::lower_bound(
                         search_matches->begin(), search_matches->end(), line_index,
@@ -157,9 +160,9 @@ public:
                          ++it) {
                         const std::size_t match_index = static_cast<std::size_t>(
                             std::distance(search_matches->begin(), it));
-                        const std::size_t start = std::min(it->column, line.text.size());
+                        const std::size_t start = std::min(it->column, rendered_length);
                         const std::size_t end = std::min(
-                            line.text.size(), start + it->length);
+                            rendered_length, start + it->length);
                         if (start >= end) continue;
                         const float match_start_x = caretX(metrics, start);
                         const float match_end_x = caretX(metrics, end);
@@ -177,7 +180,9 @@ public:
                     }
                 }
 
-                const auto columns = selection->columns_for_line(*document, line_index);
+                auto columns = selection->columns_for_line(*document, line_index);
+                columns.first = std::min(columns.first, rendered_length);
+                columns.second = std::min(columns.second, rendered_length);
                 const bool newline = selection->includes_line_break_after(*document, line_index);
                 if (columns.first < columns.second || newline) {
                     const float selected_start_x = caretX(metrics, columns.first);
@@ -233,15 +238,18 @@ public:
 
                 for (std::size_t span_index = 0; span_index < line.spans.size(); ++span_index) {
                     const auto& span = line.spans[span_index];
+                    if (span.start >= rendered_length) break;
+                    const std::size_t span_length = std::min(
+                        span.length, rendered_length - span.start);
                     const float span_start_x = caretX(metrics, span.start);
-                    const float span_end_x = caretX(metrics, span.start + span.length);
+                    const float span_end_x = caretX(metrics, span.start + span_length);
                     row_ui.text(row_id + ".token." + std::to_string(span_index))
                         .position(text_x_ + span_start_x, 0.0f)
                         .size(std::max(
                                   1.0f,
                                   span_end_x - span_start_x),
                               height)
-                        .text(line.text.substr(span.start, span.length))
+                        .text(line.text.substr(span.start, span_length))
                         .fontFamily(app::fonts::code())
                         .fontSize(14.0f)
                         .verticalAlign(eui::VerticalAlign::Center)
@@ -249,7 +257,7 @@ public:
                         .build();
                 }
                 if (collapsed && fold_region != nullptr) {
-                    const float line_end_x = caretX(metrics, line.text.size());
+                    const float line_end_x = caretX(metrics, rendered_length);
                     row_ui.text(row_id + ".fold.summary")
                         .position(text_x_ + line_end_x + 9.0f, 0.0f)
                         .size(std::max(80.0f, width - text_x_ - line_end_x - 12.0f), height)
@@ -401,6 +409,7 @@ public:
 
 private:
     static constexpr float text_x_ = 68.0f;
+    static constexpr std::size_t max_rendered_line_bytes_ = 16U * 1024U;
 
     static float caretX(
         const core::TextPrimitive::TextMetrics& metrics,
@@ -416,8 +425,10 @@ private:
     }
 
     static std::size_t byteOffsetAtX(const std::string& value, float x) {
+        const std::string rendered = value.substr(
+            0, std::min(value.size(), max_rendered_line_bytes_));
         const auto metrics = core::TextPrimitive::measureTextMetrics(
-            value, app::fonts::code(), 14.0f, 400);
+            rendered, app::fonts::code(), 14.0f, 400);
         const std::size_t count = std::min(
             metrics.byteIndices.size(), metrics.caretX.size());
         if (count == 0) return 0;

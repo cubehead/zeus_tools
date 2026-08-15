@@ -28,7 +28,7 @@ void build_input_panel(eui::Ui& ui, const ViewContext& context) {
     const float header_height = context.header_height;
     const float content_width = context.content_width;
     const float input_height = context.input_height;
-    if (oversized_input()) {
+    if (lightweight_input_preview()) {
         const float input_y = margin + header_height;
         ui.rect("input.oversized.background")
             .position(margin, input_y)
@@ -40,7 +40,9 @@ void build_input_panel(eui::Ui& ui, const ViewContext& context) {
         ui.text("input.oversized.message")
             .position(margin + 14.0f, input_y + 12.0f)
             .size(content_width - 28.0f, 28.0f)
-            .text(std::string(tr(i18n::Text::InputTooLarge)) + " · " +
+            .text(std::string(tr(oversized_input()
+                      ? i18n::Text::InputTooLarge
+                      : i18n::Text::LargeInputPreview)) + " · " +
                   std::to_string(app_state.input_text.size()) + " " +
                   tr(i18n::Text::Bytes))
             .fontFamily(fonts::ui())

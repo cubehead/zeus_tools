@@ -57,6 +57,10 @@ semantic versioning after the first stable release.
 - Avoided copying the complete read-only document before clipboard copy or export.
 - Paused automatic processing above 10 MiB, replacing the expensive editable input
   surface with a lightweight size notice and an explicit "Process anyway" action.
+- Kept 1-10 MiB desktop input responsive with a lightweight source preview while
+  background processing and full-result copy/export continue to use all bytes.
+- Bounded rich-text measurement and drawing for pathological multi-megabyte lines;
+  the underlying document, search model and clipboard/export content remain complete.
 - Preserved source content kinds across format conversions, including JSON-to-CSV
   table presentation, instead of overwriting them with the output kind.
 - Kept the common Base64 Encode action as encoding even when the source already
