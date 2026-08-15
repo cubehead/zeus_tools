@@ -46,8 +46,8 @@ Windows。
 - 格式化 JSON、XML、YAML、TOML 和 INI/Properties，并以只读方式显示语法高亮。
 - 支持折叠嵌套的 JSON 容器、XML 元素和按缩进划分的 YAML 块。
 - 支持 JSON ↔ YAML/XML/TOML、TOML/INI → JSON 和 JSON → CSV 转换。
-- 支持 JSON 转义/反转义；Base64 或 URL 编码每次只解码一层，并可通过明确的
-  继续操作手动处理嵌套内容。
+- 支持 JSON 与 Unicode 转义/反转义；Base64 或 URL 编码每次只解码一层，
+  并可通过明确的继续操作手动处理嵌套内容。
 - 使用虚拟化表格显示 CSV，支持分隔符和表头设置。
 - 可搜索文本和 CSV 单元格，支持区分大小写和正则表达式模式。
 - 可拖动水平分隔条调整输入区和结果区，且保留合理的最小显示比例。
@@ -94,6 +94,7 @@ Windows。
 | Base64 | 高置信度时解码一层 | 支持标准和 URL 安全输入；二进制安全预览 |
 | URL 编码 | 高置信度时解码一层 | 编码任意 UTF-8 文本 |
 | HTML Entity / Hex | 只自动解码具有明确特征的内容 | 编码任意 UTF-8 文本 |
+| Unicode Escape | 每次解码一层合法的 `\uXXXX` 序列 | 转义 UTF-8，并正确生成 emoji 代理对 |
 | Unix 时间 | 对精确的 10/13 位数字提供候选操作 | 显示秒、毫秒、UTC 和本地时间 |
 | JWT | 解码并格式化 Header/Payload | 搜索/复制声明；不验证签名 |
 | 文本 | 只读结果和搜索 | 大小写转换、Base64/URL 编码 |

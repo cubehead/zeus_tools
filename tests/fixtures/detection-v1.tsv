@@ -17,6 +17,7 @@ base64-json	Base64	true	eyJuYW1lIjoiWmV1cyBUb29scyIsImFjdGl2ZSI6dHJ1ZX0=
 base64-text	Base64	true	SGVsbG8gV29ybGQh
 url-encoded	URL Encode	true	message%3D%E4%BD%A0%E5%A5%BD%26active%3Dtrue
 html-entity	HTML Entity	true	Zeus &amp; Tools
+unicode-escaped	Unicode Escape	true	Hello \u4F60\u597D \uD83E\uDDEA
 hex-prefixed	Hex	true	0x48656c6c6f
 hex-separated	Hex	true	48 65 6c 6c 6f
 csv-comma	CSV	true	name,age\nAlice,30\nBob,28

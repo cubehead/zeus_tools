@@ -30,38 +30,48 @@ std::string trim_ascii(const std::string& value) {
     return first < last ? std::string(first, last) : std::string{};
 }
 
+bool read_utf8_codepoint(
+    const std::string& value,
+    std::size_t& index,
+    std::uint32_t& codepoint) {
+    if (index >= value.size()) return false;
+    const auto lead = static_cast<unsigned char>(value[index]);
+    std::size_t continuation = 0;
+    codepoint = 0;
+    if (lead <= 0x7FU) {
+        codepoint = lead;
+    } else if ((lead & 0xE0U) == 0xC0U) {
+        continuation = 1;
+        codepoint = lead & 0x1FU;
+        if (codepoint < 2) return false;
+    } else if ((lead & 0xF0U) == 0xE0U) {
+        continuation = 2;
+        codepoint = lead & 0x0FU;
+    } else if ((lead & 0xF8U) == 0xF0U && lead <= 0xF4U) {
+        continuation = 3;
+        codepoint = lead & 0x07U;
+    } else {
+        return false;
+    }
+    if (index + continuation >= value.size()) return false;
+    for (std::size_t j = 1; j <= continuation; ++j) {
+        const auto next = static_cast<unsigned char>(value[index + j]);
+        if ((next & 0xC0U) != 0x80U) return false;
+        codepoint = (codepoint << 6U) | (next & 0x3FU);
+    }
+    if ((continuation == 2 && codepoint < 0x800U) ||
+        (continuation == 3 && codepoint < 0x10000U) ||
+        (codepoint >= 0xD800U && codepoint <= 0xDFFFU) || codepoint > 0x10FFFFU) {
+        return false;
+    }
+    index += continuation + 1;
+    return true;
+}
+
 bool is_valid_utf8(const std::string& value) {
-    for (std::size_t i = 0; i < value.size();) {
-        const auto lead = static_cast<unsigned char>(value[i]);
-        std::size_t continuation = 0;
+    for (std::size_t index = 0; index < value.size();) {
         std::uint32_t codepoint = 0;
-        if (lead <= 0x7FU) {
-            codepoint = lead;
-        } else if ((lead & 0xE0U) == 0xC0U) {
-            continuation = 1;
-            codepoint = lead & 0x1FU;
-            if (codepoint < 2) return false;
-        } else if ((lead & 0xF0U) == 0xE0U) {
-            continuation = 2;
-            codepoint = lead & 0x0FU;
-        } else if ((lead & 0xF8U) == 0xF0U && lead <= 0xF4U) {
-            continuation = 3;
-            codepoint = lead & 0x07U;
-        } else {
-            return false;
-        }
-        if (i + continuation >= value.size()) return false;
-        for (std::size_t j = 1; j <= continuation; ++j) {
-            const auto next = static_cast<unsigned char>(value[i + j]);
-            if ((next & 0xC0U) != 0x80U) return false;
-            codepoint = (codepoint << 6U) | (next & 0x3FU);
-        }
-        if ((continuation == 2 && codepoint < 0x800U) ||
-            (continuation == 3 && codepoint < 0x10000U) ||
-            (codepoint >= 0xD800U && codepoint <= 0xDFFFU) || codepoint > 0x10FFFFU) {
-            return false;
-        }
-        i += continuation + 1;
+        if (!read_utf8_codepoint(value, index, codepoint)) return false;
     }
     return true;
 }
@@ -179,6 +189,123 @@ std::string encode_url(const std::string& input) {
         }
     }
     return output;
+}
+
+void append_utf8(std::string& output, std::uint32_t codepoint) {
+    if (codepoint <= 0x7FU) {
+        output.push_back(static_cast<char>(codepoint));
+    } else if (codepoint <= 0x7FFU) {
+        output.push_back(static_cast<char>(0xC0U | (codepoint >> 6U)));
+        output.push_back(static_cast<char>(0x80U | (codepoint & 0x3FU)));
+    } else if (codepoint <= 0xFFFFU) {
+        output.push_back(static_cast<char>(0xE0U | (codepoint >> 12U)));
+        output.push_back(static_cast<char>(0x80U | ((codepoint >> 6U) & 0x3FU)));
+        output.push_back(static_cast<char>(0x80U | (codepoint & 0x3FU)));
+    } else {
+        output.push_back(static_cast<char>(0xF0U | (codepoint >> 18U)));
+        output.push_back(static_cast<char>(0x80U | ((codepoint >> 12U) & 0x3FU)));
+        output.push_back(static_cast<char>(0x80U | ((codepoint >> 6U) & 0x3FU)));
+        output.push_back(static_cast<char>(0x80U | (codepoint & 0x3FU)));
+    }
+}
+
+void append_unicode_unit(std::string& output, std::uint16_t unit) {
+    constexpr char hex[] = "0123456789ABCDEF";
+    output += "\\u";
+    output.push_back(hex[(unit >> 12U) & 0x0FU]);
+    output.push_back(hex[(unit >> 8U) & 0x0FU]);
+    output.push_back(hex[(unit >> 4U) & 0x0FU]);
+    output.push_back(hex[unit & 0x0FU]);
+}
+
+std::string encode_unicode_escapes(const std::string& input, bool& valid) {
+    std::string output;
+    output.reserve(input.size() * 2);
+    valid = true;
+    for (std::size_t index = 0; index < input.size();) {
+        std::uint32_t codepoint = 0;
+        if (!read_utf8_codepoint(input, index, codepoint)) {
+            valid = false;
+            return input;
+        }
+        if (codepoint >= 0x20U && codepoint <= 0x7EU && codepoint != '\\') {
+            output.push_back(static_cast<char>(codepoint));
+        } else if (codepoint == '\\') {
+            output += "\\\\";
+        } else if (codepoint <= 0xFFFFU) {
+            append_unicode_unit(output, static_cast<std::uint16_t>(codepoint));
+        } else {
+            const std::uint32_t adjusted = codepoint - 0x10000U;
+            append_unicode_unit(output, static_cast<std::uint16_t>(0xD800U + (adjusted >> 10U)));
+            append_unicode_unit(output, static_cast<std::uint16_t>(0xDC00U + (adjusted & 0x3FFU)));
+        }
+    }
+    return output;
+}
+
+enum class UnicodeDecodeStatus { None, Invalid, Decoded };
+
+bool read_unicode_unit(const std::string& input, std::size_t offset, std::uint16_t& unit) {
+    if (offset + 4 > input.size()) return false;
+    unit = 0;
+    for (std::size_t index = offset; index < offset + 4; ++index) {
+        const int value = hex_value(input[index]);
+        if (value < 0) return false;
+        unit = static_cast<std::uint16_t>((unit << 4U) | static_cast<unsigned>(value));
+    }
+    return true;
+}
+
+UnicodeDecodeStatus decode_unicode_escapes(
+    const std::string& input,
+    std::string& output) {
+    output.clear();
+    output.reserve(input.size());
+    bool decoded = false;
+    for (std::size_t index = 0; index < input.size(); ++index) {
+        if (input[index] != '\\') {
+            output.push_back(input[index]);
+            continue;
+        }
+        if (index + 1 >= input.size()) {
+            output.push_back('\\');
+            continue;
+        }
+        if (input[index + 1] == '\\') {
+            output.push_back('\\');
+            if (index + 6 < input.size() && input[index + 2] == 'u') {
+                std::uint16_t ignored = 0;
+                decoded = read_unicode_unit(input, index + 3, ignored) || decoded;
+            }
+            ++index;
+            continue;
+        }
+        if (input[index + 1] != 'u') {
+            output.push_back('\\');
+            continue;
+        }
+
+        std::uint16_t first = 0;
+        if (!read_unicode_unit(input, index + 2, first)) return UnicodeDecodeStatus::Invalid;
+        index += 5;
+        std::uint32_t codepoint = first;
+        if (first >= 0xD800U && first <= 0xDBFFU) {
+            if (index + 6 >= input.size() || input[index + 1] != '\\' ||
+                input[index + 2] != 'u') return UnicodeDecodeStatus::Invalid;
+            std::uint16_t second = 0;
+            if (!read_unicode_unit(input, index + 3, second) ||
+                second < 0xDC00U || second > 0xDFFFU) return UnicodeDecodeStatus::Invalid;
+            codepoint = 0x10000U +
+                ((static_cast<std::uint32_t>(first) - 0xD800U) << 10U) +
+                (static_cast<std::uint32_t>(second) - 0xDC00U);
+            index += 6;
+        } else if (first >= 0xDC00U && first <= 0xDFFFU) {
+            return UnicodeDecodeStatus::Invalid;
+        }
+        append_utf8(output, codepoint);
+        decoded = true;
+    }
+    return decoded ? UnicodeDecodeStatus::Decoded : UnicodeDecodeStatus::None;
 }
 
 std::string minify_json(const std::string& input) {
@@ -373,6 +500,16 @@ ProcessResult run_text_transform(
         result.output_kind = ContentKind::HexEncoded;
         result.label = "Hex Encode";
         result.value = encode_hex(input);
+    } else if (mode == ProcessingMode::UnicodeEncode) {
+        bool valid = false;
+        result.output_kind = ContentKind::UnicodeEscaped;
+        result.label = "Unicode Escape";
+        result.value = encode_unicode_escapes(input, valid);
+        if (!valid) {
+            result = failure(ContentKind::Text, "INVALID_UTF8",
+                             "Input contains invalid UTF-8");
+            result.value = input;
+        }
     } else if (mode == ProcessingMode::JsonEscape) {
         result.output_kind = ContentKind::JsonEscaped;
         result.label = "JSON Escape";
@@ -568,6 +705,12 @@ ProcessResult run_codec_processor(
             result.decoded = true;
             return result;
         }
+        std::string unicode_decoded;
+        if (decode_unicode_escapes(input, unicode_decoded) == UnicodeDecodeStatus::Decoded &&
+            is_displayable_text(unicode_decoded)) {
+            return decoded_result(
+                ContentKind::UnicodeEscaped, "Unicode Unescape", std::move(unicode_decoded));
+        }
         const auto html = decode_html_entities(input);
         if (html.ok) return decoded_result(ContentKind::HtmlEntity, "HTML Entity", html.value);
         if (looks_like_hex_encoding(input)) {
@@ -609,6 +752,17 @@ ProcessResult run_codec_processor(
         }
         return failure(ContentKind::Base64, "INVALID_BASE64",
                        "Input is not valid standard or URL-safe Base64");
+    }
+
+    if (mode == ProcessingMode::UnicodeDecode) {
+        std::string decoded;
+        const auto status = decode_unicode_escapes(input, decoded);
+        if (status == UnicodeDecodeStatus::Decoded && is_displayable_text(decoded)) {
+            return decoded_result(
+                ContentKind::UnicodeEscaped, "Unicode Unescape", std::move(decoded));
+        }
+        return failure(ContentKind::UnicodeEscaped, "INVALID_UNICODE_ESCAPE",
+                       "Input does not contain valid Unicode escapes");
     }
 
     const bool html = mode == ProcessingMode::HtmlEntityDecode;
@@ -658,6 +812,8 @@ constexpr std::array<ProcessorRegistration,
     {ProcessingMode::HtmlEntityEncode, "html.encode", run_text_transform},
     {ProcessingMode::HexDecode, "hex.decode", run_codec_processor},
     {ProcessingMode::HexEncode, "hex.encode", run_text_transform},
+    {ProcessingMode::UnicodeDecode, "unicode.unescape", run_codec_processor},
+    {ProcessingMode::UnicodeEncode, "unicode.escape", run_text_transform},
     {ProcessingMode::Timestamp, "timestamp.inspect", run_text_transform},
 }};
 
@@ -784,6 +940,13 @@ ProcessResult detect_automatically(const std::string& input, const std::string& 
         return result;
     }
 
+    std::string unicode_decoded;
+    if (decode_unicode_escapes(input, unicode_decoded) == UnicodeDecodeStatus::Decoded &&
+        is_displayable_text(unicode_decoded)) {
+        return decoded_result(
+            ContentKind::UnicodeEscaped, "Unicode Unescape", std::move(unicode_decoded));
+    }
+
     std::string decoded;
     std::size_t encoded_count = 0;
     if (decode_url(input, decoded, encoded_count) && encoded_count > 0 &&
@@ -837,6 +1000,7 @@ const char* content_kind_name(ContentKind kind) {
     case ContentKind::UrlEncoded: return "URL Encode";
     case ContentKind::HtmlEntity: return "HTML Entity";
     case ContentKind::HexEncoded: return "Hex";
+    case ContentKind::UnicodeEscaped: return "Unicode Escape";
     case ContentKind::Csv: return "CSV";
     case ContentKind::Text: return "Text";
     case ContentKind::Count: return "Text";

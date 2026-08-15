@@ -16,6 +16,8 @@ This checklist is intentionally manual. The repository does not use GitHub CI.
 - [ ] JSON format/minify/escape and JSON → YAML/XML/CSV.
 - [ ] XML/YAML format and conversion to JSON.
 - [ ] Base64 and URL auto-decode exactly one layer.
+- [ ] Unicode Escape encodes UTF-8, decodes valid `\uXXXX`/surrogate pairs and
+      continues exactly one layer at a time.
 - [ ] JWT header/payload inspection without claiming signature verification.
 - [ ] CSV auto/manual delimiter, header switch, scroll, search and TSV copy.
 - [ ] Text selection, double-click word selection, copy and search navigation.

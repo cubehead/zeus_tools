@@ -48,8 +48,8 @@ Windows uses a portable package and does not include an NSIS/MSI installer.
 - Formats JSON, XML, YAML, TOML and INI/Properties with read-only syntax highlighting.
 - Folds nested JSON containers, XML elements and indented YAML blocks.
 - Converts JSON ↔ YAML/XML/TOML, TOML/INI → JSON and JSON → CSV.
-- Escapes/unescapes JSON and decodes Base64 or URL encoding one layer at a
-  time, with an explicit continuation action for nested content.
+- Escapes/unescapes JSON and Unicode text, and decodes Base64 or URL encoding
+  one layer at a time, with an explicit continuation action for nested content.
 - Shows CSV in a virtualized table with delimiter and header controls.
 - Searches text and CSV cells with case-sensitive and regular-expression modes.
 - Resizes the input and result workspaces with a bounded horizontal splitter.
@@ -97,6 +97,7 @@ font rendering may differ on Windows.
 | Base64 | Decode one high-confidence layer | Standard and URL-safe input; binary-safe preview |
 | URL encoding | Decode one high-confidence layer | Encode arbitrary UTF-8 text |
 | HTML Entity / Hex | Decode only explicit encoded input | Encode arbitrary UTF-8 text |
+| Unicode Escape | Decode valid `\uXXXX` sequences one layer | Escape UTF-8, including emoji surrogate pairs |
 | Unix time | Suggest conversion for exact 10/13 digit input | Show seconds, milliseconds, UTC and local time |
 | JWT | Decode and format header/payload | Search/copy claims; signature is not verified |
 | Text | Read-only result and search | Upper/lower case, Base64/URL encode |

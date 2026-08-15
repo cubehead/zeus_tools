@@ -37,11 +37,13 @@ const std::vector<Action> kActions = {
     {Mode::Auto, Kind::Jwt, Label::Inspect, 64.0f},
     {Mode::HtmlEntityDecode, Kind::HtmlEntity, Label::Decode, 64.0f},
     {Mode::HexDecode, Kind::HexEncoded, Label::Decode, 64.0f},
+    {Mode::Auto, Kind::UnicodeEscaped, Label::Decode, 64.0f},
     {Mode::Timestamp, Kind::Text, Label::UnixTime, 56.0f, false, true},
     {Mode::Base64Encode, Kind::Text, Label::Base64Encode, 104.0f, true},
     {Mode::UrlEncode, Kind::Text, Label::UrlEncode, 98.0f, true},
     {Mode::HtmlEntityEncode, Kind::Text, Label::HtmlEncode, 94.0f, true},
     {Mode::HexEncode, Kind::Text, Label::HexEncode, 82.0f, true},
+    {Mode::UnicodeEncode, Kind::Text, Label::UnicodeEncode, 112.0f, true},
     {Mode::Upper, Kind::Text, Label::Upper, 56.0f, true},
     {Mode::Lower, Kind::Text, Label::Lower, 56.0f, true},
 };
@@ -56,6 +58,7 @@ const std::vector<InputTypeDefinition> kInputTypes = {
     {"csv", Mode::Csv, Kind::Csv},
     {"base64", Mode::Base64, Kind::Base64},
     {"url", Mode::UrlDecode, Kind::UrlEncoded},
+    {"unicode", Mode::UnicodeDecode, Kind::UnicodeEscaped},
     {"text", Mode::Text, Kind::Text},
 };
 
@@ -74,6 +77,7 @@ constexpr std::array<ContentDefinition, static_cast<std::size_t>(Kind::Count)>
         {Kind::UrlEncoded, "URL", "URL", ".txt", Syntax::Plain},
         {Kind::HtmlEntity, "HTML Entity", "HTML Ent", ".txt", Syntax::Plain},
         {Kind::HexEncoded, "Hex", "Hex", ".txt", Syntax::Plain},
+        {Kind::UnicodeEscaped, "Unicode Escape", "Unicode", ".txt", Syntax::Plain},
         {Kind::Csv, "CSV", "CSV", ".tsv", Syntax::Plain},
         {Kind::Text, "Text", "Text", ".txt", Syntax::Plain},
     }};

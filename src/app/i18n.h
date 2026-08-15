@@ -12,7 +12,7 @@ enum class Text {
     PasteOrTypeJson, WaitingForInput, Processing, Invalid, Copied, Bytes,
     Format, Minify, Escape, Unescape, Table, DelimiterAuto, DelimiterComma,
     DelimiterSemicolon, DelimiterPipe, FirstRowHeader, On, Off, Decode, DecodeAgain,
-    Inspect, Base64Encode, UrlEncode, Upper, Lower, HtmlEncode, HexEncode, UnixTime,
+    Inspect, Base64Encode, UrlEncode, Upper, Lower, HtmlEncode, HexEncode, UnicodeEncode, UnixTime,
     Digest, Hmac, HmacKey,
     MessageInput, MessageResult, KeyEncoding, ShowKey, HideKey,
     WeakAlgorithm, PreviewingFirst, Rows, RowsCopyTsv, TablePreviewCopyTsv,

@@ -139,6 +139,9 @@ void test_processing_registry() {
     expect(app::processing::content_definition(zeus::ContentKind::Ini).syntax ==
                app::processing::DocumentSyntax::Toml,
            "INI metadata should select the key/value highlighter");
+    expect(app::processing::content_definition(
+               zeus::ContentKind::UnicodeEscaped).compact_label == "Unicode",
+           "Unicode escape metadata should provide a compact action-bar label");
 
     std::set<std::string> action_keys;
     for (const auto& action : app::processing::registered_actions()) {
@@ -162,6 +165,14 @@ void test_processing_registry() {
         "base64.encode", zeus::ContentKind::Base64, "SGVsbG8=");
     expect(encode != nullptr && encode->mode == zeus::ProcessingMode::Base64Encode,
            "Base64 encode should remain an encode action for encoded input");
+    const auto* unicode_encode = app::processing::find_action(
+        "unicode.escape", zeus::ContentKind::Text, "你好");
+    expect(unicode_encode != nullptr &&
+               unicode_encode->mode == zeus::ProcessingMode::UnicodeEncode,
+           "Unicode escape should be registered as a common text action");
+    expect(app::processing::find_input_type("unicode").mode ==
+               zeus::ProcessingMode::UnicodeDecode,
+           "Unicode escaped text should support an explicit input override");
 
     bool found_toml = false;
     for (const auto& action : app::processing::registered_actions()) {

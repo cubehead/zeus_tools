@@ -26,6 +26,7 @@ enum class ActionLabel {
     UrlEncode,
     HtmlEncode,
     HexEncode,
+    UnicodeEncode,
     Upper,
     Lower,
 };

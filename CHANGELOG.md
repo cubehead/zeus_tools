@@ -8,6 +8,8 @@ semantic versioning after the first stable release.
 
 ### Added
 
+- Added Unicode Escape/Unescape with explicit `\uXXXX` detection, supplementary
+  surrogate-pair support, manual input override and one-layer continuation.
 - Added a statically linked processing registry with stable action and input IDs,
   replacing positional UI/dispatch indexes without introducing runtime plugins.
 - Registered all explicit core processing modes by functional handler boundary, with

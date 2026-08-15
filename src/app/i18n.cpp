@@ -39,6 +39,7 @@ const std::array<Translation, static_cast<std::size_t>(Text::Count)> translation
     {"小写", "小寫", "Lower", "小文字", "소문자", "Minúsculas", "Minuscules", "Klein", "Minúsculas", "Нижний регистр"},
     {"HTML 编码", "HTML 編碼", "HTML Encode", "HTML エンコード", "HTML 인코딩", "Codificar HTML", "Encoder HTML", "HTML kodieren", "Codificar HTML", "Кодировать HTML"},
     {"Hex 编码", "Hex 編碼", "Hex Encode", "Hex エンコード", "Hex 인코딩", "Codificar Hex", "Encoder Hex", "Hex kodieren", "Codificar Hex", "Кодировать Hex"},
+    {"Unicode 转义", "Unicode 逸出", "Unicode Escape", "Unicode エスケープ", "Unicode 이스케이프", "Escapar Unicode", "Échapper Unicode", "Unicode escapen", "Escapar Unicode", "Экранировать Unicode"},
     {"时间", "時間", "Time", "時刻", "시간", "Tiempo", "Heure", "Zeit", "Hora", "Время"},
     {"摘要", "摘要", "Digest", "ダイジェスト", "다이제스트", "Resumen", "Empreinte", "Hash", "Resumo", "Хеш"},
     {"HMAC", "HMAC", "HMAC", "HMAC", "HMAC", "HMAC", "HMAC", "HMAC", "HMAC", "HMAC"},

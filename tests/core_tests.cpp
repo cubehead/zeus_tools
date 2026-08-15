@@ -204,6 +204,11 @@ int main() {
         "%2561%2562%2563", zeus::ProcessingMode::DecodeOneLayer);
     require(decode_layer_url.ok && decode_layer_url.value == "%61%62%63",
             "manual continuation should decode exactly one URL layer");
+    const auto decode_layer_unicode = zeus::process_text(
+        R"(\\u4F60\\u597D)", zeus::ProcessingMode::DecodeOneLayer);
+    require(decode_layer_unicode.ok && decode_layer_unicode.decoded &&
+                decode_layer_unicode.value == R"(\u4F60\u597D)",
+            "manual continuation should remove exactly one Unicode escape layer");
     const auto no_decode_layer = zeus::process_text(
         "plain text", zeus::ProcessingMode::DecodeOneLayer);
     require(!no_decode_layer.ok && no_decode_layer.error_code == "NO_ENCODED_LAYER",
@@ -584,6 +589,32 @@ int main() {
             "URL encode should preserve unreserved characters and encode UTF-8 bytes");
     require(encoded_url.output_kind == zeus::ContentKind::UrlEncoded,
             "URL encode should expose URL encoding as its output kind");
+
+    const auto decoded_unicode = zeus::process_text(
+        R"(Hello \u4F60\u597D \uD83E\uDDEA)");
+    require(decoded_unicode.ok && decoded_unicode.decoded &&
+                decoded_unicode.detected == zeus::ContentKind::UnicodeEscaped &&
+                decoded_unicode.value == "Hello 你好 🧪",
+            "automatic detection should decode valid Unicode escapes once");
+    const auto encoded_unicode = zeus::process_text(
+        "你好 🧪\n", zeus::ProcessingMode::UnicodeEncode);
+    require(encoded_unicode.ok &&
+                encoded_unicode.output_kind == zeus::ContentKind::UnicodeEscaped &&
+                encoded_unicode.value == R"(\u4F60\u597D \uD83E\uDDEA\u000A)",
+            "Unicode escape should encode BMP, supplementary and control code points");
+    const auto unicode_round_trip = zeus::process_text(
+        encoded_unicode.value, zeus::ProcessingMode::UnicodeDecode);
+    require(unicode_round_trip.ok && unicode_round_trip.value == "你好 🧪\n",
+            "Unicode escape and unescape should round-trip UTF-8 text");
+    const auto invalid_unicode = zeus::process_text(
+        R"(\uD800)", zeus::ProcessingMode::UnicodeDecode);
+    require(!invalid_unicode.ok && invalid_unicode.error_code == "INVALID_UNICODE_ESCAPE",
+            "Unicode unescape should reject an unpaired surrogate");
+    require(zeus::process_text(R"(C:\users\zeus)").detected == zeus::ContentKind::Text,
+            "ordinary backslash text must not be misdetected as Unicode escapes");
+    require(zeus::process_text(R"(<root>\u4F60</root>)").detected ==
+                zeus::ContentKind::Xml,
+            "structured formats should take precedence over nested Unicode escape text");
 
     const auto binary_base64 = zeus::process_text("AAECAwQF", zeus::ProcessingMode::Base64);
     require(binary_base64.ok && binary_base64.label.find("Binary") != std::string::npos,

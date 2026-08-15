@@ -36,6 +36,8 @@ enum class ProcessingMode {
     HtmlEntityEncode,
     HexDecode,
     HexEncode,
+    UnicodeDecode,
+    UnicodeEncode,
     Timestamp,
     Count,
 };
@@ -53,6 +55,7 @@ enum class ContentKind {
     UrlEncoded,
     HtmlEntity,
     HexEncoded,
+    UnicodeEscaped,
     Csv,
     Text,
     Count,

@@ -40,6 +40,7 @@ std::string action_label(processing::ActionLabel label) {
     case Label::UrlEncode: return controller::tr(i18n::Text::UrlEncode);
     case Label::HtmlEncode: return controller::tr(i18n::Text::HtmlEncode);
     case Label::HexEncode: return controller::tr(i18n::Text::HexEncode);
+    case Label::UnicodeEncode: return controller::tr(i18n::Text::UnicodeEncode);
     case Label::Upper: return controller::tr(i18n::Text::Upper);
     case Label::Lower: return controller::tr(i18n::Text::Lower);
     }

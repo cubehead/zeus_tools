@@ -176,7 +176,7 @@
 | 领域 | MVP | 后续版本 | 明确不做 |
 | --- | --- | --- | --- |
 | 格式 | JSON、XML、YAML、CSV、JWT 查看 | TOML、INI、Properties 已进入 0.2；后续考虑其他配置格式 | 不做 SQL 方言格式化 |
-| 编码 | Base64、URL Decode 自动一层；0.2 增加 HTML Entity、Hex、时间戳 | Unicode、Gzip | 不自动无限递归解码 |
+| 编码 | Base64、URL Decode 自动一层；0.2 增加 HTML Entity、Hex、Unicode Escape、时间戳 | Gzip | 不自动无限递归解码 |
 | 摘要/HMAC | MD5、SHA-1/256/512；HMAC-SHA1/256/512，全部手动触发 | SHA-3、BLAKE2/BLAKE3、CRC32、文件校验 | 不提供摘要“解密”或密码破解 |
 | 输入 | 粘贴、手动输入；0.2 增加拖拽/打开文件 | 命令行管道 | 不监听系统剪贴板 |
 | 输出 | 高亮文本、CSV 表格、复制；0.2 增加导出文件 | JSON Tree、Diff | 不做在线分享 |
