@@ -6,6 +6,11 @@ semantic versioning after the first stable release.
 
 ## [Unreleased]
 
+### Added
+
+- Added bilingual README release/download/star/license/platform badges, quick
+  links, project support links and direct open-source component acknowledgements.
+
 ## [0.1.0] - 2026-08-14
 
 ### Added

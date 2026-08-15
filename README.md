@@ -21,6 +21,7 @@
   <a href="https://github.com/cubehead/zeus_tools/releases/latest">Download</a> ·
   <a href="#highlights">Highlights</a> ·
   <a href="#screenshots">Screenshots</a> ·
+  <a href="#built-with">Built with</a> ·
   <a href="#build-prerequisites">Build</a> ·
   <a href="docs/releases/v0.1.0.md">Release notes</a>
 </p>
@@ -126,6 +127,20 @@ The project intentionally does not create an NSIS/MSI installer.
 - HMAC keys are kept in process memory only and are actively cleared when the
   HMAC or digest panel closes. Test packages remain Alpha software, so avoid
   using production secrets during evaluation.
+
+## Built with
+
+| Project | Role in Zeus Tools |
+| --- | --- |
+| [EUI-NEO](https://github.com/sudoevolve/EUI-NEO) | Cross-platform desktop UI and rendering framework |
+| [pugixml](https://github.com/zeux/pugixml) | Strict XML parsing and serialization |
+| [yaml-cpp](https://github.com/jbeder/yaml-cpp) | YAML parsing, formatting and conversion |
+| [Font Awesome Free](https://fontawesome.com/) | General interface icons |
+| [Primer Octicons](https://github.com/primer/octicons) | GitHub project-link mark |
+
+Direct dependency revisions are pinned for reproducible builds. See
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for complete license details
+and the runtime components included through EUI-NEO.
 
 ## Build prerequisites
 

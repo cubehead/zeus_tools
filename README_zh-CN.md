@@ -21,6 +21,7 @@
   <a href="https://github.com/cubehead/zeus_tools/releases/latest">下载</a> ·
   <a href="#功能亮点">功能亮点</a> ·
   <a href="#截图">截图</a> ·
+  <a href="#开源组件">开源组件</a> ·
   <a href="#构建前置条件">构建</a> ·
   <a href="docs/releases/v0.1.0.md">发布说明</a>
 </p>
@@ -122,6 +123,19 @@ Windows。
   的编码层，且不会修改原始输入。
 - HMAC 密钥只保留在进程内存中，关闭 HMAC 或摘要面板时会主动清理。测试包
   仍是 Alpha 软件，评估时请勿使用生产环境密钥。
+
+## 开源组件
+
+| 项目 | 在 Zeus Tools 中的用途 |
+| --- | --- |
+| [EUI-NEO](https://github.com/sudoevolve/EUI-NEO) | 跨平台桌面 UI 与渲染框架 |
+| [pugixml](https://github.com/zeux/pugixml) | 严格 XML 解析与序列化 |
+| [yaml-cpp](https://github.com/jbeder/yaml-cpp) | YAML 解析、格式化与转换 |
+| [Font Awesome Free](https://fontawesome.com/) | 通用界面图标 |
+| [Primer Octicons](https://github.com/primer/octicons) | GitHub 项目链接图标 |
+
+直接依赖均锁定版本，以保证构建可复现。完整许可证信息及 EUI-NEO 引入的
+运行时组件请查看 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
 
 ## 构建前置条件
 
