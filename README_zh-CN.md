@@ -54,6 +54,7 @@ Windows。
 - 在本地计算 MD5、SHA-1、SHA-256、SHA-512 和 HMAC。
 - 支持跟随系统、亮色和暗色主题，以及十种界面语言。
 - 支持打开或拖入 UTF-8 文件并导出当前结果，不保存最近文件或内容历史。
+- 可通过离线 stdin/stdout 命令行工具使用同一组已注册处理能力。
 - 不上传也不保存正在处理的文本。
 
 ## 截图
@@ -107,6 +108,23 @@ Windows。
 所有格式化、解码、搜索和哈希计算均在本地进程中完成。Zeus Tools 不提供
 账户、云服务、遥测或内容历史记录，只会持久化主题和语言偏好。详见
 [PRIVACY.md](PRIVACY.md)。
+
+## 命令行管道
+
+当前源码构建会生成 `zeus-tools-cli`（Windows 为 `zeus-tools-cli.exe`），从
+`main` 新构建的发布包也会包含它；已发布的 v0.1.0 产物早于 CLI 功能。它从
+一个 UTF-8 文件或 stdin 读取内容，仅将处理结果写入 stdout，诊断信息写入
+stderr，并使用与桌面应用相同的 10 MiB 输入上限。
+
+```sh
+echo '{"name":"Zeus"}' | zeus-tools-cli
+zeus-tools-cli --input json --action json.minify data.json
+zeus-tools-cli --list-inputs
+zeus-tools-cli --list-actions
+```
+
+完整选项请运行 `zeus-tools-cli --help`。输入类型和操作 ID 与桌面应用共用
+同一份静态注册表。
 
 ## 支持的平台
 
@@ -170,6 +188,8 @@ ctest --preset core
 ./build/core/zeus_csv_benchmark
 ```
 
+同一构建还会生成 `build/core/zeus-tools-cli`。
+
 ## 构建桌面应用
 
 ```sh
@@ -211,6 +231,7 @@ cmake --build build/package-windows --target package
 include/zeus/   核心模块的公开接口
 src/core/       检测、格式化、转换、加密和数据模型
 src/app/        应用状态、控制器、处理服务、EUI-NEO 页面和自定义控件
+src/cli/        离线 stdin/stdout 命令行入口
 src/platform/   macOS、Windows 和后备平台适配器
 tests/          单元测试和合成数据性能基准
 resources/      应用图标和打包资源

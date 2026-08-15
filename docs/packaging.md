@@ -4,8 +4,8 @@
 
 | 平台 | 产物 | 安装方式 | 当前签名状态 |
 | --- | --- | --- | --- |
-| macOS arm64/x86_64 | `.app` + `.dmg` + `.sha256` | 打开 DMG 后拖入 Applications | 默认无 Developer ID 签名；支持显式签名 |
-| Windows x64 | Portable `.zip` + `.sha256` | 解压后运行 `ZeusTools.exe` | 默认未签名；不生成 NSIS/MSI 安装包 |
+| macOS arm64/x86_64 | `.app` + CLI + `.dmg` + `.sha256` | 拖入 Applications；CLI 可复制到 PATH | 默认无 Developer ID 签名；支持显式签名 |
+| Windows x64 | Portable `.zip` + `.sha256` | 解压后运行 `ZeusTools.exe` 或 CLI | 默认未签名；不生成 NSIS/MSI 安装包 |
 
 版本来自顶层 `project(... VERSION ...)`，平台构建号来自 `ZEUS_BUILD_NUMBER`。正式发布前应同时更新两者，并复核仓库根目录的 `LICENSE` 与 `THIRD_PARTY_NOTICES.md`。
 
@@ -78,6 +78,7 @@ cmake --build build/package-windows --target package
 ZIP 包含：
 
 - `ZeusTools.exe`；
+- `zeus-tools-cli.exe`，用于离线 stdin/stdout 管道；
 - Zeus Tools 图标与实际使用的 Font Awesome 图标字体；不会打包 EUI Gallery 的未使用演示字体；
 - `LICENSE`、`PRIVACY.md`、`THIRD_PARTY_NOTICES.md` 与 `licenses/` 下的第三方完整许可证；
 - CPack 生成的 SHA-256 校验文件。

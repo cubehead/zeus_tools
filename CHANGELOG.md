@@ -8,6 +8,8 @@ semantic versioning after the first stable release.
 
 ### Added
 
+- Added an offline `zeus-tools-cli` stdin/file-to-stdout pipeline using the same
+  input types, stable action IDs, processing service and 10 MiB boundary as the app.
 - Added Unicode Escape/Unescape with explicit `\uXXXX` detection, supplementary
   surrogate-pair support, manual input override and one-layer continuation.
 - Added a statically linked processing registry with stable action and input IDs,
@@ -41,6 +43,8 @@ semantic versioning after the first stable release.
 
 ### Fixed
 
+- Preserved source content kinds across format conversions, including JSON-to-CSV
+  table presentation, instead of overwriting them with the output kind.
 - Kept the common Base64 Encode action as encoding even when the source already
   looks like Base64; the type-specific Decode action remains separate.
 - Prevented ordinary JSON arrays from being misclassified as escaped JSON.

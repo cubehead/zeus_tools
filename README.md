@@ -57,6 +57,7 @@ Windows uses a portable package and does not include an NSIS/MSI installer.
 - Supports system/light/dark themes and ten interface languages.
 - Opens or drops UTF-8 files and exports the current result without keeping a
   recent-file or content history.
+- Provides the same registered processors through an offline stdin/stdout CLI.
 - Never uploads or saves the text being processed.
 
 ## Screenshots
@@ -111,6 +112,24 @@ changing the source text.
 All formatting, decoding, searching and hashing happens in the local process.
 Zeus Tools has no account, cloud service, telemetry or content history. Only
 theme and language preferences are persisted. See [PRIVACY.md](PRIVACY.md).
+
+## Command-line pipeline
+
+Current source builds create `zeus-tools-cli` (`zeus-tools-cli.exe` on Windows),
+and new packages built from `main` include it. The published v0.1.0 artifacts
+predate the CLI. It reads one UTF-8 file or stdin, writes only the processed
+value to stdout, keeps diagnostics on stderr and enforces the same 10 MiB input
+limit.
+
+```sh
+echo '{"name":"Zeus"}' | zeus-tools-cli
+zeus-tools-cli --input json --action json.minify data.json
+zeus-tools-cli --list-inputs
+zeus-tools-cli --list-actions
+```
+
+Use `zeus-tools-cli --help` for the complete option reference. Input and action
+IDs come from the same static registry as the desktop application.
 
 ## Supported platforms
 
@@ -178,6 +197,8 @@ Run the synthetic 10 MB benchmarks:
 ./build/core/zeus_csv_benchmark
 ```
 
+The same build also creates `build/core/zeus-tools-cli`.
+
 ## Build the desktop app
 
 ```sh
@@ -220,6 +241,7 @@ cmake --build build/package-windows --target package
 include/zeus/   Public core interfaces
 src/core/       Detection, formatting, conversion, crypto and data models
 src/app/        App state, controller, processing service, EUI-NEO view and widgets
+src/cli/        Offline stdin/stdout command-line entry point
 src/platform/   macOS, Windows and fallback platform adapters
 tests/          Unit tests and synthetic performance benchmarks
 resources/      Application icons and packaging assets

@@ -7,6 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 option(ZEUS_BUILD_APP "Build the EUI-NEO desktop prototype" ON)
+option(ZEUS_BUILD_CLI "Build the Zeus Tools command-line pipeline" ON)
 option(ZEUS_BUILD_TESTS "Build Zeus core tests" ON)
 option(ZEUS_ENABLE_PACKAGING "Configure native application bundles and CPack packages" OFF)
 set(ZEUS_EUI_NEO_SOURCE_DIR "" CACHE PATH "Path to an existing EUI-NEO v0.5.3 checkout")
@@ -85,6 +86,14 @@ add_library(zeus_app_processing
 target_include_directories(zeus_app_processing PUBLIC src/app)
 target_link_libraries(zeus_app_processing PUBLIC zeus_core)
 target_compile_features(zeus_app_processing PUBLIC cxx_std_17)
+
+if(ZEUS_BUILD_CLI)
+    add_executable(zeus_cli src/cli/main.cpp)
+    set_target_properties(zeus_cli PROPERTIES OUTPUT_NAME "zeus-tools-cli")
+    target_link_libraries(zeus_cli PRIVATE zeus_app_processing)
+    target_compile_features(zeus_cli PRIVATE cxx_std_17)
+    target_compile_definitions(zeus_cli PRIVATE ZEUS_CLI_VERSION="${PROJECT_VERSION}")
+endif()
 
 if(WIN32)
     target_link_libraries(zeus_core PUBLIC bcrypt)
@@ -290,6 +299,14 @@ if(ZEUS_BUILD_TESTS)
     target_link_libraries(zeus_app_processing_tests PRIVATE zeus_app_processing)
     add_test(NAME zeus_app_processing_tests COMMAND zeus_app_processing_tests)
 
+    if(ZEUS_BUILD_CLI)
+        add_test(NAME zeus_cli_smoke
+            COMMAND ${CMAKE_COMMAND}
+                -DZEUS_CLI=$<TARGET_FILE:zeus_cli>
+                -DZEUS_FIXTURES=${CMAKE_CURRENT_SOURCE_DIR}/tests/fixtures
+                -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/cli_smoke.cmake)
+    endif()
+
     add_executable(zeus_core_benchmark tests/core_benchmark.cpp)
     target_link_libraries(zeus_core_benchmark PRIVATE zeus_core)
 
@@ -306,6 +323,9 @@ if(ZEUS_ENABLE_PACKAGING)
         BUNDLE DESTINATION .
         RUNTIME DESTINATION .
     )
+    if(ZEUS_BUILD_CLI)
+        install(TARGETS zeus_cli RUNTIME DESTINATION .)
+    endif()
     if(WIN32)
         install(FILES "${ZEUS_EUI_SOURCE_ROOT}/assets/Font Awesome 7 Free-Solid-900.otf"
                 DESTINATION assets)

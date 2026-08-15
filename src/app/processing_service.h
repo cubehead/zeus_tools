@@ -16,6 +16,7 @@ struct AnalysisRequest {
     std::string input_type_id = "auto";
     int csv_delimiter_index = 0;
     bool first_row_header = true;
+    bool build_presentation = true;
 };
 
 struct AnalysisResult {

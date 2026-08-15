@@ -627,7 +627,7 @@ ProcessResult run_conversion_processor(
     }
     if (!converted.ok) return format_failure(source, converted, input);
     ProcessResult result;
-    result.detected = target;
+    result.detected = source;
     result.output_kind = target;
     result.label = label;
     result.value = converted.value;

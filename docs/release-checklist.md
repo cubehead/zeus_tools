@@ -24,6 +24,7 @@ This checklist is intentionally manual. The repository does not use GitHub CI.
 - [ ] MD5/SHA/HMAC output and weak-algorithm warning.
 - [ ] System/light/dark themes and all locale menu entries.
 - [ ] Invalid input displays a concise error and detailed hover card.
+- [ ] CLI stdin/file input, registered action, stderr diagnostics and 10 MiB limit.
 
 ## Performance and platform
 
@@ -38,7 +39,7 @@ This checklist is intentionally manual. The repository does not use GitHub CI.
 
 - [ ] macOS `.app` and `.dmg` contain the intended icon and version.
 - [ ] Windows portable ZIP contains `ZeusTools.exe`, required runtime assets,
-      icon and VersionInfo; no installer is generated.
+      `zeus-tools-cli.exe`, icon and VersionInfo; no installer is generated.
 - [ ] A fresh user account can launch each artifact.
 - [ ] Uninstall/removal leaves no content history; only optional preference files
       may remain.

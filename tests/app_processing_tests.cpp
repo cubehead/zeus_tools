@@ -40,6 +40,21 @@ void test_csv_analysis() {
     expect(result.first_row_header, "CSV header preference should be retained");
 }
 
+void test_json_to_csv_retains_source_kind() {
+    app::processing::AnalysisRequest request;
+    request.input = R"([{"name":"Zeus","value":1},{"name":"Hera","value":2}])";
+    request.action_id = "json.to_csv";
+    const auto result = app::processing::analyze(request);
+
+    expect(result.process.ok && result.csv != nullptr,
+           "JSON to CSV should create a table document");
+    expect(result.detected == zeus::ContentKind::Json &&
+               result.process.detected == zeus::ContentKind::Json,
+           "JSON to CSV should retain JSON as its source kind");
+    expect(result.process.output_kind == zeus::ContentKind::Csv,
+           "JSON to CSV should expose CSV as its output kind");
+}
+
 void test_csv_manual_delimiters_use_original_input() {
     app::processing::AnalysisRequest comma_request;
     comma_request.input = "name,value\nZeus,1\nHera,2";
@@ -194,6 +209,7 @@ void test_processing_registry() {
 int main() {
     test_json_analysis();
     test_csv_analysis();
+    test_json_to_csv_retains_source_kind();
     test_csv_manual_delimiters_use_original_input();
     test_input_override();
     test_text_override_wins_over_auto_detection();

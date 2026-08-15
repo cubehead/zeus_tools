@@ -73,10 +73,12 @@ AnalysisResult analyze(const AnalysisRequest& request) {
         const auto parsed = zeus::parse_csv(table_source, delimiter, true);
         if (parsed.ok) {
             output.csv = std::make_shared<zeus::CsvDocument>(parsed.document);
-            output.detected = zeus::ContentKind::Csv;
             output.process.ok = true;
-            output.process.detected = zeus::ContentKind::Csv;
             output.process.output_kind = zeus::ContentKind::Csv;
+            if (!converted_to_csv) {
+                output.detected = zeus::ContentKind::Csv;
+                output.process.detected = zeus::ContentKind::Csv;
+            }
             output.process.label = converted_to_csv ? "JSON → CSV" : "CSV";
             output.process.value = parsed.document.to_tsv();
             output.process.error_code.clear();
@@ -85,24 +87,29 @@ AnalysisResult analyze(const AnalysisRequest& request) {
             output.process.error_column = 0;
         } else {
             output.process.ok = false;
-            output.process.detected = zeus::ContentKind::Csv;
             output.process.output_kind = zeus::ContentKind::Csv;
-            output.process.label = "CSV";
+            output.process.label = converted_to_csv ? "JSON → CSV" : "CSV";
             output.process.error_code = "CSV_PARSE_ERROR";
             output.process.error_message = parsed.error;
-            output.process.value = request.input;
+            if (!converted_to_csv) {
+                output.detected = zeus::ContentKind::Csv;
+                output.process.detected = zeus::ContentKind::Csv;
+                output.process.value = request.input;
+            }
         }
     }
 
     const std::string display = output.process.value.empty()
         ? request.input : output.process.value;
-    if (output.process.decoded) {
+    if (request.build_presentation && output.process.decoded) {
         output.decode_chain = output.process.label;
         const auto next = zeus::process_text(
             display, zeus::ProcessingMode::DecodeOneLayer);
         output.can_continue_decode = next.ok && next.decoded;
     }
-    output.document = make_document(output.process, display);
+    if (request.build_presentation) {
+        output.document = make_document(output.process, display);
+    }
     output.elapsed_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
         std::chrono::steady_clock::now() - started).count();
     return output;

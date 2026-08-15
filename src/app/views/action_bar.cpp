@@ -158,7 +158,7 @@ void build_action_bar(eui::Ui& ui, const ViewContext& context) {
                 }
             }
 
-            if (app_state.result.detected_input_kind == zeus::ContentKind::Csv) {
+            if (app_state.result.output_kind == zeus::ContentKind::Csv) {
                 ui.stack("actions.csv.delimiter.slot")
                     .size(118.0f, 30.0f)
                     .zIndex(110)

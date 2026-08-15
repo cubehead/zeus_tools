@@ -483,27 +483,34 @@ int main() {
     require(!csv_regex_error.empty(), "CSV search should report invalid regular expressions");
     const auto processed_yaml_conversion = zeus::process_text(
         R"({"name":"Zeus"})", zeus::ProcessingMode::JsonToYaml);
-    require(processed_yaml_conversion.ok && processed_yaml_conversion.detected == zeus::ContentKind::Yaml,
-            "JSON to YAML processing should select YAML result highlighting");
+    require(processed_yaml_conversion.ok &&
+                processed_yaml_conversion.detected == zeus::ContentKind::Json &&
+                processed_yaml_conversion.output_kind == zeus::ContentKind::Yaml,
+            "JSON to YAML processing should retain its source and select YAML output");
     const auto processed_xml_conversion = zeus::process_text(
         R"({"name":"Zeus"})", zeus::ProcessingMode::JsonToXml);
-    require(processed_xml_conversion.ok && processed_xml_conversion.detected == zeus::ContentKind::Xml,
-            "JSON to XML processing should select XML result highlighting");
+    require(processed_xml_conversion.ok &&
+                processed_xml_conversion.detected == zeus::ContentKind::Json &&
+                processed_xml_conversion.output_kind == zeus::ContentKind::Xml,
+            "JSON to XML processing should retain its source and select XML output");
     const auto processed_xml_json_conversion = zeus::process_text(
         R"(<user id="1"><name>Zeus</name></user>)", zeus::ProcessingMode::XmlToJson);
     require(processed_xml_json_conversion.ok &&
-                processed_xml_json_conversion.detected == zeus::ContentKind::Json &&
+                processed_xml_json_conversion.detected == zeus::ContentKind::Xml &&
                 processed_xml_json_conversion.output_kind == zeus::ContentKind::Json,
-            "XML to JSON processing should select JSON result highlighting");
+            "XML to JSON processing should retain its source and select JSON output");
     const auto processed_csv_conversion = zeus::process_text(
         R"([{"name":"Zeus"},{"name":"Tools"}])", zeus::ProcessingMode::JsonToCsv);
-    require(processed_csv_conversion.ok && processed_csv_conversion.detected == zeus::ContentKind::Csv &&
+    require(processed_csv_conversion.ok &&
+                processed_csv_conversion.detected == zeus::ContentKind::Json &&
                 processed_csv_conversion.output_kind == zeus::ContentKind::Csv,
-            "JSON to CSV processing should select the table result view");
+            "JSON to CSV processing should retain its source and select the table output");
     const auto processed_json_conversion = zeus::process_text(
         "name: Zeus\nenabled: true\n", zeus::ProcessingMode::YamlToJson);
-    require(processed_json_conversion.ok && processed_json_conversion.detected == zeus::ContentKind::Json,
-            "YAML to JSON processing should select JSON result highlighting");
+    require(processed_json_conversion.ok &&
+                processed_json_conversion.detected == zeus::ContentKind::Yaml &&
+                processed_json_conversion.output_kind == zeus::ContentKind::Json,
+            "YAML to JSON processing should retain its source and select JSON output");
 
     const auto minified_json = zeus::process_text(
         "{\n  \"message\": \"hello world\",\n  \"value\": 2\n}",
