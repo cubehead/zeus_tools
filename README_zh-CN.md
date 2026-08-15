@@ -186,6 +186,7 @@ ctest --preset core
 ```sh
 ./build/core/zeus_core_benchmark
 ./build/core/zeus_csv_benchmark
+./build/core/zeus_app_processing_benchmark
 ```
 
 同一构建还会生成 `build/core/zeus-tools-cli`。

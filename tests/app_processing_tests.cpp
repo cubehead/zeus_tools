@@ -36,6 +36,8 @@ void test_csv_analysis() {
 
     expect(result.process.ok, "CSV analysis should succeed");
     expect(result.csv != nullptr, "CSV analysis should create a table document");
+    expect(result.document == nullptr,
+           "CSV analysis should not duplicate the table as a highlighted document");
     expect(result.csv->rows.size() == 3, "CSV should retain all rows");
     expect(result.first_row_header, "CSV header preference should be retained");
 }

@@ -74,6 +74,8 @@ void compose(eui::Ui& ui, const eui::Screen& screen) {
         context.margin + 507.0f + context.header_spacer_width;
 
     ui.setFindShortcutTarget("bottom.search.hit");
+    ui.setOpenShortcut([] { controller::open_input_file(); });
+    ui.setSaveShortcut([] { controller::export_result(); });
     ui.setEscapeShortcut([&ui] {
         if (app_state.about_dialog_open) {
             app_state.about_dialog_open = false;

@@ -420,7 +420,7 @@ void analyze_input(bool debounce) {
                 request_full_repaint();
                 return;
             }
-            if (!completed.value.document) return;
+            if (!completed.value.document && !completed.value.csv) return;
             const processing::AnalysisResult& payload = completed.value;
             app_state.result.detected_input_kind = payload.detected;
             app_state.result.output_kind = payload.process.output_kind;

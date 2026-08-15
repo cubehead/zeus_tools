@@ -128,9 +128,8 @@ if(ZEUS_BUILD_APP)
         set(ZEUS_EUI_SOURCE_ROOT "${eui_neo_SOURCE_DIR}")
     endif()
 
-    # EUI-NEO v0.5.3 only exposes arrow/hand cursors. Apply a small,
-    # idempotent compatibility patch so pane splitters can use the native
-    # vertical-resize cursor on macOS and Windows.
+    # Apply small, idempotent EUI-NEO v0.5.3 compatibility patches for the
+    # native splitter cursor, desktop shortcuts and file-drop input.
     execute_process(
         COMMAND ${CMAKE_COMMAND}
                 -DSOURCE_DIR=${ZEUS_EUI_SOURCE_ROOT}
@@ -312,6 +311,9 @@ if(ZEUS_BUILD_TESTS)
 
     add_executable(zeus_csv_benchmark tests/csv_benchmark.cpp)
     target_link_libraries(zeus_csv_benchmark PRIVATE zeus_core)
+
+    add_executable(zeus_app_processing_benchmark tests/app_processing_benchmark.cpp)
+    target_link_libraries(zeus_app_processing_benchmark PRIVATE zeus_app_processing)
 endif()
 
 if(ZEUS_ENABLE_PACKAGING)

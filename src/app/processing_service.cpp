@@ -107,7 +107,10 @@ AnalysisResult analyze(const AnalysisRequest& request) {
             display, zeus::ProcessingMode::DecodeOneLayer);
         output.can_continue_decode = next.ok && next.decoded;
     }
-    if (request.build_presentation) {
+    // CSV is rendered by the virtualized table view. Building a second plain
+    // highlighted document for the same multi-megabyte value wastes time and
+    // memory, and the desktop never displays it while the table is present.
+    if (request.build_presentation && !output.csv) {
         output.document = make_document(output.process, display);
     }
     output.elapsed_ms = std::chrono::duration_cast<std::chrono::milliseconds>(

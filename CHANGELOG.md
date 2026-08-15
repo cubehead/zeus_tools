@@ -32,6 +32,9 @@ semantic versioning after the first stable release.
   invalid, ambiguous and false-positive inputs.
 - Added `Cmd/Ctrl+F` to focus result search and `Esc` to dismiss the topmost
   open dialog, dropdown or crypto panel.
+- Added `Cmd/Ctrl+O` for native file open and `Cmd/Ctrl+S` for result export.
+- Added a 10 MiB application-processing benchmark covering detection, formatting,
+  presentation-model construction and search for JSON and CSV.
 - Added TOML detection, formatting, highlighting, section folding and JSON
   conversion in both directions.
 - Added conservative INI/Properties detection, formatting and JSON conversion
@@ -43,6 +46,8 @@ semantic versioning after the first stable release.
 
 ### Fixed
 
+- Avoided building a redundant full highlighted text document for CSV results;
+  the virtualized table is now the only presentation model retained.
 - Preserved source content kinds across format conversions, including JSON-to-CSV
   table presentation, instead of overwriting them with the output kind.
 - Kept the common Base64 Encode action as encoding even when the source already

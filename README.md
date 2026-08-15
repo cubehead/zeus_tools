@@ -195,6 +195,7 @@ Run the synthetic 10 MB benchmarks:
 ```sh
 ./build/core/zeus_core_benchmark
 ./build/core/zeus_csv_benchmark
+./build/core/zeus_app_processing_benchmark
 ```
 
 The same build also creates `build/core/zeus-tools-cli`.

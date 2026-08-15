@@ -37,7 +37,8 @@
 - CSV 虚拟行列、分隔符/表头切换、单元格定位与 TSV 复制。
 - System/Light/Dark 主题和十种界面语言；主题与语言偏好本地保存。
 - macOS 苹方/SF Mono 与 Windows 微软雅黑/Cascadia Mono 字体回退。
-- `Cmd/Ctrl+F` 聚焦底部搜索框；`Esc` 关闭最上层弹窗、下拉或摘要/HMAC 面板。
+- `Cmd/Ctrl+F` 聚焦底部搜索框，`Cmd/Ctrl+O` 打开文件，`Cmd/Ctrl+S` 导出结果；
+  `Esc` 关闭最上层弹窗、下拉或摘要/HMAC 面板。
 - 用户主动打开或拖入单个 UTF-8 文件，并可导出当前结果；不保存文件路径、
   最近文件或内容历史。
 - 离线命令行管道支持 stdin/单文件输入、stdout 输出、手动类型和稳定操作 ID；
@@ -45,7 +46,8 @@
 
 ### 工程与发布资源
 
-- C++17 核心测试和 1 MB/10 MB JSON、CSV 基准程序。
+- C++17 核心测试和 1 MB/10 MB JSON、CSV 基准程序；10 MiB 应用处理服务基准覆盖
+  检测、格式化、展示模型构建和搜索，当前 Debug 峰值常驻内存约 299 MiB。
 - EUI-NEO、pugixml、yaml-cpp、toml++ 均固定到不可变提交。
 - macOS App/DMG 和 Windows Portable ZIP 配置；不生成 NSIS/MSI。
 - 应用图标、README 截图、隐私/安全/贡献文档和 GitHub Issue/PR 模板。
@@ -62,7 +64,7 @@
 | --- | --- | --- |
 | P0 | Windows 10/11 原生构建与运行 | Debug/Release 构建、Portable ZIP、图标、VersionInfo、字体和核心交互通过。 |
 | P0 | 双平台输入与 IME 验证 | 中文 IME、emoji、组合字符、剪贴板、选择和撤销无阻断问题。 |
-| P0 | 10 MB UI 端到端验收 | 记录粘贴到首屏、滚动、搜索、清空、内存峰值和稳定性数据。 |
+| P0 | 10 MB UI 端到端验收 | 后台完整处理服务基准已完成；仍需记录粘贴到首屏、GPU 渲染、滚动、清空、撤销和整机峰值。 |
 | P1 | 键盘与可访问性 | 已完成搜索聚焦和 Esc 关闭；已确认当前 EUI 自绘控件未暴露到 macOS AX 树，需先补框架辅助功能桥接，再完成全键盘导航、焦点顺序和屏幕阅读器检查。 |
 | P1 | 检测质量量化 | 在现有版本化回归语料上扩充真实匿名样例，并输出准确率与高置信度误判率。 |
 | P1 | 签名与公证 | v0.1.0 已明确采用未签名 Alpha 包；后续版本评估 macOS notarization 与 Windows Authenticode。 |
