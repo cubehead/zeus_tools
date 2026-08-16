@@ -48,6 +48,9 @@ semantic versioning after the first stable release.
 
 ### Fixed
 
+- Hardened in-memory HMAC key cleanup with non-elidable zeroing across key
+  replacement, encoded-key temporaries, input composition and undo/redo snapshots;
+  the global Clear action no longer discards the key length before wiping it.
 - Prevented CSV table results from being mistaken for an uninitialized view and
   launching another full analysis on every composed frame.
 - Parsed explicitly selected CSV input/delimiters only once, omitted the unused

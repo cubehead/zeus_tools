@@ -1,6 +1,7 @@
 #include "detection_corpus.h"
 
 #include "zeus/json_formatter.h"
+#include "zeus/secure_memory.h"
 #include "zeus/crypto_service.h"
 #include "zeus/csv_document.h"
 #include "zeus/developer_tools.h"
@@ -13,6 +14,7 @@
 #include "zeus/xml_formatter.h"
 #include "zeus/yaml_formatter.h"
 
+#include <algorithm>
 #include <cstdlib>
 #include <iostream>
 #include <set>
@@ -57,6 +59,15 @@ void verify_detection_corpus() {
 
 int main() {
     verify_detection_corpus();
+    std::string sensitive = "temporary secret";
+    zeus::secure_zero(sensitive.data(), sensitive.size());
+    require(std::all_of(sensitive.begin(), sensitive.end(), [](char value) {
+                return value == '\0';
+            }),
+            "secure zeroing should overwrite every requested byte");
+    sensitive = "replacement secret";
+    zeus::secure_clear(sensitive);
+    require(sensitive.empty(), "secure string clearing should reset its logical value");
     const auto toml = zeus::format_toml(
         "title=\"Zeus Tools\"\n[window]\nwidth=1200\ndark=true");
     require(toml.ok && toml.value.find("[window]") != std::string::npos,

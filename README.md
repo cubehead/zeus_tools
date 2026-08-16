@@ -154,8 +154,9 @@ The project intentionally does not create an NSIS/MSI installer.
 - Automatic Base64/URL decoding stops after one layer. Use `Decode +1` to
   process another detected layer manually; the source input remains unchanged.
 - HMAC keys are kept in process memory only and are actively cleared when the
-  HMAC or digest panel closes. Test packages remain Alpha software, so avoid
-  using production secrets during evaluation.
+  value is replaced or the HMAC/digest panel closes, including app-owned undo
+  snapshots. OS or input-method copies cannot be guaranteed; avoid production
+  secrets in Alpha builds.
 
 ## Built with
 

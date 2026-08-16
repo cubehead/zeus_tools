@@ -9,6 +9,7 @@
 #include "zeus/crypto_service.h"
 
 #include <string>
+#include <string_view>
 #include <vector>
 
 namespace app::controller {
@@ -31,6 +32,7 @@ std::vector<std::string> hmac_key_encoding_items();
 
 void request_full_repaint();
 void clear_hmac_key();
+void set_hmac_key(std::string_view value);
 void clear_hmac_input_state(eui::Ui& ui);
 void update_search();
 void analyze_input(bool debounce = false);

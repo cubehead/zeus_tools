@@ -28,3 +28,9 @@ Zeus Tools processes untrusted text locally. It rejects XML DTD/entity input,
 limits YAML complexity, decodes automatically at most one layer, does not
 verify JWT signatures and does not persist HMAC keys. MD5 and SHA-1 are exposed
 only for compatibility and are labeled as weak algorithms.
+
+HMAC key buffers owned by the application are overwritten when replaced or
+cleared, including decoded-key temporaries and input undo/redo snapshots. This
+is defense in depth, not a guarantee that an operating system, input method,
+driver or crash dump has not retained an external copy; do not use production
+secrets in unsigned Alpha builds.

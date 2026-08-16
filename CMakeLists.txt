@@ -64,6 +64,7 @@ add_library(zeus_core
     src/core/ini_formatter.cpp
     src/core/json_formatter.cpp
     src/core/locale_preference.cpp
+    src/core/secure_memory.cpp
     src/core/structured_converter.cpp
     src/core/system_ui_font.cpp
     src/core/text_selection.cpp

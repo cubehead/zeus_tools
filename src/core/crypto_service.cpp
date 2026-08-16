@@ -1,4 +1,5 @@
 #include "zeus/crypto_service.h"
+#include "zeus/secure_memory.h"
 
 #include <algorithm>
 #include <array>
@@ -304,14 +305,13 @@ CryptoResult compute_hmac_encoded(
     std::string decoded_key;
     std::string error;
     if (!decode_hmac_key(key, key_encoding, decoded_key, error)) {
+        secure_clear(decoded_key);
         CryptoResult result;
         result.error = std::move(error);
         return result;
     }
     CryptoResult result = compute_hmac(input, decoded_key, algorithm);
-    std::fill(decoded_key.begin(), decoded_key.end(), '\0');
-    decoded_key.clear();
-    decoded_key.shrink_to_fit();
+    secure_clear(decoded_key);
     return result;
 }
 

@@ -151,7 +151,7 @@ void build_crypto_panel(eui::Ui& ui, const ViewContext& context) {
                                     .fontSize(14.0f)
                                     .theme(tokens)
                                     .onChange([](const std::string& value) {
-                                        app_state.crypto.hmac_key = value;
+                                        set_hmac_key(value);
                                     })
                                     .build();
                             } else {
@@ -165,7 +165,7 @@ void build_crypto_panel(eui::Ui& ui, const ViewContext& context) {
                                     .fontSize(14.0f)
                                     .style(secure_style)
                                     .onChange([](const std::string& value) {
-                                        app_state.crypto.hmac_key = value;
+                                        set_hmac_key(value);
                                     })
                                     .build();
                                 if (!app_state.crypto.hmac_key.empty()) {

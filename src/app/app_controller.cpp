@@ -9,6 +9,7 @@
 #include "eui/async.h"
 
 #include "zeus/csv_document.h"
+#include "zeus/secure_memory.h"
 #include "zeus/json_formatter.h"
 #include "zeus/locale_preference.h"
 #include "zeus/system_locale.h"
@@ -248,9 +249,7 @@ zeus::HmacKeyEncoding hmac_key_encoding() {
 }
 
 void clear_hmac_key() {
-    std::fill(app_state.crypto.hmac_key.begin(), app_state.crypto.hmac_key.end(), '\0');
-    app_state.crypto.hmac_key.clear();
-    app_state.crypto.hmac_key.shrink_to_fit();
+    zeus::secure_clear(app_state.crypto.hmac_key);
     app_state.crypto.key_visible = false;
     app_state.crypto.message_source_index = 0;
     app_state.crypto.message_dropdown_open = false;
@@ -258,18 +257,18 @@ void clear_hmac_key() {
     app_state.crypto.key_encoding_dropdown_open = false;
 }
 
+void set_hmac_key(std::string_view value) {
+    zeus::secure_clear(app_state.crypto.hmac_key);
+    app_state.crypto.hmac_key.assign(value.data(), value.size());
+}
+
 void clear_hmac_input_state(eui::Ui& ui) {
     using InputState = components::input_detail::InputModel::InputState;
     InputState& state = ui.state<InputState>("actions.crypto.key");
-    const auto wipe = [](std::string& value) {
-        std::fill(value.begin(), value.end(), '\0');
-        value.clear();
-        value.shrink_to_fit();
-    };
-    wipe(state.text);
-    wipe(state.compositionText);
-    for (auto& snapshot : state.undoStack) wipe(snapshot.text);
-    for (auto& snapshot : state.redoStack) wipe(snapshot.text);
+    zeus::secure_clear(state.text);
+    zeus::secure_clear(state.compositionText);
+    for (auto& snapshot : state.undoStack) zeus::secure_clear(snapshot.text);
+    for (auto& snapshot : state.redoStack) zeus::secure_clear(snapshot.text);
     state.undoStack.clear();
     state.redoStack.clear();
     ui.releaseStateScope("actions.crypto.key");
