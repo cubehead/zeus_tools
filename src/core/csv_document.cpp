@@ -5,7 +5,6 @@
 #include <cmath>
 #include <cctype>
 #include <regex>
-#include <sstream>
 
 namespace zeus {
 namespace {
@@ -90,19 +89,25 @@ double table_score(const CsvDocument& document) {
 } // namespace
 
 std::string CsvDocument::to_tsv() const {
-    std::ostringstream output;
+    std::size_t output_bytes = rows.empty() ? 0 : rows.size() - 1;
+    for (const auto& row : rows) {
+        if (!row.empty()) output_bytes += row.size() - 1;
+        for (const auto& cell : row) output_bytes += cell.size();
+    }
+
+    std::string output;
+    output.reserve(output_bytes);
     for (std::size_t row_index = 0; row_index < rows.size(); ++row_index) {
-        if (row_index != 0) output << '\n';
+        if (row_index != 0) output.push_back('\n');
         for (std::size_t column = 0; column < rows[row_index].size(); ++column) {
-            if (column != 0) output << '\t';
-            std::string value = rows[row_index][column];
-            std::replace(value.begin(), value.end(), '\t', ' ');
-            std::replace(value.begin(), value.end(), '\n', ' ');
-            std::replace(value.begin(), value.end(), '\r', ' ');
-            output << value;
+            if (column != 0) output.push_back('\t');
+            for (const char value : rows[row_index][column]) {
+                output.push_back(value == '\t' || value == '\n' || value == '\r'
+                    ? ' ' : value);
+            }
         }
     }
-    return output.str();
+    return output;
 }
 
 std::vector<CsvSearchMatch> CsvDocument::search(

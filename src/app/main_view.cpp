@@ -25,7 +25,10 @@ AppState& app_state = controller::state();
 
 void compose(eui::Ui& ui, const eui::Screen& screen) {
     controller::initialize_documentation_scenario();
-    if (!app_state.result.document) {
+    // CSV intentionally has no duplicate highlighted document. Treat its table
+    // model as an initialized result too, otherwise every composed frame starts
+    // another full CSV analysis and replaces the previous table.
+    if (!app_state.result.document && !app_state.result.csv) {
         app_state.result.document = std::make_shared<zeus::HighlightedDocument>(
             zeus::HighlightedDocument::plain(""));
         app_state.result.status = controller::tr(i18n::Text::WaitingForInput);

@@ -80,6 +80,35 @@ void test_csv_manual_delimiters_use_original_input() {
            "manual semicolon CSV should retain semicolon-separated cells");
 }
 
+void test_auto_csv_uses_manual_delimiter_hint() {
+    app::processing::AnalysisRequest request;
+    request.input = "name;value\nZeus;1\nHera;2";
+    request.csv_delimiter_index = 3;
+    const auto result = app::processing::analyze(request);
+
+    expect(result.process.ok && result.csv != nullptr,
+           "Auto input should use an explicitly selected CSV delimiter");
+    expect(result.detected == zeus::ContentKind::Csv &&
+               result.csv->delimiter == ';',
+           "delimiter-guided Auto analysis should retain CSV detection");
+    expect(result.process.value.empty(),
+           "desktop CSV analysis should not retain a duplicate TSV value");
+}
+
+void test_invalid_explicit_csv_retains_error_presentation() {
+    app::processing::AnalysisRequest request;
+    request.input = "name,value\nZeus";
+    request.input_type_id = "csv";
+    request.csv_delimiter_index = 1;
+    const auto result = app::processing::analyze(request);
+
+    expect(!result.process.ok && result.csv == nullptr,
+           "invalid explicit CSV should retain a failed table result");
+    expect(result.document != nullptr &&
+               result.document->text() == request.input,
+           "invalid explicit CSV should retain source text for error presentation");
+}
+
 void test_input_override() {
     app::processing::AnalysisRequest request;
     request.input = "name: Zeus\nenabled: true";
@@ -260,6 +289,8 @@ int main() {
     test_csv_analysis();
     test_json_to_csv_retains_source_kind();
     test_csv_manual_delimiters_use_original_input();
+    test_auto_csv_uses_manual_delimiter_hint();
+    test_invalid_explicit_csv_retains_error_presentation();
     test_input_override();
     test_text_override_wins_over_auto_detection();
     test_toml_analysis();

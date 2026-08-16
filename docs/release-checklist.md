@@ -35,6 +35,8 @@ This checklist is intentionally manual. The repository does not use GitHub CI.
       and formatted result without measuring the complete line in either UI surface.
 - [x] Large-input pages preserve UTF-8 boundaries and support page-local editing,
       selection and undo without copying the entire source into the EUI input model.
+- [x] macOS exact 10 MiB CSV reaches the 640-page input preview and virtual table,
+      completes analysis once, then returns to idle CPU; stable RSS is recorded.
 - [ ] Peak memory is recorded for 10 MB JSON and CSV.
 - [ ] macOS IME/emoji/combining characters pass.
 - [ ] Windows 10 and Windows 11 IME/emoji/combining characters pass.

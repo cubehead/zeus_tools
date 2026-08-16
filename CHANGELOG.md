@@ -48,6 +48,11 @@ semantic versioning after the first stable release.
 
 ### Fixed
 
+- Prevented CSV table results from being mistaken for an uninitialized view and
+  launching another full analysis on every composed frame.
+- Parsed explicitly selected CSV input/delimiters only once, omitted the unused
+  desktop TSV duplicate and replaced stream-based TSV generation with reserved
+  linear output construction.
 - Avoided building a redundant full highlighted text document for CSV results;
   the virtualized table is now the only presentation model retained.
 - Reduced large-result peak memory by moving processing/CSV models and removing

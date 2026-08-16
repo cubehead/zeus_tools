@@ -39,6 +39,27 @@ using CsvCellMatch = zeus::CsvSearchMatch;
 namespace {
 AppState app_state_storage;
 AppState& app_state = app_state_storage;
+
+#ifdef ZEUS_DOCS_SCENARIO
+std::string make_large_csv_scenario(std::size_t target_bytes) {
+    std::string input = "id,name,city,status,notes\n";
+    input.reserve(target_bytes);
+    std::size_t row = 1;
+    while (true) {
+        const std::string value = std::to_string(row) +
+            ",Zeus CSV benchmark,Shanghai,Active,searchable fixture\n";
+        if (input.size() + value.size() + 256 > target_bytes) break;
+        input += value;
+        ++row;
+    }
+    const std::string final_prefix = std::to_string(row) +
+        ",Zeus CSV final,Shanghai,Active,";
+    input += final_prefix;
+    input.append(target_bytes - input.size() - 1, 'x');
+    input.push_back('\n');
+    return input;
+}
+#endif
 }
 
 AppState& state() {
@@ -104,6 +125,10 @@ void initialize_documentation_scenario() {
         app_state.input_text.append(
             processing::kRecommendedMaxInputBytes - prefix.size() - suffix.size(), 'x');
         app_state.input_text.append(suffix);
+    } else if (scenario == "large-csv") {
+        app_state.input_text = make_large_csv_scenario(
+            processing::kRecommendedMaxInputBytes);
+        app_state.csv.delimiter_index = 1;
     }
 #endif
 }
