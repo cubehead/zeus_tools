@@ -8,6 +8,8 @@ semantic versioning after the first stable release.
 
 ### Added
 
+- Added a reusable macOS DMG/Windows Portable ZIP validator covering the GUI,
+  CLI, runtime assets, metadata, complete license set and forbidden demo files.
 - Added an offline `zeus-tools-cli` stdin/file-to-stdout pipeline using the same
   input types, stable action IDs, processing service and 10 MiB boundary as the app.
 - Added Unicode Escape/Unescape with explicit `\uXXXX` detection, supplementary

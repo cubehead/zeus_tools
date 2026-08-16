@@ -52,6 +52,8 @@ This checklist is intentionally manual. The repository does not use GitHub CI.
 - [ ] Uninstall/removal leaves no content history; only optional preference files
       may remain.
 - [ ] SHA-256 checksums are generated and verified.
+- [ ] `scripts/check-package.sh` passes against the final macOS DMG and Windows
+      Portable ZIP.
 - [ ] Signing/notarization status is stated accurately in release notes.
 
 ## Privacy and security

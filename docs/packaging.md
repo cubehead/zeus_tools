@@ -47,6 +47,13 @@ cmake --build build/package-macos --target package
 
 输出目录：`build/package-macos/packages/`。
 
+生成后验证 DMG 的 SHA-256、应用、CLI、运行时资源、版本信息、许可证和禁止资源：
+
+```sh
+./scripts/check-package.sh macos \
+  build/package-macos/packages/Zeus-Tools-0.1.0-macOS-arm64.dmg
+```
+
 如有 Developer ID Application 证书，在配置阶段显式传入：
 
 ```sh
@@ -84,6 +91,15 @@ ZIP 包含：
 - CPack 生成的 SHA-256 校验文件。
 
 Windows 资源脚本会嵌入应用图标、产品名、语义版本、构建号和文件描述。项目明确不配置 NSIS/MSI；发布的是解压即用的 Portable ZIP。
+
+生成后验证 ZIP 的 SHA-256、GUI/CLI、运行时资源、许可证和禁止资源：
+
+```sh
+./scripts/check-package.sh windows \
+  build/package-windows/packages/Zeus-Tools-0.1.0-Windows-AMD64-portable.zip
+```
+
+Windows 原生环境也可以先解压 ZIP，再使用相同命令把第二个参数指向解压根目录。
 
 若后续拥有代码签名证书，应在执行 `package` 前签名：
 

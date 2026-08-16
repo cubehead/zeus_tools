@@ -29,6 +29,8 @@ docs/licenses/TRAY-MIT.txt
 docs/licenses/YAML-CPP-MIT.txt
 docs/licenses/YYJSON-MIT.txt
 docs/licenses/ZLIB.txt
+cmake/validate_installed_package.cmake
+scripts/check-package.sh
 "
 
 for file in $required_files; do
