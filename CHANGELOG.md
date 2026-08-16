@@ -53,6 +53,8 @@ semantic versioning after the first stable release.
 - Parsed explicitly selected CSV input/delimiters only once, omitted the unused
   desktop TSV duplicate and replaced stream-based TSV generation with reserved
   linear output construction.
+- Removed a full-input temporary allocation from timestamp action availability
+  checks by parsing bounded `string_view` data directly.
 - Avoided building a redundant full highlighted text document for CSV results;
   the virtualized table is now the only presentation model retained.
 - Reduced large-result peak memory by moving processing/CSV models and removing

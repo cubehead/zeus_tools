@@ -18,6 +18,7 @@
 #include <set>
 #include <sstream>
 #include <string>
+#include <string_view>
 
 namespace {
 
@@ -103,6 +104,10 @@ int main() {
     require(zeus::looks_like_unix_timestamp("1700000000000") &&
                 !zeus::looks_like_unix_timestamp("order-1700000000"),
             "timestamp suggestions should require exact 10 or 13 digit input");
+    const std::string embedded_timestamp = "x1700000000y";
+    require(zeus::looks_like_unix_timestamp(
+                std::string_view(embedded_timestamp).substr(1, 10)),
+            "timestamp suggestions should parse bounded non-owning input");
     require(zeus::compute_digest("", zeus::DigestAlgorithm::Md5).hex ==
                 "d41d8cd98f00b204e9800998ecf8427e",
             "MD5 should match its standard empty-string vector");

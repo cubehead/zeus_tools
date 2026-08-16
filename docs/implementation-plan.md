@@ -67,7 +67,7 @@
 | --- | --- | --- |
 | P0 | Windows 10/11 原生构建与运行 | Debug/Release 构建、Portable ZIP、图标、VersionInfo、字体和核心交互通过。 |
 | P0 | 双平台输入与 IME 验证 | 中文 IME、emoji、组合字符、剪贴板、选择和撤销无阻断问题。 |
-| P0 | 10 MB UI 端到端验收 | 后台基准、超限保护、macOS 精确 10 MiB JSON/CSV 首屏与稳定 RSS、16 KiB 分页编辑已完成；仍需跨页连续选择、整机峰值采样和 Windows 原生复验。 |
+| P0 | 10 MB UI 端到端验收 | 后台基准、超限保护、macOS 精确 10 MiB JSON/CSV 首屏、稳定 RSS/整机峰值、16 KiB 分页编辑已完成；仍需跨页连续选择和 Windows 原生复验。 |
 | P1 | 键盘与可访问性 | 已完成搜索聚焦和 Esc 关闭；已确认当前 EUI 自绘控件未暴露到 macOS AX 树，需先补框架辅助功能桥接，再完成全键盘导航、焦点顺序和屏幕阅读器检查。 |
 | P1 | 检测质量外部验证 | 仓库内 55 例基线与报告已完成；仍需收集经授权脱敏、未用于规则开发的真实样例，输出独立准确率与高置信度误判率。 |
 | P1 | 签名与公证 | v0.1.0 已明确采用未签名 Alpha 包；后续版本评估 macOS notarization 与 Windows Authenticode。 |

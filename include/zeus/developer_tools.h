@@ -3,6 +3,7 @@
 #include "zeus/json_formatter.h"
 
 #include <string>
+#include <string_view>
 
 namespace zeus {
 
@@ -11,7 +12,7 @@ FormatResult decode_html_entities(const std::string& input);
 std::string encode_hex(const std::string& input);
 FormatResult decode_hex(const std::string& input);
 bool looks_like_hex_encoding(const std::string& input);
-bool looks_like_unix_timestamp(const std::string& input);
+bool looks_like_unix_timestamp(std::string_view input);
 FormatResult format_unix_timestamp(const std::string& input);
 
 } // namespace zeus

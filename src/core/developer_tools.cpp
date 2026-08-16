@@ -1,6 +1,7 @@
 #include "zeus/developer_tools.h"
 
 #include <algorithm>
+#include <charconv>
 #include <cctype>
 #include <chrono>
 #include <cstdint>
@@ -8,6 +9,7 @@
 #include <iomanip>
 #include <limits>
 #include <sstream>
+#include <string_view>
 
 namespace zeus {
 namespace {
@@ -57,19 +59,27 @@ std::string trim_ascii(const std::string& input) {
     return first < last ? std::string(first, last) : std::string{};
 }
 
-bool parse_timestamp(const std::string& input, std::int64_t& milliseconds) {
-    const std::string trimmed = trim_ascii(input);
+bool parse_timestamp(std::string_view input, std::int64_t& milliseconds) {
+    while (!input.empty() &&
+           std::isspace(static_cast<unsigned char>(input.front())) != 0) {
+        input.remove_prefix(1);
+    }
+    while (!input.empty() &&
+           std::isspace(static_cast<unsigned char>(input.back())) != 0) {
+        input.remove_suffix(1);
+    }
+    const std::string_view trimmed = input;
     if (trimmed.size() != 10 && trimmed.size() != 13) return false;
     if (!std::all_of(trimmed.begin(), trimmed.end(), [](unsigned char ch) {
             return std::isdigit(ch) != 0;
         })) return false;
-    try {
-        const std::int64_t raw = std::stoll(trimmed);
-        milliseconds = trimmed.size() == 10 ? raw * 1000 : raw;
-        return true;
-    } catch (...) {
-        return false;
-    }
+    std::int64_t raw = 0;
+    const auto converted = std::from_chars(
+        trimmed.data(), trimmed.data() + trimmed.size(), raw);
+    if (converted.ec != std::errc{} ||
+        converted.ptr != trimmed.data() + trimmed.size()) return false;
+    milliseconds = trimmed.size() == 10 ? raw * 1000 : raw;
+    return true;
 }
 
 bool safe_gmtime(std::time_t value, std::tm& output) {
@@ -213,7 +223,7 @@ bool looks_like_hex_encoding(const std::string& input) {
     return decode_hex(trimmed).ok;
 }
 
-bool looks_like_unix_timestamp(const std::string& input) {
+bool looks_like_unix_timestamp(std::string_view input) {
     std::int64_t ignored = 0;
     return parse_timestamp(input, ignored);
 }

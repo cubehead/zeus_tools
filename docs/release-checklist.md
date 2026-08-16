@@ -37,7 +37,8 @@ This checklist is intentionally manual. The repository does not use GitHub CI.
       selection and undo without copying the entire source into the EUI input model.
 - [x] macOS exact 10 MiB CSV reaches the 640-page input preview and virtual table,
       completes analysis once, then returns to idle CPU; stable RSS is recorded.
-- [ ] Peak memory is recorded for 10 MB JSON and CSV.
+- [x] macOS Physical footprint and process-lifetime peak are recorded for exact
+      10 MiB JSON and CSV scenarios.
 - [ ] macOS IME/emoji/combining characters pass.
 - [ ] Windows 10 and Windows 11 IME/emoji/combining characters pass.
 - [ ] Minimum supported macOS version starts the app.

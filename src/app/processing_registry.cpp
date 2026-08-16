@@ -96,7 +96,7 @@ static_assert(content_definitions_are_complete(),
 
 bool action_applies(const Action& action, Kind kind, std::string_view input) {
     if (action.common) return kind != Kind::Empty;
-    if (action.timestamp_candidate) return zeus::looks_like_unix_timestamp(std::string(input));
+    if (action.timestamp_candidate) return zeus::looks_like_unix_timestamp(input);
     return action.input_kind == kind;
 }
 
