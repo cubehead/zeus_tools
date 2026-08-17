@@ -6,13 +6,61 @@
 #include <iostream>
 #include <set>
 #include <string>
+#include <string_view>
 
 namespace {
 
-void expect(bool condition, const char* message) {
+void expect(bool condition, std::string_view message) {
     if (condition) return;
     std::cerr << "FAILED: " << message << '\n';
     std::exit(1);
+}
+
+std::string sample_for_kind(zeus::ContentKind kind) {
+    switch (kind) {
+    case zeus::ContentKind::Json:
+        return R"({"name":"Zeus","value":1})";
+    case zeus::ContentKind::Xml:
+        return "<tool><name>Zeus</name><value>1</value></tool>";
+    case zeus::ContentKind::Yaml:
+        return "- name: Zeus\n  active: true\n- name: Tools\n  active: false";
+    case zeus::ContentKind::Toml:
+        return "name = \"Zeus\"\nvalue = 1";
+    case zeus::ContentKind::Ini:
+        return "[tool]\nname=Zeus\nvalue=1";
+    case zeus::ContentKind::Jwt:
+        return "eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0."
+               "eyJuYW1lIjoiWmV1cyIsImFjdGl2ZSI6dHJ1ZX0.signature";
+    case zeus::ContentKind::JsonEscaped:
+        return R"({\"name\":\"Zeus\",\"value\":1})";
+    case zeus::ContentKind::Base64:
+        return "SGVsbG8gWmV1cw==";
+    case zeus::ContentKind::UrlEncoded:
+        return "Zeus%20Tools%20%E4%BD%A0%E5%A5%BD";
+    case zeus::ContentKind::HtmlEntity:
+        return "Zeus &amp; &#x4F60;&#22909;";
+    case zeus::ContentKind::HexEncoded:
+        return "0x5a 65 75 73";
+    case zeus::ContentKind::UnicodeEscaped:
+        return R"(Zeus \u4F60\u597D)";
+    case zeus::ContentKind::Csv:
+        return "name,value\nZeus,1\nHera,2";
+    case zeus::ContentKind::Text:
+        return "Zeus Tools 你好";
+    case zeus::ContentKind::Empty:
+    case zeus::ContentKind::Count:
+        return {};
+    }
+    return {};
+}
+
+std::string sample_for_action(const app::processing::ActionDefinition& action) {
+    if (action.mode == zeus::ProcessingMode::JsonToCsv) {
+        return R"([{"name":"Zeus","value":1},{"name":"Hera","value":2}])";
+    }
+    if (action.timestamp_candidate) return "1700000000";
+    if (action.common) return sample_for_kind(zeus::ContentKind::Text);
+    return sample_for_kind(action.input_kind);
 }
 
 void test_json_analysis() {
@@ -282,6 +330,53 @@ void test_processing_registry() {
            "unknown input types should safely fall back to auto");
 }
 
+void test_every_registered_input_type_executes() {
+    for (const auto& type : app::processing::registered_input_types()) {
+        app::processing::AnalysisRequest request;
+        request.input_type_id = std::string(type.id);
+        request.input = type.mode == zeus::ProcessingMode::Auto
+            ? sample_for_kind(zeus::ContentKind::Json)
+            : sample_for_kind(type.kind);
+        const auto result = app::processing::analyze(request);
+        const std::string context = "registered input type should execute: " +
+            std::string(type.id);
+        expect(result.process.ok, context);
+        expect(result.document != nullptr || result.csv != nullptr,
+               context + " should build a presentation model");
+        if (type.mode != zeus::ProcessingMode::Auto) {
+            expect(result.detected == type.kind,
+                   context + " should retain its declared content kind");
+        }
+    }
+}
+
+void test_every_registered_action_executes() {
+    for (const auto& action : app::processing::registered_actions()) {
+        app::processing::AnalysisRequest request;
+        request.input = sample_for_action(action);
+        request.action_id = std::string(app::processing::action_id(action));
+        const auto* applicable = app::processing::find_action(
+            request.action_id, action.input_kind, request.input);
+        const std::string context = "registered action should execute: " +
+            request.action_id + " for " +
+            std::string(zeus::content_kind_name(action.input_kind));
+        expect(applicable == &action,
+               context + " should resolve to its exact registry entry");
+        const auto direct = zeus::process_text(request.input, action.mode);
+        expect(direct.ok, context + " should succeed in the core processor");
+        const auto result = app::processing::analyze(request);
+        expect(result.process.ok, context);
+        if (!action.timestamp_candidate) {
+            expect(result.detected == action.input_kind,
+                   context + " should be applied to the intended detected type");
+        }
+        expect(result.process.output_kind == direct.output_kind,
+               context + " should retain the handler output type");
+        expect(result.document != nullptr || result.csv != nullptr,
+               context + " should build a presentation model");
+    }
+}
+
 } // namespace
 
 int main() {
@@ -299,6 +394,8 @@ int main() {
     test_recommended_input_size_boundary();
     test_large_input_pages_preserve_utf8_boundaries();
     test_processing_registry();
+    test_every_registered_input_type_executes();
+    test_every_registered_action_executes();
     std::cout << "All app processing tests passed.\n";
     return 0;
 }

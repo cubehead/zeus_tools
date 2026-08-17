@@ -8,6 +8,8 @@ semantic versioning after the first stable release.
 
 ### Added
 
+- Added table-driven execution smoke coverage for every registered desktop input
+  type and action, including handler applicability, output kind and presentation construction.
 - Added a reusable macOS DMG/Windows Portable ZIP validator covering the GUI,
   CLI, runtime assets, metadata, complete license set and forbidden demo files.
 - Added an offline `zeus-tools-cli` stdin/file-to-stdout pipeline using the same
