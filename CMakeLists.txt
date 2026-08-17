@@ -182,6 +182,16 @@ if(ZEUS_BUILD_APP)
         message(FATAL_ERROR "Failed to add file-drop support to EUI-NEO")
     endif()
 
+    execute_process(
+        COMMAND ${CMAKE_COMMAND}
+                -DSOURCE_DIR=${ZEUS_EUI_SOURCE_ROOT}
+                -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/patch_eui_windows_ime.cmake
+        RESULT_VARIABLE ZEUS_EUI_WINDOWS_IME_PATCH_RESULT
+    )
+    if(NOT ZEUS_EUI_WINDOWS_IME_PATCH_RESULT EQUAL 0)
+        message(FATAL_ERROR "Failed to preserve Windows IME compositions in EUI-NEO")
+    endif()
+
     set(ZEUS_APP_SOURCES
         "${ZEUS_EUI_APP_MAIN}"
         src/app/app.cpp

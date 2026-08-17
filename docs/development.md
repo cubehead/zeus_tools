@@ -136,7 +136,7 @@ Unix 路径、SQL、日志、环境变量、HTTP 头和普通查询串。
 这些数字仅代表仓库内固定回归语料，不是对真实世界数据分布的统计推断。后续仍需使用
 经过脱敏且获得授权的真实样例建立独立评估集，避免在同一开发语料上调参与评估。
 
-CSV 大数据虚拟滚动、精确搜索定位以及 XML、YAML、摘要/HMAC、Base64、URL Decode 已完成首个可用版本。`v0.2.0` 提供 macOS arm64 DMG 和通过 MinGW-w64 交叉构建的 Windows x64 Portable ZIP，并在两个包中加入 CLI。Windows 11 原生 MinGW/MSVC 构建与启动冒烟已完成；Windows 10、原生 IME 候选框、签名/公证和跨页连续选择仍按发布清单推进。
+CSV 大数据虚拟滚动、精确搜索定位以及 XML、YAML、摘要/HMAC、Base64、URL Decode 已完成首个可用版本。`v0.2.0` 提供 macOS arm64 DMG 和通过 MinGW-w64 交叉构建的 Windows x64 Portable ZIP，并在两个包中加入 CLI。Windows 11 原生 MinGW/MSVC 构建、启动和 IME 已完成；Windows 10、签名/公证和跨页连续选择仍按发布清单推进。
 
 ## Windows 11 原生验证
 
@@ -149,12 +149,13 @@ CSV 大数据虚拟滚动、精确搜索定位以及 XML、YAML、摘要/HMAC、
 - ZIP SHA-256、许可文件、运行时资源和禁止资源检查；
 - 解压目录中的完整 CLI 冒烟和 GUI 启动；
 - GUI 中文、emoji、组合字符直输与渲染、JSON 自动识别/格式化及中文搜索；
+- Windows IME 完整拼音预编辑、候选框定位与中文候选提交；
 - 精确 10 MiB JSON、CSV 和应用处理服务基准。
 
 MinGW GUI/CLI 采用静态运行时，`objdump` 已确认不再导入
-`libgcc_s_seh-1.dll`、`libstdc++-6.dll` 或 `libwinpthread-1.dll`。Unicode 直输
-测试不能替代 IME 组合与候选框提交，因此 Windows 10/11 原生 IME 和 Windows 10
-启动仍保持待验收状态。
+`libgcc_s_seh-1.dll`、`libstdc++-6.dll` 或 `libwinpthread-1.dll`。2026-08-18
+补充的真实按键验证确认 Windows 11 拼音组合 `zhong'wen` 能保持完整预编辑，候选
+“中文”提交后不残留 ASCII 拼音。Windows 10 启动与 IME 仍保持待验收状态。
 
 ## 依赖
 

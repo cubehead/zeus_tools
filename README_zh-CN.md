@@ -32,7 +32,7 @@ Zeus Tools 是一款离线、跨平台的开发者工具箱，用于格式化、
 Windows。
 
 > 项目状态：**Alpha**。现已提供可供测试的发布包。Windows x64 版本最初由交叉
-> 编译生成；Windows 11 原生 MinGW/MSVC 构建与启动已通过，Windows 10 和 IME 仍待验证。
+> 编译生成；Windows 11 原生 MinGW/MSVC 构建、启动与 IME 已通过，Windows 10 仍待验证。
 
 ## 下载
 
@@ -131,14 +131,14 @@ zeus-tools-cli --list-actions
 | 平台 | 产物 | 当前状态 |
 | --- | --- | --- |
 | macOS 12+ | `.app` / `.dmg` | arm64 版本已测试；签名和公证待完成 |
-| Windows 10/11 x64 | 便携版 `.zip` | Windows 11 原生构建/启动通过；Windows 10/IME 待完成 |
+| Windows 10/11 x64 | 便携版 `.zip` | Windows 11 原生构建/启动/IME 通过；Windows 10 待完成 |
 
 本项目有意不提供 NSIS/MSI 安装包。
 
 ## Alpha 版本限制
 
-- Windows 11 原生 MinGW/MSVC 构建、便携 ZIP 与启动验证已通过；Windows 10
-  和原生 IME 验证仍待完成。
+- Windows 11 原生 MinGW/MSVC 构建、便携 ZIP、启动与 IME 验证已通过；
+  Windows 10 验证仍待完成。
 - 测试包未经签名；用于公开生产版本的 macOS 公证和 Windows 代码签名尚未
   配置。
 - YAML 有意只接受单文档安全子集，并拒绝指令、标签、锚点、别名和多文档

@@ -16,6 +16,8 @@ semantic versioning after the first stable release.
   Portable ZIP does not require external GCC, C++ or pthread DLLs.
 - Compiled all MSVC sources as UTF-8 so localized strings are independent of the
   active Windows system code page.
+- Preserved active Windows IME compositions by ignoring intermediate GLFW
+  character callbacks until the selected candidate is committed.
 
 ## [0.2.0] - 2026-08-17
 

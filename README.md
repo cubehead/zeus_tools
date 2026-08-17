@@ -33,7 +33,7 @@ macOS and Windows.
 
 > Project status: **Alpha**. Release packages are available for testing.
 > The Windows x64 package was originally cross-compiled. Native Windows 11
-> MinGW/MSVC build and startup validation now pass; Windows 10 and IME validation remain.
+> MinGW/MSVC build, startup and IME validation now pass; Windows 10 validation remains.
 
 ## Download
 
@@ -137,14 +137,14 @@ IDs come from the same static registry as the desktop application.
 | Platform | Artifact | Current status |
 | --- | --- | --- |
 | macOS 12+ | `.app` / `.dmg` | arm64 build tested; signing and notarization pending |
-| Windows 10/11 x64 | Portable `.zip` | Windows 11 native build/startup passed; Windows 10/IME pending |
+| Windows 10/11 x64 | Portable `.zip` | Windows 11 native build/startup/IME passed; Windows 10 pending |
 
 The project intentionally does not create an NSIS/MSI installer.
 
 ## Alpha limitations
 
-- Windows 11 native MinGW/MSVC build, Portable ZIP and startup validation pass;
-  Windows 10 and native IME validation remain.
+- Windows 11 native MinGW/MSVC build, Portable ZIP, startup and IME validation
+  pass; Windows 10 validation remains.
 - Test packages are unsigned; macOS notarization and Windows code signing are
   not yet configured for a public production release.
 - YAML intentionally accepts a single-document safe subset and rejects
