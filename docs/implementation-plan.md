@@ -1,8 +1,8 @@
 # Zeus Tools 当前开发计划
 
-> 状态：v0.1.0 已发布，进入 0.1.x 稳定化
+> 状态：v0.2.0 Alpha 已发布，继续跨平台稳定化
 >
-> 更新日期：2026-08-15
+> 更新日期：2026-08-17
 >
 > 产品基线：[产品需求](./product-requirements.md)
 >
@@ -60,6 +60,8 @@
   PE/VersionInfo、运行时资源和系统 DLL 依赖检查。
 - `v0.1.0` 标签、双平台产物、SHA-256 文件及双语发布说明已发布到
   GitHub Releases。
+- `v0.2.0` 加入 TOML/INI、Unicode/HTML/Hex、文件工作流、离线 CLI、
+  大文本分页编辑、处理器全量执行测试和更严格的双平台包校验。
 
 ## 2. 当前未完成
 
@@ -70,7 +72,7 @@
 | P0 | 10 MB UI 端到端验收 | 后台基准、超限保护、macOS 精确 10 MiB JSON/CSV 首屏、稳定 RSS/整机峰值、16 KiB 分页编辑已完成；仍需跨页连续选择和 Windows 原生复验。 |
 | P1 | 键盘与可访问性 | 已完成搜索聚焦和 Esc 关闭；已确认当前 EUI 自绘控件未暴露到 macOS AX 树，需先补框架辅助功能桥接，再完成全键盘导航、焦点顺序和屏幕阅读器检查。 |
 | P1 | 检测质量外部验证 | 仓库内 55 例基线与报告已完成；仍需收集经授权脱敏、未用于规则开发的真实样例，输出独立准确率与高置信度误判率。 |
-| P1 | 签名与公证 | v0.1.0 已明确采用未签名 Alpha 包；后续版本评估 macOS notarization 与 Windows Authenticode。 |
+| P1 | 签名与公证 | v0.2.0 已明确采用未签名 Alpha 包；后续版本评估 macOS notarization 与 Windows Authenticode。 |
 
 ## 3. 当前里程碑
 
@@ -78,8 +80,8 @@
 | --- | --- | --- |
 | 0.1 Alpha 功能闭环 | 已完成 | 核心格式、编码、CSV、搜索、选择、主题、语言和 crypto 可用。 |
 | v0.1.0 公开 Alpha | 已发布 | `v0.1.0` 标签和 GitHub Release 包含 macOS arm64 DMG、Windows x64 Portable ZIP、校验值与发布说明。 |
-| 0.1.x 稳定化 | 进行中 | 完成 Windows 原生、双平台 IME、10 MB UI 端到端及键盘可访问性验收。 |
-| 0.2 轻量扩展 | 进行中 | TOML、INI/Properties、HTML Entity、Hex、时间戳和文件工作流完成双平台验证。 |
+| v0.2.0 扩展 Alpha | 已发布 | 新格式、编码、文件工作流、CLI、大文本保护和异常隔离进入双平台候选包。 |
+| 0.2.x 稳定化 | 进行中 | 完成 Windows 原生、双平台 IME、10 MB UI 端到端及键盘可访问性验收。 |
 
 ## 4. 后续版本发布门禁
 

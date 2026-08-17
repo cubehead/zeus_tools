@@ -23,7 +23,7 @@
   <a href="#screenshots">Screenshots</a> ·
   <a href="#built-with">Built with</a> ·
   <a href="#build-prerequisites">Build</a> ·
-  <a href="docs/releases/v0.1.0.md">Release notes</a>
+  <a href="docs/releases/v0.2.0.md">Release notes</a>
 </p>
 
 Zeus Tools is an offline, cross-platform developer toolbox for formatting,
@@ -117,9 +117,8 @@ theme and language preferences are persisted. See [PRIVACY.md](PRIVACY.md).
 
 ## Command-line pipeline
 
-Current source builds create `zeus-tools-cli` (`zeus-tools-cli.exe` on Windows),
-and new packages built from `main` include it. The published v0.1.0 artifacts
-predate the CLI. It reads one UTF-8 file or stdin, writes only the processed
+Release packages include `zeus-tools-cli` (`zeus-tools-cli.exe` on Windows).
+It reads one UTF-8 file or stdin, writes only the processed
 value to stdout, keeps diagnostics on stderr and enforces the same 10 MiB input
 limit.
 

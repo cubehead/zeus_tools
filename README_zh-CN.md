@@ -23,7 +23,7 @@
   <a href="#截图">截图</a> ·
   <a href="#开源组件">开源组件</a> ·
   <a href="#构建前置条件">构建</a> ·
-  <a href="docs/releases/v0.1.0.md">发布说明</a>
+  <a href="docs/releases/v0.2.0.md">发布说明</a>
 </p>
 
 Zeus Tools 是一款离线、跨平台的开发者工具箱，用于格式化、检查、转换、
@@ -112,8 +112,7 @@ Windows。
 
 ## 命令行管道
 
-当前源码构建会生成 `zeus-tools-cli`（Windows 为 `zeus-tools-cli.exe`），从
-`main` 新构建的发布包也会包含它；已发布的 v0.1.0 产物早于 CLI 功能。它从
+发布包包含 `zeus-tools-cli`（Windows 为 `zeus-tools-cli.exe`）。它从
 一个 UTF-8 文件或 stdin 读取内容，仅将处理结果写入 stdout，诊断信息写入
 stderr，并使用与桌面应用相同的 10 MiB 输入上限。
 

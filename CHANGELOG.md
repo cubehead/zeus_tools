@@ -6,6 +6,8 @@ semantic versioning after the first stable release.
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-08-17
+
 ### Added
 
 - Added table-driven execution smoke coverage for every registered desktop input
@@ -137,5 +139,6 @@ semantic versioning after the first stable release.
 
 - XML DTD/entity rejection, constrained YAML parsing and local-only processing.
 
-[Unreleased]: https://github.com/cubehead/zeus_tools/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/cubehead/zeus_tools/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/cubehead/zeus_tools/releases/tag/v0.2.0
 [0.1.0]: https://github.com/cubehead/zeus_tools/releases/tag/v0.1.0

@@ -80,7 +80,7 @@ void initialize_documentation_scenario() {
 
     if (scenario == "json") {
         app_state.input_text =
-            R"({"service":"Zeus Tools","version":"0.1.0","offline":true,"formats":["JSON","XML","YAML","CSV"],"features":{"autoDetect":true,"decodeDepth":1,"theme":"system"},"limits":{"maxInputMb":10},"releasedAt":"2026-08-14T08:00:00Z"})";
+            R"({"service":"Zeus Tools","version":"0.2.0","offline":true,"formats":["JSON","XML","YAML","TOML","INI","CSV"],"features":{"autoDetect":true,"decodeDepth":1,"theme":"system"},"limits":{"maxInputMb":10},"releasedAt":"2026-08-17T08:00:00Z"})";
     } else if (scenario == "csv") {
         app_state.input_text =
             "id,name,format,status,latency_ms\n"
@@ -108,7 +108,7 @@ void initialize_documentation_scenario() {
             "[formats]\n"
             "structured = [\"JSON\", \"XML\", \"YAML\", \"TOML\"]";
     } else if (scenario == "hmac") {
-        app_state.input_text = "release=0.1.0&platform=desktop&offline=true";
+        app_state.input_text = "release=0.2.0&platform=desktop&offline=true";
         app_state.result.detected_input_kind = zeus::ContentKind::Text;
         app_state.result.output_kind = zeus::ContentKind::Text;
         app_state.crypto.panel_open = true;

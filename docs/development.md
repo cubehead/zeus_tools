@@ -2,7 +2,7 @@
 
 ## 当前阶段
 
-项目已发布 `v0.1.0` Alpha，当前进入 0.1.x 稳定化阶段。已落地能力如下：
+项目已发布 `v0.2.0` Alpha，当前进入 0.2.x 跨平台稳定化阶段。已落地能力如下：
 
 当前实现与完整产品基线之间的差距统一记录在根目录 README 的
 “Alpha limitations”及[发布检查清单](./release-checklist.md)，本节只描述已落地能力。
@@ -136,7 +136,7 @@ Unix 路径、SQL、日志、环境变量、HTTP 头和普通查询串。
 这些数字仅代表仓库内固定回归语料，不是对真实世界数据分布的统计推断。后续仍需使用
 经过脱敏且获得授权的真实样例建立独立评估集，避免在同一开发语料上调参与评估。
 
-CSV 大数据虚拟滚动、精确搜索定位以及 XML、YAML、摘要/HMAC、Base64、URL Decode 已完成首个可用版本。`v0.1.0` 已提供 macOS arm64 DMG 和通过 MinGW-w64 交叉构建的 Windows x64 Portable ZIP。Windows 原生运行验证、签名/公证和 10 MB UI 端到端性能验收仍按发布清单推进。
+CSV 大数据虚拟滚动、精确搜索定位以及 XML、YAML、摘要/HMAC、Base64、URL Decode 已完成首个可用版本。`v0.2.0` 提供 macOS arm64 DMG 和通过 MinGW-w64 交叉构建的 Windows x64 Portable ZIP，并在两个包中加入 CLI。Windows 原生运行验证、签名/公证和跨页连续选择仍按发布清单推进。
 
 ## 依赖
 

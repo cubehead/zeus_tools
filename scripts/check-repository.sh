@@ -22,6 +22,7 @@ docs/packaging.md
 docs/product-requirements.md
 docs/release-checklist.md
 docs/releases/v0.1.0.md
+docs/releases/v0.2.0.md
 docs/assets/overview-dark.jpg
 docs/assets/csv-table.jpg
 docs/assets/digest-hmac.jpg
