@@ -6,6 +6,15 @@ semantic versioning after the first stable release.
 
 ## [Unreleased]
 
+### Fixed
+
+- Fixed digest and HMAC results becoming empty on compilers that evaluate the
+  output-vector move before the platform hashing call.
+- Made Windows CNG hashing allocate the provider-reported hash object and handle
+  empty messages without passing a null input pointer.
+- Statically linked the MinGW runtime into Windows GUI and CLI executables so the
+  Portable ZIP does not require external GCC, C++ or pthread DLLs.
+
 ## [0.2.0] - 2026-08-17
 
 ### Added

@@ -217,16 +217,32 @@ bool bcrypt_hash(
     if (BCryptOpenAlgorithmProvider(
             &provider, bcrypt_algorithm(algorithm), nullptr, flags) < 0) return false;
     const auto close_provider = [&] { BCryptCloseAlgorithmProvider(provider, 0); };
+    ULONG object_size = 0;
+    ULONG result_size = 0;
+    if (BCryptGetProperty(
+            provider, BCRYPT_OBJECT_LENGTH,
+            reinterpret_cast<PUCHAR>(&object_size), sizeof(object_size),
+            &result_size, 0) < 0) {
+        close_provider();
+        return false;
+    }
+    std::vector<std::uint8_t> hash_object(object_size);
     PUCHAR key_data = hmac
         ? reinterpret_cast<PUCHAR>(const_cast<char*>(key.data()))
         : nullptr;
     const ULONG key_size = hmac ? static_cast<ULONG>(key.size()) : 0;
-    if (BCryptCreateHash(provider, &hash, nullptr, 0, key_data, key_size, 0) < 0) {
+    if (BCryptCreateHash(
+            provider, &hash, hash_object.data(), object_size,
+            key_data, key_size, 0) < 0) {
         close_provider();
         return false;
     }
+    // CNG rejects a null input pointer even when the byte count is zero.
+    // A default-constructed string_view may expose nullptr for the valid empty
+    // message, so finalize the newly-created hash directly in that case.
     auto* data = reinterpret_cast<PUCHAR>(const_cast<char*>(input.data()));
-    if (BCryptHashData(hash, data, static_cast<ULONG>(input.size()), 0) < 0) {
+    if (!input.empty() &&
+        BCryptHashData(hash, data, static_cast<ULONG>(input.size()), 0) < 0) {
         BCryptDestroyHash(hash);
         close_provider();
         return false;
@@ -286,7 +302,8 @@ bool digest_algorithm_is_weak(DigestAlgorithm algorithm) {
 
 CryptoResult compute_digest(std::string_view input, DigestAlgorithm algorithm) {
     std::vector<std::uint8_t> bytes;
-    return finish(platform_digest(input, algorithm, bytes), std::move(bytes));
+    const bool ok = platform_digest(input, algorithm, bytes);
+    return finish(ok, std::move(bytes));
 }
 
 CryptoResult compute_hmac(
@@ -294,7 +311,8 @@ CryptoResult compute_hmac(
     std::string_view key,
     DigestAlgorithm algorithm) {
     std::vector<std::uint8_t> bytes;
-    return finish(platform_hmac(input, key, algorithm, bytes), std::move(bytes));
+    const bool ok = platform_hmac(input, key, algorithm, bytes);
+    return finish(ok, std::move(bytes));
 }
 
 CryptoResult compute_hmac_encoded(
