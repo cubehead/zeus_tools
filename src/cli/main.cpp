@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <array>
+#include <exception>
 #include <fstream>
 #include <iostream>
 #include <set>
@@ -219,7 +220,18 @@ int main(int argc, char** argv) {
     request.input_type_id = options.input_type;
     request.action_id = options.action;
     request.build_presentation = false;
-    const auto result = app::processing::analyze(request);
+    app::processing::AnalysisResult result;
+    try {
+        result = app::processing::analyze(request);
+    } catch (const std::exception&) {
+        // Parser exceptions can contain fragments of the source value. Keep
+        // CLI diagnostics concise and avoid echoing potentially sensitive input.
+        std::cerr << "error[PROCESSING_EXCEPTION]: processing failed unexpectedly\n";
+        return 6;
+    } catch (...) {
+        std::cerr << "error[PROCESSING_EXCEPTION]: processing failed unexpectedly\n";
+        return 6;
+    }
     if (options.action != "auto" && app::processing::find_action(
             options.action, result.detected, request.input) == nullptr) {
         std::cerr << "error: action " << options.action << " is not available for "

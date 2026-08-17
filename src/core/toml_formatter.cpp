@@ -44,6 +44,76 @@ bool bare_key(const std::string& key) {
     });
 }
 
+bool table_headers_start_safely(const std::string& input, ParseIssue* error = nullptr) {
+    enum class StringState { None, Basic, Literal, MultilineBasic, MultilineLiteral };
+    StringState string_state = StringState::None;
+    std::size_t line = 1;
+    std::size_t line_start = 0;
+    while (line_start < input.size()) {
+        const std::size_t line_end = input.find('\n', line_start);
+        const std::size_t end = line_end == std::string::npos ? input.size() : line_end;
+        std::size_t cursor = line_start;
+        while (cursor < end && (input[cursor] == ' ' || input[cursor] == '\t')) ++cursor;
+        if (string_state == StringState::None && cursor < end && input[cursor] == '[') {
+            const std::size_t opening = cursor + 1 < end && input[cursor + 1] == '[' ? 2 : 1;
+            const std::size_t key_start = cursor + opening;
+            const auto valid_first = [](unsigned char ch) {
+                return (ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z') ||
+                    (ch >= '0' && ch <= '9') || ch == '_' || ch == '-' ||
+                    ch == '\'' || ch == '"';
+            };
+            if (key_start >= end || !valid_first(
+                    static_cast<unsigned char>(input[key_start]))) {
+                if (error != nullptr) {
+                    *error = issue(
+                        "PARSE_TOML", "Invalid TOML table header");
+                    error->line = line;
+                    error->column = key_start - line_start + 1;
+                }
+                return false;
+            }
+        }
+        for (std::size_t index = line_start; index < end; ++index) {
+            const char ch = input[index];
+            const bool triple = index + 2 < end && input[index + 1] == ch &&
+                input[index + 2] == ch && (ch == '"' || ch == '\'');
+            if (string_state == StringState::None) {
+                if (ch == '#') break;
+                if (triple) {
+                    string_state = ch == '"'
+                        ? StringState::MultilineBasic : StringState::MultilineLiteral;
+                    index += 2;
+                } else if (ch == '"') {
+                    string_state = StringState::Basic;
+                } else if (ch == '\'') {
+                    string_state = StringState::Literal;
+                }
+            } else if (string_state == StringState::Basic) {
+                if (ch == '\\' && index + 1 < end) {
+                    ++index;
+                } else if (ch == '"') {
+                    string_state = StringState::None;
+                }
+            } else if (string_state == StringState::Literal) {
+                if (ch == '\'') string_state = StringState::None;
+            } else if (string_state == StringState::MultilineBasic && triple && ch == '"') {
+                string_state = StringState::None;
+                index += 2;
+            } else if (string_state == StringState::MultilineLiteral && triple && ch == '\'') {
+                string_state = StringState::None;
+                index += 2;
+            }
+        }
+        if (string_state == StringState::Basic || string_state == StringState::Literal) {
+            string_state = StringState::None;
+        }
+        if (line_end == std::string::npos) break;
+        line_start = line_end + 1;
+        ++line;
+    }
+    return true;
+}
+
 bool json_number(const std::string& value) {
     std::size_t index = 0;
     if (index < value.size() && value[index] == '-') ++index;
@@ -208,6 +278,7 @@ bool looks_like_toml(const std::string& input) {
     const std::string trimmed = trim_ascii(input);
     if (trimmed.empty() || trimmed.find('=') == std::string::npos) return false;
     if (trimmed.find('\n') == std::string::npos && trimmed.front() != '[') return false;
+    if (!table_headers_start_safely(input)) return false;
     try {
         const toml::table parsed = toml::parse(input);
         return !parsed.empty();
@@ -217,6 +288,10 @@ bool looks_like_toml(const std::string& input) {
 }
 
 FormatResult format_toml(const std::string& input) {
+    ParseIssue preflight;
+    if (!table_headers_start_safely(input, &preflight)) {
+        return {false, {}, std::move(preflight)};
+    }
     try {
         const toml::table parsed = toml::parse(input);
         std::ostringstream output;
@@ -228,6 +303,10 @@ FormatResult format_toml(const std::string& input) {
 }
 
 FormatResult toml_to_json(const std::string& input, int indent_width) {
+    ParseIssue preflight;
+    if (!table_headers_start_safely(input, &preflight)) {
+        return {false, {}, std::move(preflight)};
+    }
     try {
         const toml::table parsed = toml::parse(input);
         std::ostringstream json;

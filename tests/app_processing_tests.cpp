@@ -3,6 +3,7 @@
 #include "large_input_paging.h"
 
 #include <cstdlib>
+#include <exception>
 #include <iostream>
 #include <set>
 #include <string>
@@ -377,6 +378,57 @@ void test_every_registered_action_executes() {
     }
 }
 
+void test_all_processors_reject_adversarial_input_without_throwing() {
+    std::string deeply_nested(256, '[');
+    deeply_nested.append(256, ']');
+    const std::string invalid_utf8("\xFF\xFE\xC0", 3);
+    const std::string samples[] = {
+        invalid_utf8,
+        R"({"broken":[1,})",
+        R"(<!DOCTYPE tool [<!ENTITY xxe SYSTEM "file:///etc/passwd">]><tool>&xxe;</tool>)",
+        "name,quote\nZeus,\"unterminated",
+        R"(\uD800 broken surrogate %ZZ ====)",
+        deeply_nested,
+    };
+
+    for (int index = 0; index < static_cast<int>(zeus::ProcessingMode::Count); ++index) {
+        const auto mode = static_cast<zeus::ProcessingMode>(index);
+        for (const auto& sample : samples) {
+            try {
+                (void)zeus::process_text(sample, mode);
+            } catch (const std::exception& exception) {
+                std::cerr << "FAILED: processor threw for mode "
+                          << zeus::processing_mode_id(mode) << ": "
+                          << exception.what() << '\n';
+                std::exit(1);
+            } catch (...) {
+                std::cerr << "FAILED: processor threw an unknown exception for mode "
+                          << zeus::processing_mode_id(mode) << '\n';
+                std::exit(1);
+            }
+        }
+    }
+
+    for (const auto& type : app::processing::registered_input_types()) {
+        for (const auto& sample : samples) {
+            app::processing::AnalysisRequest request;
+            request.input = sample;
+            request.input_type_id = std::string(type.id);
+            try {
+                (void)app::processing::analyze(request);
+            } catch (const std::exception& exception) {
+                std::cerr << "FAILED: processing service threw for input type "
+                          << type.id << ": " << exception.what() << '\n';
+                std::exit(1);
+            } catch (...) {
+                std::cerr << "FAILED: processing service threw an unknown exception for input type "
+                          << type.id << '\n';
+                std::exit(1);
+            }
+        }
+    }
+}
+
 } // namespace
 
 int main() {
@@ -396,6 +448,7 @@ int main() {
     test_processing_registry();
     test_every_registered_input_type_executes();
     test_every_registered_action_executes();
+    test_all_processors_reject_adversarial_input_without_throwing();
     std::cout << "All app processing tests passed.\n";
     return 0;
 }

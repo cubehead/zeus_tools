@@ -82,6 +82,16 @@ int main() {
             "JSON objects should convert to TOML tables and arrays");
     require(!zeus::json_to_toml(R"({"missing":null})").ok,
             "JSON null should report its unsupported TOML mapping");
+    std::string malformed_toml_header(256, '[');
+    malformed_toml_header.append(256, ']');
+    const auto malformed_toml = zeus::format_toml(malformed_toml_header);
+    require(!malformed_toml.ok && malformed_toml.issue.code == "PARSE_TOML" &&
+                malformed_toml.issue.line == 1,
+            "malformed TOML table headers should fail before reaching parser assertions");
+    const auto multiline_toml = zeus::format_toml(
+        "value = \"\"\"\n[[[ remains string content\n\"\"\"");
+    require(multiline_toml.ok,
+            "TOML table preflight should ignore bracket-like multiline string content");
 
     const auto ini = zeus::format_ini("[window]\nwidth=1200\ntheme: system");
     require(ini.ok && ini.value.find("width = 1200") != std::string::npos,
