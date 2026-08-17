@@ -155,7 +155,11 @@ CSV 大数据虚拟滚动、精确搜索定位以及 XML、YAML、摘要/HMAC、
 MinGW GUI/CLI 采用静态运行时，`objdump` 已确认不再导入
 `libgcc_s_seh-1.dll`、`libstdc++-6.dll` 或 `libwinpthread-1.dll`。2026-08-18
 补充的真实按键验证确认 Windows 11 拼音组合 `zhong'wen` 能保持完整预编辑，候选
-“中文”提交后不残留 ASCII 拼音。Windows 10 启动与 IME 仍保持待验收状态。
+“中文”提交后不残留 ASCII 拼音。2026-08-18 又通过 GitHub CLI 下载并验证了线上
+`v0.2.0` Windows Portable ZIP：发布附件 SHA-256
+`9abc373bdd4d812cc1563b92433de112f50f405782f6562a2301ed9826633995` 匹配，包结构、
+VersionInfo、CLI 冒烟和 GUI 启动均通过，GUI/CLI 均按该 Alpha 的发布策略保持未签名。
+Windows 10 启动与 IME 仍保持待验收状态。
 
 ## 依赖
 
