@@ -16,7 +16,11 @@ if [ -z "$version" ]; then
   exit 1
 fi
 
-if [ -f "$artifact" ] && [ -f "$artifact.sha256" ]; then
+if [ -f "$artifact" ]; then
+  if [ ! -f "$artifact.sha256" ]; then
+    echo "Missing SHA-256 checksum: $artifact.sha256" >&2
+    exit 1
+  fi
   expected_hash=$(sed -n '1s/[[:space:]].*$//p' "$artifact.sha256")
   if command -v sha256sum >/dev/null 2>&1; then
     actual_hash=$(sha256sum "$artifact" | sed 's/[[:space:]].*$//')
@@ -56,6 +60,10 @@ elif [ "$platform" = windows ]; then
   fi
   package_root=$(dirname "$package_root")
 elif [ "$platform" = macos ]; then
+  if [ -z "$macos_minimum" ]; then
+    echo "Unable to read the minimum macOS version" >&2
+    exit 1
+  fi
   command -v hdiutil >/dev/null 2>&1 || {
     echo "DMG validation requires macOS hdiutil" >&2
     exit 1

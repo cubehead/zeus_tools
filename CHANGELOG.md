@@ -50,6 +50,8 @@ semantic versioning after the first stable release.
 
 ### Fixed
 
+- Made package validation reject artifacts without their SHA-256 sidecar and
+  expanded repository publication checks to cover current docs, screenshots and licenses.
 - Cleared and repainted the complete retained UI surface after layered state
   changes, preventing stale vertical blocks after closing selectors or switching formats.
 - Kept the compiled Mach-O deployment target aligned with the declared macOS

@@ -14,10 +14,18 @@ CONTRIBUTING.md
 CHANGELOG.md
 THIRD_PARTY_NOTICES.md
 docs/adr/001-ui-framework.md
+docs/adr/002-processing-registry.md
+docs/README.md
+docs/development.md
+docs/implementation-plan.md
+docs/packaging.md
+docs/product-requirements.md
 docs/release-checklist.md
+docs/releases/v0.1.0.md
 docs/assets/overview-dark.jpg
 docs/assets/csv-table.jpg
 docs/assets/digest-hmac.jpg
+docs/assets/jwt-inspect.jpg
 docs/licenses/EUI-NEO-APACHE-2.0.txt
 docs/licenses/FONT-AWESOME-FREE.txt
 docs/licenses/FREETYPE.txt
@@ -29,6 +37,7 @@ docs/licenses/TRAY-MIT.txt
 docs/licenses/YAML-CPP-MIT.txt
 docs/licenses/YYJSON-MIT.txt
 docs/licenses/ZLIB.txt
+docs/licenses/tomlplusplus.txt
 cmake/validate_installed_package.cmake
 scripts/check-package.sh
 "
