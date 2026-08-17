@@ -41,6 +41,7 @@ docs/licenses/ZLIB.txt
 docs/licenses/tomlplusplus.txt
 cmake/validate_installed_package.cmake
 scripts/check-package.sh
+scripts/check-package.ps1
 "
 
 for file in $required_files; do

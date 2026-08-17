@@ -6,6 +6,11 @@ semantic versioning after the first stable release.
 
 ## [Unreleased]
 
+### Added
+
+- Added a native PowerShell Windows package validator covering SHA-256,
+  packaged files, VersionInfo, CLI behavior, Authenticode status and GUI startup.
+
 ### Fixed
 
 - Fixed digest and HMAC results becoming empty on compilers that evaluate the

@@ -103,6 +103,17 @@ Windows 资源脚本会嵌入应用图标、产品名、语义版本、构建号
 
 Windows 原生环境也可以先解压 ZIP，再使用相同命令把第二个参数指向解压根目录。
 
+在不依赖 Bash 的原生 Windows PowerShell 中，可以执行完整的哈希、包内容、
+VersionInfo、CLI 和 GUI 启动验收：
+
+```powershell
+.\scripts\check-package.ps1 `
+  build\package-windows\packages\Zeus-Tools-0.2.0-Windows-AMD64-portable.zip
+```
+
+正式签名版本追加 `-RequireSignature`；只做服务器或无桌面环境检查时可追加
+`-SkipGui`。该脚本可直接复制到 Windows 10/11 原生验收环境执行。
+
 若后续拥有代码签名证书，应在执行 `package` 前签名：
 
 ```powershell
