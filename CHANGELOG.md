@@ -12,6 +12,8 @@ semantic versioning after the first stable release.
   packaged files, VersionInfo, CLI behavior, Authenticode status and GUI startup.
 - Added a native Authenticode signing helper that validates the certificate,
   signs both GUI and CLI with an RFC 3161 timestamp, and verifies each signature.
+- Added strict package validation for valid timestamped Authenticode signatures
+  on both Windows executables.
 
 ### Fixed
 

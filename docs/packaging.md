@@ -134,6 +134,9 @@ cmake --build build/package-windows --target package
 `-TimestampUrl`。证书指纹及凭据只能通过本机安全存储或受控发布环境的 Secret
 Store 提供，禁止写入仓库。
 
+启用 `-RequireSignature` 时，包验证器会要求 GUI 与 CLI 均具有有效且带可信
+时间戳的 Authenticode 签名。
+
 ## 发布前检查
 
 - [ ] Release 构建和核心测试通过。

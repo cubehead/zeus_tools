@@ -80,10 +80,15 @@ try {
     Assert-ExitCode 'Packaged CLI smoke test'
     Write-Host 'Packaged CLI smoke test passed'
 
-    $signature = Get-AuthenticodeSignature -LiteralPath $gui
-    Write-Host "Authenticode status: $($signature.Status)"
-    if ($RequireSignature -and $signature.Status -ne 'Valid') {
-        throw "A valid Authenticode signature is required; status is $($signature.Status)"
+    foreach ($executable in @($gui, $cli)) {
+        $signature = Get-AuthenticodeSignature -LiteralPath $executable
+        Write-Host "Authenticode status ($([IO.Path]::GetFileName($executable))): $($signature.Status)"
+        if ($RequireSignature -and $signature.Status -ne 'Valid') {
+            throw "A valid Authenticode signature is required for $executable; status is $($signature.Status)"
+        }
+        if ($RequireSignature -and $null -eq $signature.TimeStamperCertificate) {
+            throw "A trusted timestamp is required for $executable"
+        }
     }
 
     if (-not $SkipGui) {
