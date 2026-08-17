@@ -42,6 +42,7 @@ docs/licenses/tomlplusplus.txt
 cmake/validate_installed_package.cmake
 scripts/check-package.sh
 scripts/check-package.ps1
+scripts/sign-windows.ps1
 "
 
 for file in $required_files; do

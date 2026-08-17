@@ -114,15 +114,25 @@ VersionInfo、CLI 和 GUI 启动验收：
 正式签名版本追加 `-RequireSignature`；只做服务器或无桌面环境检查时可追加
 `-SkipGui`。该脚本可直接复制到 Windows 10/11 原生验收环境执行。
 
-若后续拥有代码签名证书，应在执行 `package` 前签名：
+若后续拥有代码签名证书，应在执行 `package` 前签名。证书私钥保留在 Windows
+证书存储中，仓库脚本只接收证书指纹：
 
 ```powershell
-signtool sign /fd SHA256 /td SHA256 /tr https://timestamp.digicert.com `
-  /sha1 <CERTIFICATE_THUMBPRINT> build\package-windows\ZeusTools.exe
-signtool verify /pa /v build\package-windows\ZeusTools.exe
+.\scripts\sign-windows.ps1 `
+  -CertificateThumbprint <CERTIFICATE_THUMBPRINT> `
+  -BuildRoot build\package-windows
+
+cmake --build build/package-windows --target package
+
+.\scripts\check-package.ps1 `
+  build\package-windows\packages\Zeus-Tools-0.2.0-Windows-AMD64-portable.zip `
+  -RequireSignature
 ```
 
-证书指纹及凭据只能通过本机安全存储或受控发布环境的 Secret Store 提供，禁止写入仓库。
+脚本同时签名 GUI 与 CLI，使用 SHA-256 和 RFC 3161 时间戳，并在返回前调用
+`signtool verify`。机器证书存储使用 `-MachineStore`；自定义时间戳服务使用
+`-TimestampUrl`。证书指纹及凭据只能通过本机安全存储或受控发布环境的 Secret
+Store 提供，禁止写入仓库。
 
 ## 发布前检查
 

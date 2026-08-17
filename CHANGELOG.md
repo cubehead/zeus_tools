@@ -10,6 +10,8 @@ semantic versioning after the first stable release.
 
 - Added a native PowerShell Windows package validator covering SHA-256,
   packaged files, VersionInfo, CLI behavior, Authenticode status and GUI startup.
+- Added a native Authenticode signing helper that validates the certificate,
+  signs both GUI and CLI with an RFC 3161 timestamp, and verifies each signature.
 
 ### Fixed
 
