@@ -167,7 +167,11 @@ MinGW GUI/CLI 采用静态运行时，`objdump` 已确认不再导入
 - yaml-cpp 0.9.0（固定提交 `56e3bb55…`；MIT）
 - toml++ v3.4.0（固定提交 `30172438…`；MIT）
 - macOS：Xcode Command Line Tools
-- Windows：Visual Studio 2022 C++ Desktop Workload
+- Windows：Visual Studio 2022 C++ Desktop Workload，或 WinLibs MinGW-w64 UCRT
+
+在原生 Windows PowerShell 中使用 MinGW 动态链接的测试目标时，运行 `ctest`
+前需确保对应的 `mingw64\bin` 已加入当前进程的 `PATH`；发布包中的 GUI/CLI
+使用静态 MinGW 运行时，不需要这一环境配置。
 
 ## 构建核心
 

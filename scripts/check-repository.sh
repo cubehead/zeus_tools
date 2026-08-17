@@ -42,6 +42,7 @@ docs/licenses/tomlplusplus.txt
 cmake/validate_installed_package.cmake
 scripts/check-package.sh
 scripts/check-package.ps1
+scripts/check-repository.ps1
 scripts/sign-windows.ps1
 "
 
@@ -55,7 +56,8 @@ done
 for revision in \
   f2a3b72104bd946988f8ebe0a13dda956f3455ae \
   ee86beb30e4973f5feffe3ce63bfa4fbadf72f38 \
-  56e3bb550c91fd7005566f19c079cb7a503223cf; do
+  56e3bb550c91fd7005566f19c079cb7a503223cf \
+  30172438cee64926dc41fdd9c11fb3ba5b2ba9de; do
   if ! rg -q "$revision" CMakeLists.txt || ! rg -q "$revision" THIRD_PARTY_NOTICES.md; then
     echo "Dependency revision is missing from CMake or third-party notices: $revision" >&2
     exit 1

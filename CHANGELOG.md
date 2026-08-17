@@ -14,6 +14,8 @@ semantic versioning after the first stable release.
   signs both GUI and CLI with an RFC 3161 timestamp, and verifies each signature.
 - Added strict package validation for valid timestamped Authenticode signatures
   on both Windows executables.
+- Added a native PowerShell repository publication check for Windows release
+  environments.
 
 ### Fixed
 

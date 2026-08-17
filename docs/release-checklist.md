@@ -5,7 +5,8 @@ This checklist is intentionally manual. The repository does not use GitHub CI.
 ## Source and version
 
 - [ ] Working tree contains only intended source, documentation and assets.
-- [ ] `./scripts/check-repository.sh` passes.
+- [ ] `./scripts/check-repository.sh` passes; on native Windows,
+      `.\scripts\check-repository.ps1` passes.
 - [ ] `project(... VERSION ...)`, build number and `CHANGELOG.md` agree.
 - [ ] Core tests pass from a clean build directory.
 - [ ] Synthetic JSON and CSV benchmarks have no material regression.
