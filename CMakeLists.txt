@@ -6,6 +6,14 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+if(MSVC)
+    # Source, fixtures and localized UI strings are UTF-8. MSVC otherwise
+    # interprets them using the active Windows code page (for example CP936).
+    add_compile_options(
+        $<$<COMPILE_LANGUAGE:C>:/utf-8>
+        $<$<COMPILE_LANGUAGE:CXX>:/utf-8>)
+endif()
+
 option(ZEUS_BUILD_APP "Build the EUI-NEO desktop prototype" ON)
 option(ZEUS_BUILD_CLI "Build the Zeus Tools command-line pipeline" ON)
 option(ZEUS_BUILD_TESTS "Build Zeus core tests" ON)

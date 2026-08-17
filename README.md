@@ -32,8 +32,8 @@ in C++17 with [EUI-NEO](https://github.com/sudoevolve/EUI-NEO) and targets
 macOS and Windows.
 
 > Project status: **Alpha**. Release packages are available for testing.
-> The Windows x64 package is cross-compiled and still requires native Windows
-> 10/11 validation.
+> The Windows x64 package was originally cross-compiled. Native Windows 11
+> MinGW/MSVC build and startup validation now pass; Windows 10 and IME validation remain.
 
 ## Download
 
@@ -137,14 +137,14 @@ IDs come from the same static registry as the desktop application.
 | Platform | Artifact | Current status |
 | --- | --- | --- |
 | macOS 12+ | `.app` / `.dmg` | arm64 build tested; signing and notarization pending |
-| Windows 10/11 x64 | Portable `.zip` | cross-built; native validation pending |
+| Windows 10/11 x64 | Portable `.zip` | Windows 11 native build/startup passed; Windows 10/IME pending |
 
 The project intentionally does not create an NSIS/MSI installer.
 
 ## Alpha limitations
 
-- Windows build and portable ZIP configuration have not yet completed native
-  Windows 10/11 validation.
+- Windows 11 native MinGW/MSVC build, Portable ZIP and startup validation pass;
+  Windows 10 and native IME validation remain.
 - Test packages are unsigned; macOS notarization and Windows code signing are
   not yet configured for a public production release.
 - YAML intentionally accepts a single-document safe subset and rejects

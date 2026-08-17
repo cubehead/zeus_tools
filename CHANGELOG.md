@@ -14,6 +14,8 @@ semantic versioning after the first stable release.
   empty messages without passing a null input pointer.
 - Statically linked the MinGW runtime into Windows GUI and CLI executables so the
   Portable ZIP does not require external GCC, C++ or pthread DLLs.
+- Compiled all MSVC sources as UTF-8 so localized strings are independent of the
+  active Windows system code page.
 
 ## [0.2.0] - 2026-08-17
 

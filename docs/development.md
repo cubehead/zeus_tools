@@ -136,14 +136,16 @@ Unix 路径、SQL、日志、环境变量、HTTP 头和普通查询串。
 这些数字仅代表仓库内固定回归语料，不是对真实世界数据分布的统计推断。后续仍需使用
 经过脱敏且获得授权的真实样例建立独立评估集，避免在同一开发语料上调参与评估。
 
-CSV 大数据虚拟滚动、精确搜索定位以及 XML、YAML、摘要/HMAC、Base64、URL Decode 已完成首个可用版本。`v0.2.0` 提供 macOS arm64 DMG 和通过 MinGW-w64 交叉构建的 Windows x64 Portable ZIP，并在两个包中加入 CLI。Windows 11 原生 MinGW 构建与启动冒烟已完成；Windows 10、MSVC、原生 IME 候选框、签名/公证和跨页连续选择仍按发布清单推进。
+CSV 大数据虚拟滚动、精确搜索定位以及 XML、YAML、摘要/HMAC、Base64、URL Decode 已完成首个可用版本。`v0.2.0` 提供 macOS arm64 DMG 和通过 MinGW-w64 交叉构建的 Windows x64 Portable ZIP，并在两个包中加入 CLI。Windows 11 原生 MinGW/MSVC 构建与启动冒烟已完成；Windows 10、原生 IME 候选框、签名/公证和跨页连续选择仍按发布清单推进。
 
 ## Windows 11 原生验证
 
 2026-08-17 在 Windows 11 专业版 x64（build 26200）完成以下验证：
 
-- MinGW-w64 UCRT Debug 核心与 CLI 构建，CTest 4/4 通过；
-- Release GUI/CLI、Windows 图标与 VersionInfo 资源以及 CPack Portable ZIP 构建；
+- MinGW-w64 UCRT 与 Visual Studio 2022/MSVC Debug 核心和 CLI 构建，两个
+  工具链的 CTest 均为 4/4 通过；
+- MinGW-w64 与 MSVC Release GUI/CLI、Windows 图标与 VersionInfo 资源以及
+  CPack Portable ZIP 构建；
 - ZIP SHA-256、许可文件、运行时资源和禁止资源检查；
 - 解压目录中的完整 CLI 冒烟和 GUI 启动；
 - GUI 中文、emoji、组合字符直输与渲染、JSON 自动识别/格式化及中文搜索；
@@ -151,8 +153,8 @@ CSV 大数据虚拟滚动、精确搜索定位以及 XML、YAML、摘要/HMAC、
 
 MinGW GUI/CLI 采用静态运行时，`objdump` 已确认不再导入
 `libgcc_s_seh-1.dll`、`libstdc++-6.dll` 或 `libwinpthread-1.dll`。Unicode 直输
-测试不能替代 IME 组合与候选框提交，因此 Windows 10/11 原生 IME、Windows 10
-启动以及 Visual Studio 2022/MSVC 构建仍保持待验收状态。
+测试不能替代 IME 组合与候选框提交，因此 Windows 10/11 原生 IME 和 Windows 10
+启动仍保持待验收状态。
 
 ## 依赖
 
