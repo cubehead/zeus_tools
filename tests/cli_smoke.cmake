@@ -56,3 +56,22 @@ file(REMOVE "${oversized_path}")
 if(NOT oversized_status EQUAL 3 OR NOT oversized_error MATCHES "10 MiB limit")
     message(FATAL_ERROR "CLI should enforce the input boundary: ${oversized_error}")
 endif()
+
+set(malformed_toml_path "${cli_directory}/zeus-cli-malformed-toml.txt")
+string(REPEAT "[" 256 malformed_toml_open)
+string(REPEAT "]" 256 malformed_toml_close)
+file(WRITE "${malformed_toml_path}"
+    "${malformed_toml_open}${malformed_toml_close}")
+execute_process(
+    COMMAND "${ZEUS_CLI}" --input toml "${malformed_toml_path}"
+    RESULT_VARIABLE malformed_toml_status
+    OUTPUT_VARIABLE malformed_toml_output
+    ERROR_VARIABLE malformed_toml_error)
+file(REMOVE "${malformed_toml_path}")
+if(NOT malformed_toml_status EQUAL 4 OR
+   NOT malformed_toml_error MATCHES "PARSE_TOML" OR
+   malformed_toml_error MATCHES "\\[\\[\\[")
+    message(FATAL_ERROR
+        "Malformed TOML should return a concise parse error without aborting or echoing input: "
+        "status=${malformed_toml_status}; error=${malformed_toml_error}")
+endif()

@@ -53,7 +53,8 @@ semantic versioning after the first stable release.
 ### Fixed
 
 - Prevented unexpected parser exceptions from terminating the CLI, while keeping
-  its fallback diagnostic free of input fragments; added malformed-input coverage across all processors.
+  its fallback diagnostic free of input fragments; added malformed-input coverage across all processors
+  and a subprocess regression for formerly fatal TOML table headers.
 - Made package validation reject artifacts without their SHA-256 sidecar and
   expanded repository publication checks to cover current docs, screenshots and licenses.
 - Cleared and repainted the complete retained UI surface after layered state
