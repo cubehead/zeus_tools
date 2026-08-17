@@ -55,6 +55,9 @@ if(ZEUS_PACKAGE_PLATFORM STREQUAL "windows")
         require_file("${file}")
     endforeach()
 elseif(ZEUS_PACKAGE_PLATFORM STREQUAL "macos")
+    if(NOT DEFINED ZEUS_MACOS_MIN_VERSION OR ZEUS_MACOS_MIN_VERSION STREQUAL "")
+        message(FATAL_ERROR "ZEUS_MACOS_MIN_VERSION is required for macOS validation")
+    endif()
     set(app "Zeus Tools.app/Contents")
     foreach(file
             "${app}/Info.plist"
@@ -70,6 +73,7 @@ elseif(ZEUS_PACKAGE_PLATFORM STREQUAL "macos")
     foreach(expected
             "<string>io.github.zeustools.app</string>"
             "<string>${ZEUS_PACKAGE_VERSION}</string>"
+            "<string>${ZEUS_MACOS_MIN_VERSION}</string>"
             "<string>zeus-tools.icns</string>"
             "<true/>")
         string(FIND "${plist}" "${expected}" found)
@@ -77,6 +81,24 @@ elseif(ZEUS_PACKAGE_PLATFORM STREQUAL "macos")
             message(FATAL_ERROR "Info.plist is missing expected value: ${expected}")
         endif()
     endforeach()
+    find_program(ZEUS_OTOOL_EXECUTABLE otool REQUIRED)
+    execute_process(
+        COMMAND "${ZEUS_OTOOL_EXECUTABLE}" -l
+                "${ZEUS_PACKAGE_ROOT}/${app}/MacOS/Zeus Tools"
+        RESULT_VARIABLE otool_result
+        OUTPUT_VARIABLE load_commands
+        ERROR_VARIABLE otool_error
+    )
+    if(NOT otool_result EQUAL 0)
+        message(FATAL_ERROR "Unable to inspect Mach-O load commands: ${otool_error}")
+    endif()
+    string(REGEX MATCH "minos[ \t]+([0-9]+\\.[0-9]+)" minimum_match
+        "${load_commands}")
+    set(mach_minimum "${CMAKE_MATCH_1}")
+    if(NOT mach_minimum STREQUAL ZEUS_MACOS_MIN_VERSION)
+        message(FATAL_ERROR
+            "Mach-O minimum macOS ${mach_minimum} does not match declared ${ZEUS_MACOS_MIN_VERSION}")
+    endif()
 else()
     message(FATAL_ERROR "Unsupported package platform: ${ZEUS_PACKAGE_PLATFORM}")
 endif()

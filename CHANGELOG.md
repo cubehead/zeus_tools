@@ -50,6 +50,10 @@ semantic versioning after the first stable release.
 
 ### Fixed
 
+- Cleared and repainted the complete retained UI surface after layered state
+  changes, preventing stale vertical blocks after closing selectors or switching formats.
+- Kept the compiled Mach-O deployment target aligned with the declared macOS
+  12.0 minimum instead of producing a current-SDK-only binary with a misleading plist.
 - Hardened in-memory HMAC key cleanup with non-elidable zeroing across key
   replacement, encoded-key temporaries, input composition and undo/redo snapshots;
   the global Clear action no longer discards the key length before wiping it.

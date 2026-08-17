@@ -8,6 +8,8 @@
 | Windows x64 | Portable `.zip` + `.sha256` | 解压后运行 `ZeusTools.exe` 或 CLI | 默认未签名；不生成 NSIS/MSI 安装包 |
 
 版本来自顶层 `project(... VERSION ...)`，平台构建号来自 `ZEUS_BUILD_NUMBER`。正式发布前应同时更新两者，并复核仓库根目录的 `LICENSE` 与 `THIRD_PARTY_NOTICES.md`。
+macOS 最低系统版本由 `ZEUS_MACOS_MIN_VERSION` 统一控制，默认 12.0；配置会同时写入
+Mach-O deployment target 与 `LSMinimumSystemVersion`，产物校验器会拒绝两者不一致的包。
 
 `v0.1.0` 已发布 macOS arm64 DMG 和 Windows x64 Portable ZIP。macOS 产物在
 本机完成构建与磁盘映像验证；Windows 产物使用 MinGW-w64 交叉构建，并完成

@@ -13,8 +13,16 @@ option(ZEUS_ENABLE_PACKAGING "Configure native application bundles and CPack pac
 set(ZEUS_EUI_NEO_SOURCE_DIR "" CACHE PATH "Path to an existing EUI-NEO v0.5.3 checkout")
 set(ZEUS_APP_IDENTIFIER "io.github.zeustools.app" CACHE STRING "macOS application bundle identifier")
 set(ZEUS_BUILD_NUMBER "1" CACHE STRING "Numeric platform build number")
+set(ZEUS_MACOS_MIN_VERSION "12.0" CACHE STRING "Minimum supported macOS version")
 set(ZEUS_CODESIGN_IDENTITY "" CACHE STRING "Optional macOS Developer ID Application identity")
 set(ZEUS_DOCS_SCENARIO "" CACHE STRING "Optional synthetic README screenshot scenario")
+
+if(APPLE)
+    # Keep the Mach-O load command and Info.plist minimum version in sync. A
+    # plist-only declaration does not make a binary compatible with older macOS.
+    set(CMAKE_OSX_DEPLOYMENT_TARGET "${ZEUS_MACOS_MIN_VERSION}"
+        CACHE STRING "Minimum macOS deployment target" FORCE)
+endif()
 
 include(FetchContent)
 set(PUGIXML_BUILD_TESTS OFF CACHE BOOL "" FORCE)

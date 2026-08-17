@@ -23,7 +23,7 @@
   <key>CFBundleVersion</key>
   <string>@ZEUS_BUILD_NUMBER@</string>
   <key>LSMinimumSystemVersion</key>
-  <string>12.0</string>
+  <string>@ZEUS_MACOS_MIN_VERSION@</string>
   <key>LSMultipleInstancesProhibited</key>
   <true/>
   <key>NSHighResolutionCapable</key>

@@ -6,6 +6,7 @@
 #include "components/input_model.h"
 #include "core/platform/platform.h"
 #include "core/window/window_backend.h"
+#include "eui/app.h"
 #include "eui/async.h"
 
 #include "zeus/csv_document.h"
@@ -166,7 +167,12 @@ const char* tr(i18n::Text text) {
 
 void request_full_repaint() {
     ++app_state.full_repaint_revision;
-    core::platform::requestUiUpdate();
+    // EUI renders through a retained off-screen cache. A regular UI update
+    // only recomposes the element tree and repaints its calculated dirty
+    // rectangles, which can leave pixels from a dismissed popup behind when
+    // its old bounds are no longer present in the new tree. Force a complete
+    // cache clear and paint for state changes that can alter layered content.
+    ::app::detail::requestFullPaint();
 }
 
 const char* theme_label() {

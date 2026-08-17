@@ -10,6 +10,7 @@ platform=$1
 artifact=$2
 project_dir=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 version=$(sed -n 's/^project(ZeusTools VERSION \([^ ]*\).*/\1/p' "$project_dir/CMakeLists.txt")
+macos_minimum=$(sed -n 's/^set(ZEUS_MACOS_MIN_VERSION "\([^"]*\)".*/\1/p' "$project_dir/CMakeLists.txt")
 if [ -z "$version" ]; then
   echo "Unable to read project version" >&2
   exit 1
@@ -72,4 +73,5 @@ cmake \
   -DZEUS_PACKAGE_ROOT="$package_root" \
   -DZEUS_PACKAGE_PLATFORM="$platform" \
   -DZEUS_PACKAGE_VERSION="$version" \
+  -DZEUS_MACOS_MIN_VERSION="$macos_minimum" \
   -P "$project_dir/cmake/validate_installed_package.cmake"
