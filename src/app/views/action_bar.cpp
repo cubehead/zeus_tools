@@ -52,6 +52,7 @@ using namespace controller;
 
 void build_action_bar(eui::Ui& ui, const ViewContext& context) {
     const auto& tokens = context.tokens;
+    const auto control_tokens = fonts::control_tokens(tokens);
     const bool dark_theme = context.dark_theme;
     const float margin = context.margin;
     const float actions_y = context.actions_y;
@@ -85,7 +86,7 @@ void build_action_bar(eui::Ui& ui, const ViewContext& context) {
                         .open(app_state.input_type_dropdown_open)
                         .itemHeight(30.0f)
                         .zIndex(100)
-                        .theme(tokens)
+                        .theme(control_tokens)
                         .transition(eui::Transition{})
                         .onOpenChange([](bool open) {
                             app_state.input_type_dropdown_open = open;
@@ -182,7 +183,7 @@ void build_action_bar(eui::Ui& ui, const ViewContext& context) {
                             .open(app_state.csv.delimiter_dropdown_open)
                             .itemHeight(30.0f)
                             .zIndex(110)
-                            .theme(tokens)
+                            .theme(control_tokens)
                             .transition(eui::Transition{})
                             .onOpenChange([](bool open) {
                                 app_state.csv.delimiter_dropdown_open = open;

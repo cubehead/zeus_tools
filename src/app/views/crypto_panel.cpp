@@ -24,6 +24,7 @@ using namespace controller;
 
 void build_crypto_panel(eui::Ui& ui, const ViewContext& context) {
     const auto& tokens = context.tokens;
+    const auto control_tokens = fonts::control_tokens(tokens);
     const float margin = context.margin;
     const float actions_y = context.actions_y;
     const float content_width = context.content_width;
@@ -98,7 +99,7 @@ void build_crypto_panel(eui::Ui& ui, const ViewContext& context) {
                                 .open(app_state.crypto.message_dropdown_open)
                                 .itemHeight(30.0f)
                                 .zIndex(195)
-                                .theme(tokens)
+                                .theme(control_tokens)
                                 .transition(eui::Transition{})
                                 .onOpenChange([](bool open) {
                                     app_state.crypto.message_dropdown_open = open;
@@ -124,7 +125,7 @@ void build_crypto_panel(eui::Ui& ui, const ViewContext& context) {
                                 .open(app_state.crypto.key_encoding_dropdown_open)
                                 .itemHeight(30.0f)
                                 .zIndex(195)
-                                .theme(tokens)
+                                .theme(control_tokens)
                                 .transition(eui::Transition{})
                                 .onOpenChange([](bool open) {
                                     app_state.crypto.key_encoding_dropdown_open = open;

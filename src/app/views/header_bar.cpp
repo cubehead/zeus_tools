@@ -24,7 +24,7 @@ using namespace controller;
 
 void build_header_bar(eui::Ui& ui, const ViewContext& context) {
     const auto& tokens = context.tokens;
-    const auto& language_tokens = context.language_tokens;
+    const auto language_tokens = fonts::control_tokens(context.language_tokens);
     const float margin = context.margin;
     const float content_width = context.content_width;
     const float header_height = context.header_height;

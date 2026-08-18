@@ -41,6 +41,16 @@ constexpr float action_gap() {
 #endif
 }
 
+template <typename Tokens>
+Tokens control_tokens(Tokens tokens) {
+#if defined(_WIN32)
+    tokens.metrics.typography.body *= 0.88f;
+    tokens.metrics.typography.option *= 0.88f;
+    tokens.metrics.typography.hint *= 0.88f;
+#endif
+    return tokens;
+}
+
 inline const char* code() {
 #if defined(_WIN32)
     return "Cascadia Mono";

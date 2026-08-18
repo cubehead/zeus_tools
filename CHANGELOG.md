@@ -19,8 +19,8 @@ semantic versioning after the first stable release.
 
 ### Fixed
 
-- Reduced Windows button typography and action-strip spacing so format-specific
-  and common actions remain visible at the default window width.
+- Reduced Windows button/dropdown typography and action-strip spacing so
+  format-specific and common actions remain visible at the default window width.
 - Fixed digest and HMAC results becoming empty on compilers that evaluate the
   output-vector move before the platform hashing call.
 - Made Windows CNG hashing allocate the provider-reported hash object and handle
