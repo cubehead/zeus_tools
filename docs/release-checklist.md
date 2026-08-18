@@ -41,7 +41,8 @@ This checklist is intentionally manual. The repository does not use GitHub CI.
 - [x] macOS Physical footprint and process-lifetime peak are recorded for exact
       10 MiB JSON and CSV scenarios.
 - [ ] macOS IME/emoji/combining characters pass.
-- [ ] Windows 10 and Windows 11 IME/emoji/combining characters pass.
+- [x] Windows 11 IME/emoji/combining characters pass.
+- [ ] Windows 10 IME/emoji/combining characters pass.
 - [ ] Minimum supported macOS version starts the app.
 
 ## Package
