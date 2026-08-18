@@ -178,7 +178,8 @@ void build_header_bar(eui::Ui& ui, const ViewContext& context) {
 
     components::tooltip(ui, "header.export.tooltip")
         .source("header.export.bg")
-        .value(tr(i18n::Text::ExportResult))
+        .value(tr(app_state.result.binary_data
+            ? i18n::Text::ExportBinary : i18n::Text::ExportResult))
         .anchor(theme_button_center_x - 50.0f, margin + header_height - 2.0f)
         .bounds(context.screen_width, context.screen_height)
         .theme(tokens)

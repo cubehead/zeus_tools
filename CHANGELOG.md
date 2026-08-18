@@ -8,6 +8,8 @@ semantic versioning after the first stable release.
 
 ### Added
 
+- Added raw `.bin` export for Base64 results that decode to non-displayable
+  bytes, while keeping the result viewer searchable and free of binary text.
 - Added a reproducible Clang/GCC ASan + UBSan core test preset for local
   stability checks without introducing GitHub CI.
 - Added SHA-384 digest and HMAC-SHA384 using the native macOS and Windows

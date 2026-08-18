@@ -38,6 +38,7 @@ struct ResultState {
     std::size_t selected_csv_column = kNoCsvCell;
     std::shared_ptr<zeus::HighlightedDocument> document;
     std::shared_ptr<zeus::CsvDocument> csv;
+    std::shared_ptr<const std::string> binary_data;
     zeus::TextSelection selection;
     zeus::TextFoldState folds;
     std::string decode_chain;

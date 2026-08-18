@@ -18,7 +18,7 @@ enum class Text {
     WeakAlgorithm, ChecksumOnly, PreviewingFirst, Rows, RowsCopyTsv, TablePreviewCopyTsv,
     SearchResult, InvalidRegex, CopyAll, CopySelected, Selected, LocalOnly,
     About, Version, Build, AboutDescription, PrivacySummary, SpecialThanks,
-    OpenSourceThanks, ProjectWebsite, License, OpenFile, ExportResult, Close,
+    OpenSourceThanks, ProjectWebsite, License, OpenFile, ExportResult, ExportBinary, Close,
     InputTooLarge, LargeInputEditor, ProcessAnyway,
     PreviousPage, NextPage, CopyInput, Count,
 };

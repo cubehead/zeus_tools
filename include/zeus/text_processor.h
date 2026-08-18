@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstddef>
+#include <memory>
 #include <string>
 
 namespace zeus {
@@ -68,6 +69,9 @@ struct ProcessResult {
     ContentKind output_kind = ContentKind::Text;
     std::string label = "Text";
     std::string value;
+    // Present only when a decoder produced non-displayable bytes. `value`
+    // remains a safe text summary for UI/CLI presentation.
+    std::shared_ptr<const std::string> binary_data;
     std::string error_code;
     std::string error_message;
     std::size_t error_line = 0;

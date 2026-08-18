@@ -417,6 +417,7 @@ void analyze_input(bool debounce) {
         app_state.result.document = std::make_shared<zeus::HighlightedDocument>(
             zeus::HighlightedDocument::plain(""));
         app_state.result.csv.reset();
+        app_state.result.binary_data.reset();
         app_state.result.decode_chain.clear();
         app_state.result.can_continue_decode = false;
         app_state.result.status = tr(i18n::Text::WaitingForInput);
@@ -442,6 +443,7 @@ void analyze_input(bool debounce) {
         app_state.result.document = std::make_shared<zeus::HighlightedDocument>(
             zeus::HighlightedDocument::plain(""));
         app_state.result.csv.reset();
+        app_state.result.binary_data.reset();
         app_state.result.decode_chain.clear();
         app_state.result.can_continue_decode = false;
         app_state.result.status = tr(i18n::Text::Invalid);
@@ -506,6 +508,7 @@ void analyze_input(bool debounce) {
             reset_result_interaction_state();
             app_state.result.document = payload.document;
             app_state.result.csv = payload.csv;
+            app_state.result.binary_data = payload.process.binary_data;
             const auto& result = payload.process;
             app_state.result.decode_chain = payload.decode_chain;
             app_state.result.can_continue_decode = payload.can_continue_decode;
@@ -535,7 +538,9 @@ void analyze_input(bool debounce) {
             } else {
                 app_state.result.issue.clear();
                 app_state.result.issue_detail.clear();
-                app_state.result.status = result.label + " · " + std::to_string(result.value.size()) +
+                const std::size_t result_bytes = result.binary_data
+                    ? result.binary_data->size() : result.value.size();
+                app_state.result.status = result.label + " · " + std::to_string(result_bytes) +
                               " " + tr(i18n::Text::Bytes) + " · " +
                               std::to_string(payload.elapsed_ms) + " ms";
             }
@@ -616,6 +621,7 @@ void continue_decode_one_layer() {
             reset_result_interaction_state();
             app_state.result.document = payload.document;
             app_state.result.csv.reset();
+            app_state.result.binary_data = payload.process.binary_data;
             app_state.result.issue.clear();
             app_state.result.issue_detail.clear();
             app_state.result.status = app_state.result.decode_chain + " · " +
@@ -774,14 +780,21 @@ void open_input_file() {
 }
 
 static void export_result_impl() {
-    if (!app_state.result.document && !app_state.result.csv) return;
-    const std::string extension(
-        processing::content_definition(app_state.result.output_kind).export_extension);
-    const std::string path = platform::choose_export_file("zeus-result" + extension);
+    if (!app_state.result.document && !app_state.result.csv &&
+        !app_state.result.binary_data) return;
+    const bool binary = static_cast<bool>(app_state.result.binary_data);
+    const std::string extension = binary
+        ? ".bin"
+        : std::string(processing::content_definition(
+              app_state.result.output_kind).export_extension);
+    const std::string path = platform::choose_export_file(
+        binary ? "zeus-decoded.bin" : "zeus-result" + extension);
     if (path.empty()) return;
     std::string table_value;
     const std::string* value = nullptr;
-    if (app_state.result.csv) {
+    if (binary) {
+        value = app_state.result.binary_data.get();
+    } else if (app_state.result.csv) {
         table_value = app_state.result.csv->to_tsv();
         value = &table_value;
     } else {
@@ -796,7 +809,8 @@ static void export_result_impl() {
     } else {
         app_state.result.issue.clear();
         app_state.result.issue_detail.clear();
-        app_state.result.status = std::string(tr(i18n::Text::ExportResult)) + " · " +
+        app_state.result.status = std::string(tr(binary
+                ? i18n::Text::ExportBinary : i18n::Text::ExportResult)) + " · " +
             std::to_string(value->size()) + " " + tr(i18n::Text::Bytes);
     }
     request_full_repaint();
@@ -817,7 +831,9 @@ void compute_crypto_output(zeus::DigestAlgorithm algorithm) {
         (app_state.result.document || app_state.result.csv);
     std::string csv_message;
     const std::string* message = &app_state.input_text;
-    if (use_result && app_state.result.document) {
+    if (use_result && app_state.result.binary_data) {
+        message = app_state.result.binary_data.get();
+    } else if (use_result && app_state.result.document) {
         message = &app_state.result.document->text();
     } else if (use_result && app_state.result.csv) {
         csv_message = app_state.result.csv->to_tsv();
@@ -863,6 +879,7 @@ void compute_crypto_output(zeus::DigestAlgorithm algorithm) {
     app_state.result.document = std::make_shared<zeus::HighlightedDocument>(
         zeus::HighlightedDocument::plain(std::move(display)));
     app_state.result.csv.reset();
+    app_state.result.binary_data.reset();
     app_state.result.can_continue_decode = false;
     app_state.result.decode_chain.clear();
     app_state.result.issue.clear();

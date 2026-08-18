@@ -58,7 +58,7 @@ std::string choose_export_file(const std::string& suggested_name) {
     dialog.lStructSize = sizeof(dialog);
     dialog.lpstrFile = path.data();
     dialog.nMaxFile = static_cast<DWORD>(path.size());
-    dialog.lpstrFilter = L"Text file\0*.txt\0All files\0*.*\0";
+    dialog.lpstrFilter = L"Zeus Tools output\0*.json;*.xml;*.yaml;*.yml;*.toml;*.csv;*.tsv;*.txt;*.bin\0All files\0*.*\0";
     dialog.nFilterIndex = 1;
     dialog.Flags = OFN_OVERWRITEPROMPT | OFN_PATHMUSTEXIST | OFN_NOCHANGEDIR;
     return GetSaveFileNameW(&dialog) ? utf8(path.data()) : std::string{};

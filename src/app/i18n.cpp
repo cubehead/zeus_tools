@@ -72,6 +72,7 @@ const std::array<Translation, static_cast<std::size_t>(Text::Count)> translation
     {"MIT 许可证", "MIT 授權條款", "MIT License", "MIT ライセンス", "MIT 라이선스", "Licencia MIT", "Licence MIT", "MIT-Lizenz", "Licença MIT", "Лицензия MIT"},
     {"打开文件", "開啟檔案", "Open file", "ファイルを開く", "파일 열기", "Abrir archivo", "Ouvrir un fichier", "Datei öffnen", "Abrir arquivo", "Открыть файл"},
     {"导出结果", "匯出結果", "Export result", "結果を書き出す", "결과 내보내기", "Exportar resultado", "Exporter le résultat", "Ergebnis exportieren", "Exportar resultado", "Экспортировать результат"},
+    {"保存二进制", "儲存二進位資料", "Save binary", "バイナリを保存", "바이너리 저장", "Guardar binario", "Enregistrer le binaire", "Binärdaten speichern", "Salvar binário", "Сохранить двоичные данные"},
     {"关闭", "關閉", "Close", "閉じる", "닫기", "Cerrar", "Fermer", "Schließen", "Fechar", "Закрыть"},
     {"输入超过 10 MiB", "輸入超過 10 MiB", "Input exceeds 10 MiB", "入力が 10 MiB を超えています", "입력이 10 MiB를 초과했습니다", "La entrada supera 10 MiB", "L’entrée dépasse 10 Mio", "Eingabe überschreitet 10 MiB", "A entrada excede 10 MiB", "Ввод превышает 10 МиБ"},
     {"大输入分页编辑", "大型輸入分頁編輯", "Paged large-input editor", "大きな入力のページ編集", "대용량 입력 페이지 편집", "Editor paginado de entrada grande", "Éditeur paginé pour grande entrée", "Seiteneditor für große Eingaben", "Editor paginado de entrada grande", "Постраничный редактор большого ввода"},

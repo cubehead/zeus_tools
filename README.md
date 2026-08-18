@@ -97,7 +97,7 @@ font rendering may differ on Windows.
 | TOML | Strict parse, format, highlight and section folding | Convert to/from JSON |
 | INI/Properties | Conservative assignment parsing and formatting | Convert to JSON without guessing value types |
 | CSV | Detect comma, Tab, semicolon or pipe | Override delimiter/header, virtual table, TSV copy |
-| Base64 | Decode one high-confidence layer | Standard and URL-safe input; binary-safe preview |
+| Base64 | Decode one high-confidence layer | Standard and URL-safe input; binary-safe preview and raw `.bin` export |
 | URL encoding | Decode one high-confidence layer | Encode arbitrary UTF-8 text |
 | HTML Entity / Hex | Decode only explicit encoded input | Encode arbitrary UTF-8 text |
 | Unicode Escape | Decode valid `\uXXXX` sequences one layer | Escape UTF-8, including emoji surrogate pairs |

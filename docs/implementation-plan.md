@@ -18,7 +18,8 @@
 - JSON/XML/YAML/TOML/INI 格式化、高亮、错误信息及结构折叠。
 - JSON ↔ YAML/XML/TOML、TOML/INI → JSON、JSON → CSV，以及 JSON Escape/Unescape。
 - HTML Entity、Hex、Unicode Escape 编解码和仅对精确 10/13 位输入提供的 Unix 时间转换。
-- Base64 和 URL 自动解码一层；Base64 二进制结果显示字节数与 Hex 预览。
+- Base64 和 URL 自动解码一层；Base64 二进制结果显示字节数与 Hex 预览，并可将
+  原始解码字节显式导出为 `.bin` 文件。
 - CRC32、MD5、SHA-1、SHA-256、SHA-384、SHA-512 与 HMAC 计算，支持 Hex/Base64 输出；
   CRC32 仅作为非密码学校验和提供，不进入 HMAC。
 - HMAC 可选择原始输入/当前结果以及 UTF-8/Hex/Base64 密钥；密钥默认遮罩，

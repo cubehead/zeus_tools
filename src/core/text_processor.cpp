@@ -455,7 +455,8 @@ ProcessResult decoded_result(ContentKind source_kind, const char* source_label, 
     } else {
         result.output_kind = ContentKind::Text;
         result.label = std::string(source_label) + " → Binary";
-        result.value = binary_summary(decoded);
+        result.binary_data = std::make_shared<const std::string>(std::move(decoded));
+        result.value = binary_summary(*result.binary_data);
     }
     return result;
 }

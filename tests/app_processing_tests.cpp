@@ -224,6 +224,20 @@ void test_decode_one_layer() {
            "decoded JSON should be formatted");
 }
 
+void test_binary_base64_retains_export_payload() {
+    app::processing::AnalysisRequest request;
+    request.input = "AAECAwQF";
+    request.input_type_id = "base64";
+    const auto result = app::processing::analyze(request);
+
+    expect(result.process.ok && result.process.decoded,
+           "explicit Base64 should decode binary input");
+    expect(result.process.binary_data && result.process.binary_data->size() == 6,
+           "desktop analysis should retain binary bytes for explicit export");
+    expect(result.document && result.document->text().find("Hex preview") != std::string::npos,
+           "binary output should keep a searchable safe summary document");
+}
+
 void test_recommended_input_size_boundary() {
     expect(!app::processing::exceeds_recommended_input_size(
                app::processing::kRecommendedMaxInputBytes),
@@ -501,6 +515,7 @@ int main() {
     test_toml_analysis();
     test_ini_analysis();
     test_decode_one_layer();
+    test_binary_base64_retains_export_payload();
     test_recommended_input_size_boundary();
     test_large_input_pages_preserve_utf8_boundaries();
     test_processing_registry();

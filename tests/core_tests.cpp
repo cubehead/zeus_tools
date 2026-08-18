@@ -628,6 +628,10 @@ int main() {
     const auto binary_base64 = zeus::process_text("AAECAwQF", zeus::ProcessingMode::Base64);
     require(binary_base64.ok && binary_base64.label.find("Binary") != std::string::npos,
             "binary Base64 must render a safe summary instead of invalid text");
+    require(binary_base64.binary_data && binary_base64.binary_data->size() == 6 &&
+                static_cast<unsigned char>((*binary_base64.binary_data)[0]) == 0 &&
+                static_cast<unsigned char>((*binary_base64.binary_data)[5]) == 5,
+            "binary Base64 must retain the exact decoded bytes for explicit export");
 
     const auto csv = zeus::parse_csv("name,description\nZeus,\"format, decode\"\n中文,工具");
     require(csv.ok && csv.document.rows.size() == 3,
