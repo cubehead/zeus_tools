@@ -191,6 +191,17 @@ cmake --build --preset core
 ctest --preset core
 ```
 
+在 Clang/GCC 开发机上运行 AddressSanitizer 与 UndefinedBehaviorSanitizer：
+
+```sh
+cmake --preset core-sanitize
+cmake --build --preset core-sanitize
+ctest --preset core-sanitize
+```
+
+该预设面向 macOS/Linux 的 Clang/GCC，不构建桌面界面，覆盖核心处理、检测质量、
+处理注册表和 CLI 冒烟测试；Windows 原生验证继续使用编译器严格警告与发布清单。
+
 输出自动检测质量报告：
 
 ```sh

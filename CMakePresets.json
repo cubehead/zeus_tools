@@ -29,6 +29,24 @@
       }
     },
     {
+      "name": "core-sanitize",
+      "displayName": "Core with ASan and UBSan",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/core-sanitize",
+      "condition": {
+        "type": "notEquals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      },
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "ZEUS_BUILD_APP": "OFF",
+        "ZEUS_BUILD_CLI": "ON",
+        "ZEUS_BUILD_TESTS": "ON",
+        "ZEUS_ENABLE_SANITIZERS": "ON"
+      }
+    },
+    {
       "name": "package-macos",
       "displayName": "macOS release package",
       "generator": "Ninja",
@@ -66,6 +84,7 @@
   "buildPresets": [
     { "name": "dev", "configurePreset": "dev" },
     { "name": "core", "configurePreset": "core" },
+    { "name": "core-sanitize", "configurePreset": "core-sanitize" },
     { "name": "package-macos", "configurePreset": "package-macos" },
     { "name": "package-windows", "configurePreset": "package-windows" }
   ],
@@ -77,6 +96,11 @@
     {
       "name": "core",
       "configurePreset": "core",
+      "output": { "outputOnFailure": true }
+    },
+    {
+      "name": "core-sanitize",
+      "configurePreset": "core-sanitize",
       "output": { "outputOnFailure": true }
     }
   ]

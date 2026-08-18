@@ -18,12 +18,27 @@ option(ZEUS_BUILD_APP "Build the EUI-NEO desktop prototype" ON)
 option(ZEUS_BUILD_CLI "Build the Zeus Tools command-line pipeline" ON)
 option(ZEUS_BUILD_TESTS "Build Zeus core tests" ON)
 option(ZEUS_ENABLE_PACKAGING "Configure native application bundles and CPack packages" OFF)
+option(ZEUS_ENABLE_SANITIZERS "Enable AddressSanitizer and UndefinedBehaviorSanitizer" OFF)
 set(ZEUS_EUI_NEO_SOURCE_DIR "" CACHE PATH "Path to an existing EUI-NEO v0.5.3 checkout")
 set(ZEUS_APP_IDENTIFIER "io.github.zeustools.app" CACHE STRING "macOS application bundle identifier")
 set(ZEUS_BUILD_NUMBER "2" CACHE STRING "Numeric platform build number")
 set(ZEUS_MACOS_MIN_VERSION "12.0" CACHE STRING "Minimum supported macOS version")
 set(ZEUS_CODESIGN_IDENTITY "" CACHE STRING "Optional macOS Developer ID Application identity")
 set(ZEUS_DOCS_SCENARIO "" CACHE STRING "Optional synthetic README screenshot scenario")
+
+if(ZEUS_ENABLE_SANITIZERS)
+    if(MSVC)
+        message(FATAL_ERROR "ZEUS_ENABLE_SANITIZERS currently requires Clang or GCC")
+    endif()
+    add_compile_options(
+        $<$<COMPILE_LANGUAGE:C>:-fsanitize=address,undefined>
+        $<$<COMPILE_LANGUAGE:C>:-fno-omit-frame-pointer>
+        $<$<COMPILE_LANGUAGE:C>:-fno-sanitize-recover=all>
+        $<$<COMPILE_LANGUAGE:CXX>:-fsanitize=address,undefined>
+        $<$<COMPILE_LANGUAGE:CXX>:-fno-omit-frame-pointer>
+        $<$<COMPILE_LANGUAGE:CXX>:-fno-sanitize-recover=all>)
+    add_link_options(-fsanitize=address,undefined -fno-sanitize-recover=all)
+endif()
 
 if(APPLE)
     # Keep the Mach-O load command and Info.plist minimum version in sync. A

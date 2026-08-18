@@ -50,6 +50,8 @@
 - C++17 核心测试和 1 MB/10 MB JSON、CSV 基准程序；10 MiB 应用处理服务基准覆盖
   检测、格式化、展示模型构建和搜索，当前 Debug 峰值常驻内存约 269 MiB，较优化前
   下降约 10%。
+- 提供 Clang/GCC AddressSanitizer + UndefinedBehaviorSanitizer 核心测试预设，当前
+  四组核心、检测、处理注册表与 CLI 回归均通过；项目仍按约定不使用 GitHub CI。
 - 自动检测报告覆盖 55 个版本化样例；当前精确匹配率、可识别内容召回率和纯文本
   特异度均为 100%，并设置语料数量下限防止删减难例。
 - EUI-NEO、pugixml、yaml-cpp、toml++ 均固定到不可变提交。
