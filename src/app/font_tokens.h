@@ -3,7 +3,42 @@
 namespace app::fonts {
 
 inline const char* ui() {
+#if defined(_WIN32)
+    return "Microsoft YaHei";
+#elif defined(__APPLE__)
     return "PingFang SC";
+#else
+    return "sans-serif";
+#endif
+}
+
+// Microsoft YaHei UI has visibly larger control glyphs than PingFang at the
+// same nominal pixel size. Keep document typography unchanged and normalize
+// only button labels so Windows controls retain the same visual density.
+constexpr float button_size(float requested) {
+#if defined(_WIN32)
+    return requested * 0.88f;
+#else
+    return requested;
+#endif
+}
+
+// The action strip can contain both format-specific and common actions. Its
+// Windows controls need a denser footprint to remain inside the default window.
+constexpr float action_width(float requested) {
+#if defined(_WIN32)
+    return requested * 0.82f;
+#else
+    return requested;
+#endif
+}
+
+constexpr float action_gap() {
+#if defined(_WIN32)
+    return 5.0f;
+#else
+    return 8.0f;
+#endif
 }
 
 inline const char* code() {

@@ -41,7 +41,7 @@ void build_crypto_panel(eui::Ui& ui, const ViewContext& context) {
                     components::button(ui, id)
                         .size(width, 32.0f)
                         .text(label)
-                        .fontSize(18.0f)
+                        .fontSize(fonts::button_size(18.0f))
                         .theme(tokens, false)
                         .onClick([algorithm] { compute_crypto_output(algorithm); })
                         .build();
@@ -64,7 +64,7 @@ void build_crypto_panel(eui::Ui& ui, const ViewContext& context) {
                 components::button(ui, "actions.crypto.hmac")
                     .size(76.0f, 32.0f)
                     .text("HMAC")
-                    .fontSize(18.0f)
+                    .fontSize(fonts::button_size(18.0f))
                     .theme(tokens, app_state.crypto.hmac)
                     .onClick([&ui] {
                         app_state.crypto.hmac = !app_state.crypto.hmac;
@@ -188,7 +188,7 @@ void build_crypto_panel(eui::Ui& ui, const ViewContext& context) {
                         .text(app_state.crypto.key_visible
                             ? tr(i18n::Text::HideKey)
                             : tr(i18n::Text::ShowKey))
-                        .fontSize(16.0f)
+                        .fontSize(fonts::button_size(16.0f))
                         .theme(tokens, app_state.crypto.key_visible)
                         .onClick([] {
                             app_state.crypto.key_visible = !app_state.crypto.key_visible;

@@ -115,7 +115,7 @@ void build_search_bar(eui::Ui& ui, const ViewContext& context) {
             components::button(ui, "bottom.search.case")
                 .size(42.0f, 34.0f)
                 .text("Aa")
-                .fontSize(16.0f)
+                .fontSize(fonts::button_size(16.0f))
                 .theme(tokens, app_state.search.case_sensitive)
                 .onClick([] {
                     app_state.search.case_sensitive = !app_state.search.case_sensitive;
@@ -126,7 +126,7 @@ void build_search_bar(eui::Ui& ui, const ViewContext& context) {
             components::button(ui, "bottom.search.regex")
                 .size(42.0f, 34.0f)
                 .text(".*")
-                .fontSize(16.0f)
+                .fontSize(fonts::button_size(16.0f))
                 .theme(tokens, app_state.search.use_regex)
                 .onClick([] {
                     app_state.search.use_regex = !app_state.search.use_regex;
@@ -137,7 +137,7 @@ void build_search_bar(eui::Ui& ui, const ViewContext& context) {
             components::button(ui, "bottom.previous")
                 .size(34.0f, 34.0f)
                 .text("↑")
-                .fontSize(19.0f)
+                .fontSize(fonts::button_size(19.0f))
                 .theme(tokens, false)
                 .onClick([] { move_match(-1); })
                 .build();
@@ -145,7 +145,7 @@ void build_search_bar(eui::Ui& ui, const ViewContext& context) {
             components::button(ui, "bottom.next")
                 .size(34.0f, 34.0f)
                 .text("↓")
-                .fontSize(19.0f)
+                .fontSize(fonts::button_size(19.0f))
                 .theme(tokens, false)
                 .onClick([] { move_match(1); })
                 .build();
@@ -164,7 +164,7 @@ void build_search_bar(eui::Ui& ui, const ViewContext& context) {
                 .text((app_state.result.csv ? !csv_cell_selected : app_state.result.selection.empty())
                     ? tr(i18n::Text::CopyAll)
                     : tr(i18n::Text::CopySelected))
-                .fontSize(18.0f)
+                .fontSize(fonts::button_size(18.0f))
                 .theme(tokens, false)
                 .onClick([] { copy_result(false); })
                 .build();

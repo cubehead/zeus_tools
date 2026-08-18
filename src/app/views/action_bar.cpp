@@ -66,7 +66,7 @@ void build_action_bar(eui::Ui& ui, const ViewContext& context) {
         .border(1.0f, tokens.border)
         .build();
 
-    constexpr float action_gap = 8.0f;
+    const float action_gap = fonts::action_gap();
     ui.row("actions")
         .position(margin + 16.0f, actions_y + 7.0f)
         .size(content_width - 32.0f, 30.0f)
@@ -75,11 +75,11 @@ void build_action_bar(eui::Ui& ui, const ViewContext& context) {
         .alignItems(eui::Align::CENTER)
         .content([&] {
             ui.stack("actions.input.type.slot")
-                .size(116.0f, 30.0f)
+                .size(fonts::action_width(116.0f), 30.0f)
                 .zIndex(100)
                 .content([&] {
                     components::dropdown(ui, "actions.input.type")
-                        .size(116.0f, 30.0f)
+                        .size(fonts::action_width(116.0f), 30.0f)
                         .items(input_type_items())
                         .selected(processing::input_type_index(app_state.input_type_id))
                         .open(app_state.input_type_dropdown_open)
@@ -104,9 +104,9 @@ void build_action_bar(eui::Ui& ui, const ViewContext& context) {
 
             if (oversized_input_paused()) {
                 components::button(ui, "actions.process.oversized")
-                    .size(148.0f, 30.0f)
+                    .size(fonts::action_width(148.0f), 30.0f)
                     .text(tr(i18n::Text::ProcessAnyway))
-                    .fontSize(18.0f)
+                    .fontSize(fonts::button_size(18.0f))
                     .theme(tokens, false)
                     .radius(5.0f)
                     .onClick([] { process_oversized_input(); })
@@ -124,9 +124,9 @@ void build_action_bar(eui::Ui& ui, const ViewContext& context) {
                 }
                 auto button = components::button(
                         ui, component_id)
-                    .size(definition.width, 30.0f)
+                    .size(fonts::action_width(definition.width), 30.0f)
                     .text(action_label(definition.label))
-                    .fontSize(20.0f)
+                    .fontSize(fonts::button_size(20.0f))
                     .theme(tokens, active)
                     .radius(5.0f)
                     .onClick([definition] {
@@ -152,10 +152,10 @@ void build_action_bar(eui::Ui& ui, const ViewContext& context) {
             const std::string detected_label(processing::content_definition(
                 app_state.result.detected_input_kind).compact_label);
             ui.text("actions.detected")
-                .size(64.0f, 30.0f)
+                .size(fonts::action_width(64.0f), 30.0f)
                 .text(detected_label)
                 .fontFamily(fonts::ui())
-                .fontSize(18.0f)
+                .fontSize(fonts::button_size(18.0f))
                 .fontWeight(700)
                 .verticalAlign(eui::VerticalAlign::Center)
                 .color(tokens.text)
@@ -172,11 +172,11 @@ void build_action_bar(eui::Ui& ui, const ViewContext& context) {
 
             if (app_state.result.output_kind == zeus::ContentKind::Csv) {
                 ui.stack("actions.csv.delimiter.slot")
-                    .size(118.0f, 30.0f)
+                    .size(fonts::action_width(118.0f), 30.0f)
                     .zIndex(110)
                     .content([&] {
                         components::dropdown(ui, "actions.csv.delimiter")
-                            .size(118.0f, 30.0f)
+                            .size(fonts::action_width(118.0f), 30.0f)
                             .items(csv_delimiter_items())
                             .selected(app_state.csv.delimiter_index)
                             .open(app_state.csv.delimiter_dropdown_open)
@@ -202,10 +202,10 @@ void build_action_bar(eui::Ui& ui, const ViewContext& context) {
                     })
                     .build();
                 components::button(ui, "actions.csv.header")
-                    .size(106.0f, 30.0f)
+                    .size(fonts::action_width(106.0f), 30.0f)
                     .text(std::string(tr(i18n::Text::FirstRowHeader)) + ":" +
                           (app_state.csv.first_row_header ? tr(i18n::Text::On) : tr(i18n::Text::Off)))
-                    .fontSize(18.0f)
+                    .fontSize(fonts::button_size(18.0f))
                     .theme(tokens, app_state.csv.first_row_header)
                     .radius(5.0f)
                     .onClick([] {
@@ -220,9 +220,9 @@ void build_action_bar(eui::Ui& ui, const ViewContext& context) {
 
             if (app_state.result.can_continue_decode) {
                 components::button(ui, "actions.decode.again")
-                    .size(94.0f, 30.0f)
+                    .size(fonts::action_width(94.0f), 30.0f)
                     .text(tr(i18n::Text::DecodeAgain))
-                    .fontSize(18.0f)
+                    .fontSize(fonts::button_size(18.0f))
                     .theme(tokens, false)
                     .radius(5.0f)
                     .onClick([] { continue_decode_one_layer(); })
@@ -238,10 +238,10 @@ void build_action_bar(eui::Ui& ui, const ViewContext& context) {
                     if (definition.common) action(definition);
                 }
                 components::button(ui, "actions.digest")
-                    .size(90.0f, 30.0f)
+                    .size(fonts::action_width(90.0f), 30.0f)
                     .text(std::string(app_state.crypto.panel_open ? "▾ " : "▸ ") +
                           tr(i18n::Text::Digest))
-                    .fontSize(19.0f)
+                    .fontSize(fonts::button_size(19.0f))
                     .theme(tokens, false)
                     .radius(5.0f)
                     .colors(

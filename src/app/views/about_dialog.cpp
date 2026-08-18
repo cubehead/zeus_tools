@@ -108,7 +108,7 @@ void build_about_dialog(eui::Ui& ui, const ViewContext& context) {
                 .position(dialog_width - 52.0f, 18.0f)
                 .size(34.0f, 34.0f)
                 .text("×")
-                .fontSize(22.0f)
+                .fontSize(fonts::button_size(22.0f))
                 .theme(tokens, false)
                 .onClick([] {
                     app_state.about_dialog_open = false;
@@ -187,7 +187,7 @@ void build_about_dialog(eui::Ui& ui, const ViewContext& context) {
                         370.0f + row * 46.0f)
                     .size(link_width, 38.0f)
                     .text(std::string(project.name) + "  ↗")
-                    .fontSize(15.0f)
+                    .fontSize(fonts::button_size(15.0f))
                     .theme(tokens, false)
                     .onClick([url = project.url] { eui::platform::openUrl(url); })
                     .build();
@@ -197,7 +197,7 @@ void build_about_dialog(eui::Ui& ui, const ViewContext& context) {
                 .position(28.0f, dialog_height - 72.0f)
                 .size(190.0f, 42.0f)
                 .text(controller::tr(i18n::Text::ProjectWebsite))
-                .fontSize(17.0f)
+                .fontSize(fonts::button_size(17.0f))
                 .theme(tokens, true)
                 .onClick([] { eui::platform::openUrl(kProjectUrl); })
                 .build();

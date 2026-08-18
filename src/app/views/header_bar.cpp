@@ -129,7 +129,7 @@ void build_header_bar(eui::Ui& ui, const ViewContext& context) {
             components::button(ui, "header.clear")
                 .size(88.0f, 38.0f)
                 .text(tr(i18n::Text::Clear))
-                .fontSize(20.0f)
+                .fontSize(fonts::button_size(20.0f))
                 .theme(tokens, false)
                 .onClick([&ui] {
                     app_state.input_text.clear();

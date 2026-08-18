@@ -109,7 +109,7 @@ void build_large_input_editor(eui::Ui& ui, const ViewContext& context) {
             components::button(ui, "input.large.previous")
                 .size(38.0f, 26.0f)
                 .text("‹")
-                .fontSize(22.0f)
+                .fontSize(fonts::button_size(22.0f))
                 .theme(tokens, false)
                 .radius(5.0f)
                 .onClick([] {
@@ -122,7 +122,7 @@ void build_large_input_editor(eui::Ui& ui, const ViewContext& context) {
             components::button(ui, "input.large.next")
                 .size(38.0f, 26.0f)
                 .text("›")
-                .fontSize(22.0f)
+                .fontSize(fonts::button_size(22.0f))
                 .theme(tokens, false)
                 .radius(5.0f)
                 .onClick([pages] {
