@@ -1,6 +1,7 @@
 #include "processing_service.h"
 #include "processing_registry.h"
 #include "large_input_paging.h"
+#include "font_tokens.h"
 
 #include <cstdlib>
 #include <exception>
@@ -331,6 +332,63 @@ void test_processing_registry() {
            "unknown input types should safely fall back to auto");
 }
 
+void test_windows_action_bar_fits_default_window() {
+    constexpr float available_width = 1280.0f - 18.0f * 2.0f - 32.0f;
+    constexpr bool windows = true;
+
+    const auto width = [](float value) {
+        return app::fonts::action_width_for_platform(value, windows);
+    };
+    const auto continues_decode = [](zeus::ContentKind kind) {
+        return kind == zeus::ContentKind::Base64 ||
+            kind == zeus::ContentKind::UrlEncoded ||
+            kind == zeus::ContentKind::JsonEscaped ||
+            kind == zeus::ContentKind::HtmlEntity ||
+            kind == zeus::ContentKind::HexEncoded ||
+            kind == zeus::ContentKind::UnicodeEscaped;
+    };
+
+    for (int raw_kind = 1; raw_kind < static_cast<int>(zeus::ContentKind::Count); ++raw_kind) {
+        const auto kind = static_cast<zeus::ContentKind>(raw_kind);
+        const std::string sample = sample_for_kind(kind);
+        float total = width(116.0f) + width(64.0f);
+        std::size_t items = 2;
+        for (const auto& action : app::processing::registered_actions()) {
+            if (!action.common && app::processing::action_applies(action, kind, sample)) {
+                total += width(action.width);
+                ++items;
+            }
+        }
+        if (kind == zeus::ContentKind::Csv) {
+            total += width(118.0f) + width(106.0f);
+            items += 2;
+        }
+        if (continues_decode(kind)) {
+            total += width(94.0f);
+            ++items;
+        }
+        total += 1.0f;
+        ++items;
+        for (const auto& action : app::processing::registered_actions()) {
+            if (action.common) {
+                total += width(action.width);
+                ++items;
+            }
+        }
+        total += width(90.0f);
+        ++items;
+        total += static_cast<float>(items - 1) *
+            app::fonts::action_gap_for_platform(windows);
+        expect(total <= available_width,
+               "Windows action bar should fit every content type at the default width");
+    }
+
+    expect(app::fonts::button_size_for_platform(20.0f, true) < 20.0f,
+           "Windows buttons should use compact typography");
+    expect(app::fonts::button_size_for_platform(20.0f, false) == 20.0f,
+           "non-Windows button typography should remain unchanged");
+}
+
 void test_every_registered_input_type_executes() {
     for (const auto& type : app::processing::registered_input_types()) {
         app::processing::AnalysisRequest request;
@@ -446,6 +504,7 @@ int main() {
     test_recommended_input_size_boundary();
     test_large_input_pages_preserve_utf8_boundaries();
     test_processing_registry();
+    test_windows_action_bar_fits_default_window();
     test_every_registered_input_type_executes();
     test_every_registered_action_executes();
     test_all_processors_reject_adversarial_input_without_throwing();
