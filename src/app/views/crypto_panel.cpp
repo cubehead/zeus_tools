@@ -60,6 +60,7 @@ void build_crypto_panel(eui::Ui& ui, const ViewContext& context) {
                 algorithm_button("actions.crypto.md5", "MD5", zeus::DigestAlgorithm::Md5, 62.0f);
                 algorithm_button("actions.crypto.sha1", "SHA-1", zeus::DigestAlgorithm::Sha1, 72.0f);
                 algorithm_button("actions.crypto.sha256", "SHA-256", zeus::DigestAlgorithm::Sha256, 86.0f);
+                algorithm_button("actions.crypto.sha384", "SHA-384", zeus::DigestAlgorithm::Sha384, 86.0f);
                 algorithm_button("actions.crypto.sha512", "SHA-512", zeus::DigestAlgorithm::Sha512, 86.0f);
                 if (!app_state.crypto.hmac) {
                     algorithm_button("actions.crypto.crc32", "CRC32", zeus::DigestAlgorithm::Crc32, 76.0f);

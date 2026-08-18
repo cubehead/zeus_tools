@@ -8,6 +8,8 @@ semantic versioning after the first stable release.
 
 ### Added
 
+- Added SHA-384 digest and HMAC-SHA384 using the native macOS and Windows
+  cryptography providers, with standard-vector coverage.
 - Added a manual CRC32 checksum with Hex/Base64 output, standard-vector tests
   and an explicit non-cryptographic warning; CRC32 is not offered for HMAC.
 - Added a native PowerShell Windows package validator covering SHA-256,

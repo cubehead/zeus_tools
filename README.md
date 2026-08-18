@@ -55,7 +55,7 @@ Windows uses a portable package and does not include an NSIS/MSI installer.
 - Resizes the input and result workspaces with a bounded horizontal splitter.
 - Keeps 1-10 MiB input responsive with UTF-8-safe paged editing and explicit
   full-input copy; processing still uses the complete source.
-- Calculates CRC32, MD5, SHA-1, SHA-256, SHA-512 and HMAC locally.
+- Calculates CRC32, MD5, SHA-1, SHA-256, SHA-384, SHA-512 and HMAC locally.
 - Supports system/light/dark themes and ten interface languages.
 - Opens or drops UTF-8 files and exports the current result without keeping a
   recent-file or content history.

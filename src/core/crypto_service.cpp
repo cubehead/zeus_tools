@@ -26,6 +26,7 @@ std::size_t digest_size(DigestAlgorithm algorithm) {
     case DigestAlgorithm::Md5: return 16;
     case DigestAlgorithm::Sha1: return 20;
     case DigestAlgorithm::Sha256: return 32;
+    case DigestAlgorithm::Sha384: return 48;
     case DigestAlgorithm::Sha512: return 64;
     case DigestAlgorithm::Crc32: return 4;
     }
@@ -186,6 +187,7 @@ bool platform_digest(
     case DigestAlgorithm::Md5: CC_MD5(data, size, output.data()); return true;
     case DigestAlgorithm::Sha1: CC_SHA1(data, size, output.data()); return true;
     case DigestAlgorithm::Sha256: CC_SHA256(data, size, output.data()); return true;
+    case DigestAlgorithm::Sha384: CC_SHA384(data, size, output.data()); return true;
     case DigestAlgorithm::Sha512: CC_SHA512(data, size, output.data()); return true;
     case DigestAlgorithm::Crc32: return false;
     }
@@ -198,6 +200,7 @@ CCHmacAlgorithm hmac_algorithm(DigestAlgorithm algorithm) {
     case DigestAlgorithm::Md5: return kCCHmacAlgMD5;
     case DigestAlgorithm::Sha1: return kCCHmacAlgSHA1;
     case DigestAlgorithm::Sha256: return kCCHmacAlgSHA256;
+    case DigestAlgorithm::Sha384: return kCCHmacAlgSHA384;
     case DigestAlgorithm::Sha512: return kCCHmacAlgSHA512;
     case DigestAlgorithm::Crc32: return kCCHmacAlgSHA256;
     }
@@ -221,6 +224,7 @@ LPCWSTR bcrypt_algorithm(DigestAlgorithm algorithm) {
     case DigestAlgorithm::Md5: return BCRYPT_MD5_ALGORITHM;
     case DigestAlgorithm::Sha1: return BCRYPT_SHA1_ALGORITHM;
     case DigestAlgorithm::Sha256: return BCRYPT_SHA256_ALGORITHM;
+    case DigestAlgorithm::Sha384: return BCRYPT_SHA384_ALGORITHM;
     case DigestAlgorithm::Sha512: return BCRYPT_SHA512_ALGORITHM;
     case DigestAlgorithm::Crc32: return nullptr;
     }
@@ -313,6 +317,7 @@ const char* digest_algorithm_name(DigestAlgorithm algorithm) {
     case DigestAlgorithm::Md5: return "MD5";
     case DigestAlgorithm::Sha1: return "SHA-1";
     case DigestAlgorithm::Sha256: return "SHA-256";
+    case DigestAlgorithm::Sha384: return "SHA-384";
     case DigestAlgorithm::Sha512: return "SHA-512";
     case DigestAlgorithm::Crc32: return "CRC32";
     }

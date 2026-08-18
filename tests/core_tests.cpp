@@ -141,6 +141,10 @@ int main() {
             "SHA-256 should match its standard abc vector");
     require(sha256.base64 == "ungWv48Bz+pBQUDeXa4iI7ADYaOWF3qctBD/YfIAFa0=",
             "digest Base64 output should match the raw digest bytes");
+    require(zeus::compute_digest("abc", zeus::DigestAlgorithm::Sha384).hex ==
+                "cb00753f45a35e8bb5a03d699ac65007272c32ab0eded163"
+                "1a8b605a43ff5bed8086072ba1e7cc2358baeca134c825a7",
+            "SHA-384 should match its standard abc vector");
     require(zeus::compute_digest("abc", zeus::DigestAlgorithm::Sha512).hex ==
                 "ddaf35a193617abacc417349ae20413112e6fa4e89a97ea20a9eeee64b55d39a"
                 "2192992a274fc1a836ba3c23a3feebbd454d4423643ce80e2a9ac94fa54ca49f",
@@ -161,6 +165,10 @@ int main() {
     require(zeus::compute_hmac(hmac_message, "key", zeus::DigestAlgorithm::Sha256).hex ==
                 "f7bc83f430538424b13298e6aa6fb143ef4d59a14946175997479dbc2d1a3cd8",
             "HMAC-SHA256 should match the standard vector");
+    require(zeus::compute_hmac(hmac_message, "key", zeus::DigestAlgorithm::Sha384).hex ==
+                "d7f4727e2c0b39ae0f1e40cc96f60242d5b7801841cea6fc592c5d3e1ae50700"
+                "582a96cf35e1e554995fe4e03381c237",
+            "HMAC-SHA384 should match the standard vector");
     require(zeus::compute_hmac(hmac_message, "key", zeus::DigestAlgorithm::Sha512).hex ==
                 "b42af09057bac1e2d41708e48a902e09b5ff7f12ab428a4fe86653c73dd248fb"
                 "82f948a549f7b791a5b41915ee4d1ec3935357e4e2317250d0372afa2ebeeb3a",
