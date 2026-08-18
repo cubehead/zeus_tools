@@ -27,8 +27,27 @@ std::size_t digest_size(DigestAlgorithm algorithm) {
     case DigestAlgorithm::Sha1: return 20;
     case DigestAlgorithm::Sha256: return 32;
     case DigestAlgorithm::Sha512: return 64;
+    case DigestAlgorithm::Crc32: return 4;
     }
     return 0;
+}
+
+std::vector<std::uint8_t> crc32_digest(std::string_view input) {
+    std::uint32_t value = 0xFFFFFFFFU;
+    for (const unsigned char byte : input) {
+        value ^= byte;
+        for (int bit = 0; bit < 8; ++bit) {
+            const std::uint32_t mask = 0U - (value & 1U);
+            value = (value >> 1U) ^ (0xEDB88320U & mask);
+        }
+    }
+    value ^= 0xFFFFFFFFU;
+    return {
+        static_cast<std::uint8_t>((value >> 24U) & 0xFFU),
+        static_cast<std::uint8_t>((value >> 16U) & 0xFFU),
+        static_cast<std::uint8_t>((value >> 8U) & 0xFFU),
+        static_cast<std::uint8_t>(value & 0xFFU),
+    };
 }
 
 std::string hex_encode(const std::vector<std::uint8_t>& bytes) {
@@ -168,6 +187,7 @@ bool platform_digest(
     case DigestAlgorithm::Sha1: CC_SHA1(data, size, output.data()); return true;
     case DigestAlgorithm::Sha256: CC_SHA256(data, size, output.data()); return true;
     case DigestAlgorithm::Sha512: CC_SHA512(data, size, output.data()); return true;
+    case DigestAlgorithm::Crc32: return false;
     }
     return false;
 }
@@ -179,6 +199,7 @@ CCHmacAlgorithm hmac_algorithm(DigestAlgorithm algorithm) {
     case DigestAlgorithm::Sha1: return kCCHmacAlgSHA1;
     case DigestAlgorithm::Sha256: return kCCHmacAlgSHA256;
     case DigestAlgorithm::Sha512: return kCCHmacAlgSHA512;
+    case DigestAlgorithm::Crc32: return kCCHmacAlgSHA256;
     }
     return kCCHmacAlgSHA256;
 }
@@ -201,6 +222,7 @@ LPCWSTR bcrypt_algorithm(DigestAlgorithm algorithm) {
     case DigestAlgorithm::Sha1: return BCRYPT_SHA1_ALGORITHM;
     case DigestAlgorithm::Sha256: return BCRYPT_SHA256_ALGORITHM;
     case DigestAlgorithm::Sha512: return BCRYPT_SHA512_ALGORITHM;
+    case DigestAlgorithm::Crc32: return nullptr;
     }
     return BCRYPT_SHA256_ALGORITHM;
 }
@@ -292,6 +314,7 @@ const char* digest_algorithm_name(DigestAlgorithm algorithm) {
     case DigestAlgorithm::Sha1: return "SHA-1";
     case DigestAlgorithm::Sha256: return "SHA-256";
     case DigestAlgorithm::Sha512: return "SHA-512";
+    case DigestAlgorithm::Crc32: return "CRC32";
     }
     return "SHA-256";
 }
@@ -300,7 +323,14 @@ bool digest_algorithm_is_weak(DigestAlgorithm algorithm) {
     return algorithm == DigestAlgorithm::Md5 || algorithm == DigestAlgorithm::Sha1;
 }
 
+bool digest_algorithm_is_checksum(DigestAlgorithm algorithm) {
+    return algorithm == DigestAlgorithm::Crc32;
+}
+
 CryptoResult compute_digest(std::string_view input, DigestAlgorithm algorithm) {
+    if (algorithm == DigestAlgorithm::Crc32) {
+        return finish(true, crc32_digest(input));
+    }
     std::vector<std::uint8_t> bytes;
     const bool ok = platform_digest(input, algorithm, bytes);
     return finish(ok, std::move(bytes));
@@ -310,6 +340,11 @@ CryptoResult compute_hmac(
     std::string_view input,
     std::string_view key,
     DigestAlgorithm algorithm) {
+    if (algorithm == DigestAlgorithm::Crc32) {
+        CryptoResult result;
+        result.error = "HMAC is not defined for CRC32";
+        return result;
+    }
     std::vector<std::uint8_t> bytes;
     const bool ok = platform_hmac(input, key, algorithm, bytes);
     return finish(ok, std::move(bytes));

@@ -23,7 +23,7 @@ This checklist is intentionally manual. The repository does not use GitHub CI.
 - [ ] JWT header/payload inspection without claiming signature verification.
 - [ ] CSV auto/manual delimiter, header switch, scroll, search and TSV copy.
 - [ ] Text selection, double-click word selection, copy and search navigation.
-- [ ] MD5/SHA/HMAC output and weak-algorithm warning.
+- [ ] CRC32/MD5/SHA/HMAC output plus checksum/weak-algorithm warnings.
 - [ ] System/light/dark themes and all locale menu entries.
 - [ ] Invalid input displays a concise error and detailed hover card.
 - [ ] CLI stdin/file input, registered action, stderr diagnostics and 10 MiB limit.

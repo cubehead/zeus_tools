@@ -145,6 +145,11 @@ int main() {
                 "ddaf35a193617abacc417349ae20413112e6fa4e89a97ea20a9eeee64b55d39a"
                 "2192992a274fc1a836ba3c23a3feebbd454d4423643ce80e2a9ac94fa54ca49f",
             "SHA-512 should match its standard abc vector");
+    const auto crc32 = zeus::compute_digest("abc", zeus::DigestAlgorithm::Crc32);
+    require(crc32.ok && crc32.hex == "352441c2" && crc32.base64 == "NSRBwg==",
+            "CRC32 should match the standard IEEE abc vector");
+    require(!zeus::compute_hmac("abc", "key", zeus::DigestAlgorithm::Crc32).ok,
+            "CRC32 should be rejected as an HMAC algorithm");
 
     const std::string hmac_message = "The quick brown fox jumps over the lazy dog";
     require(zeus::compute_hmac(hmac_message, "key", zeus::DigestAlgorithm::Md5).hex ==
@@ -180,7 +185,8 @@ int main() {
             "non-canonical Base64 key padding should return an error");
     require(zeus::digest_algorithm_is_weak(zeus::DigestAlgorithm::Md5) &&
                 zeus::digest_algorithm_is_weak(zeus::DigestAlgorithm::Sha1) &&
-                !zeus::digest_algorithm_is_weak(zeus::DigestAlgorithm::Sha256),
+                !zeus::digest_algorithm_is_weak(zeus::DigestAlgorithm::Sha256) &&
+                zeus::digest_algorithm_is_checksum(zeus::DigestAlgorithm::Crc32),
             "MD5 and SHA-1 should be marked as weak algorithms");
 
     const auto decode_layer_base64 = zeus::process_text(

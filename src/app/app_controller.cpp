@@ -116,6 +116,12 @@ void initialize_documentation_scenario() {
         app_state.crypto.hmac_key = "docs-demo-key";
         app_state.crypto.key_visible = false;
         compute_crypto_output(zeus::DigestAlgorithm::Sha256);
+    } else if (scenario == "crc32") {
+        app_state.input_text = "Zeus Tools CRC32 verification";
+        app_state.result.detected_input_kind = zeus::ContentKind::Text;
+        app_state.result.output_kind = zeus::ContentKind::Text;
+        app_state.crypto.panel_open = true;
+        compute_crypto_output(zeus::DigestAlgorithm::Crc32);
     } else if (scenario == "about") {
         app_state.about_dialog_open = true;
     } else if (scenario == "oversized") {
@@ -850,6 +856,8 @@ void compute_crypto_output(zeus::DigestAlgorithm algorithm) {
                           "\n\nBase64\n" + result.base64;
     if (zeus::digest_algorithm_is_weak(algorithm)) {
         display += "\n\n⚠ " + std::string(tr(i18n::Text::WeakAlgorithm));
+    } else if (zeus::digest_algorithm_is_checksum(algorithm)) {
+        display += "\n\n⚠ " + std::string(tr(i18n::Text::ChecksumOnly));
     }
     reset_result_interaction_state();
     app_state.result.document = std::make_shared<zeus::HighlightedDocument>(

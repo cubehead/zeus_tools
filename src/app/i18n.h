@@ -15,7 +15,7 @@ enum class Text {
     Inspect, Base64Encode, UrlEncode, Upper, Lower, HtmlEncode, HexEncode, UnicodeEncode, UnixTime,
     Digest, Hmac, HmacKey,
     MessageInput, MessageResult, KeyEncoding, ShowKey, HideKey,
-    WeakAlgorithm, PreviewingFirst, Rows, RowsCopyTsv, TablePreviewCopyTsv,
+    WeakAlgorithm, ChecksumOnly, PreviewingFirst, Rows, RowsCopyTsv, TablePreviewCopyTsv,
     SearchResult, InvalidRegex, CopyAll, CopySelected, Selected, LocalOnly,
     About, Version, Build, AboutDescription, PrivacySummary, SpecialThanks,
     OpenSourceThanks, ProjectWebsite, License, OpenFile, ExportResult, Close,

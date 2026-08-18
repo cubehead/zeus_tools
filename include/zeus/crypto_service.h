@@ -12,6 +12,7 @@ enum class DigestAlgorithm {
     Sha1,
     Sha256,
     Sha512,
+    Crc32,
 };
 
 enum class HmacKeyEncoding {
@@ -30,6 +31,7 @@ struct CryptoResult {
 
 const char* digest_algorithm_name(DigestAlgorithm algorithm);
 bool digest_algorithm_is_weak(DigestAlgorithm algorithm);
+bool digest_algorithm_is_checksum(DigestAlgorithm algorithm);
 CryptoResult compute_digest(std::string_view input, DigestAlgorithm algorithm);
 CryptoResult compute_hmac(
     std::string_view input,

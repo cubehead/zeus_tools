@@ -25,7 +25,10 @@
 - JSON 对象/数组、XML 多行元素和 YAML 缩进块支持行号槽折叠，使用带边框的小方形 `-`（展开）和 `+`（收起）控件；折叠只改变可见行映射，不修改格式化结果。搜索跳转会展开包含当前命中的折叠区间，全选与复制仍基于完整原文。
 - 搜索、匹配跳转、匹配数量和复制集中在窗口底栏；顶部仅保留标题、主题与清空等应用级操作。
 - 多语言 i18n 已覆盖简体中文、繁體中文、English、日本語、한국어、Español、Français、Deutsch、Português、Русский；语言下拉项使用各自母语名称，“跟随系统”按当前生效语言显示，选择结果本地持久化。主题图标、语言下拉和清空入口右对齐放置在窗口右上角。
-- MD5、SHA-1、SHA-256、SHA-512 与 HMAC 首版完成，支持 Hex/Base64 输出；macOS 使用 CommonCrypto、Windows 使用 CNG/BCrypt，无额外运行时依赖。HMAC 密钥仅保存在当前进程内存，MD5/SHA-1 明确标记为弱算法。
+- CRC32、MD5、SHA-1、SHA-256、SHA-512 与 HMAC 已完成，支持 Hex/Base64 输出；
+  CRC32 使用内置 IEEE 实现且明确标记为非密码学校验和，HMAC 仍只接受密码学哈希；
+  macOS 使用 CommonCrypto、Windows 使用 CNG/BCrypt，无额外运行时依赖。HMAC 密钥
+  仅保存在当前进程内存，MD5/SHA-1 明确标记为弱算法。
 - 自动检测与手动类型覆盖：可强制按 JSON、XML、YAML、CSV、Base64、URL Decode 或纯文本处理，且不修改原文；JSON、Base64、URL Encode 检测及单层解码处理链已接入。
 - JWT 三段式 Base64URL 自动识别：只读展示并高亮 Header、Payload 和原始 Signature；明确标记签名未验证，claims 可直接搜索和复制。
 - Base64 二进制安全摘要（字节数与 Hex 预览），避免把二进制直接渲染为乱码。
@@ -254,7 +257,7 @@ scripts/            可重复执行的资源生成脚本
 自定义富文本和 CSV 控件不包含 EUI 的应用实现头，以避免多翻译单元重复定义。
 
 更新 README 截图时，可通过 CMake 缓存参数 `ZEUS_DOCS_SCENARIO` 启动只使用
-合成数据的固定场景：`json`、`csv`、`jwt`、`hmac`、`about`、`large-json`、
+合成数据的固定场景：`json`、`csv`、`jwt`、`hmac`、`crc32`、`about`、`large-json`、
 `large-csv` 或 `oversized`。后三项分别生成精确 10 MiB JSON、精确 10 MiB CSV 和
 10 MiB + 1 byte 文本，仅用于性能/保护边界验收。该值未设置时，合成数据
 不会编译进应用，也不会改变正常发行行为。

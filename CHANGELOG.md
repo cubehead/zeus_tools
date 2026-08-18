@@ -8,6 +8,8 @@ semantic versioning after the first stable release.
 
 ### Added
 
+- Added a manual CRC32 checksum with Hex/Base64 output, standard-vector tests
+  and an explicit non-cryptographic warning; CRC32 is not offered for HMAC.
 - Added a native PowerShell Windows package validator covering SHA-256,
   packaged files, VersionInfo, CLI behavior, Authenticode status and GUI startup.
 - Added a native Authenticode signing helper that validates the certificate,
