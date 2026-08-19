@@ -10,6 +10,8 @@ semantic versioning after the first stable release.
 
 - Added direct in-memory preview for PNG/JPEG Base64 Data URLs whose decoded
   magic bytes confirm the image type; searchable summaries and raw export remain available.
+- Added safe PNG/JPEG dimension parsing to binary summaries; images without
+  parseable dimensions or above preview limits remain exportable without rendering.
 - Added a render-layer smoke test that decodes a PNG Data URL through EUI's
   in-memory image path and rejects malformed or unsupported preview sources.
 - Added conservative one-layer Base64 Data URL detection for text and binary

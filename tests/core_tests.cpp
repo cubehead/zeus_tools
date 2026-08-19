@@ -663,25 +663,49 @@ int main() {
     require(uppercase_data_url.ok && uppercase_data_url.value == "Hello",
             "Base64 Data URL scheme and marker matching should be ASCII case-insensitive");
     const auto data_url_png = zeus::process_text(
-        "data:image/png;base64,iVBORw0KGgo=");
+        "data:image/png;base64,"
+        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9Zr6sAAAAASUVORK5CYII=");
     require(data_url_png.ok && data_url_png.binary_data &&
                 data_url_png.binary_extension == ".png",
             "a self-described binary Base64 Data URL should auto-decode for safe export");
     require(data_url_png.image_preview_source.rfind("data:image/png;base64,", 0) == 0,
             "verified PNG bytes from a Base64 Data URL should expose an in-memory preview");
+    require(data_url_png.value.find("Dimensions: 1 × 1 px") != std::string::npos,
+            "a valid PNG preview should include its pixel dimensions in the summary");
+    const auto truncated_png = zeus::process_text(
+        "data:image/png;base64,iVBORw0KGgo=", zeus::ProcessingMode::Base64);
+    require(truncated_png.binary_extension == ".png" &&
+                truncated_png.image_preview_source.empty(),
+            "a truncated PNG signature should remain exportable but must not be previewed");
     const auto ordinary_png = zeus::process_text(
-        "iVBORw0KGgo=", zeus::ProcessingMode::Base64);
+        data_url_png.image_preview_source.substr(std::string("data:image/png;base64,").size()),
+        zeus::ProcessingMode::Base64);
     require(ordinary_png.image_preview_source.empty(),
             "ordinary Base64 image bytes should not opt into automatic image preview");
     const auto fake_png = zeus::process_text(
         "data:image/png;base64,JVBERi0xLjcK", zeus::ProcessingMode::Base64);
     require(fake_png.binary_extension == ".pdf" && fake_png.image_preview_source.empty(),
             "Data URL MIME metadata must not override magic-byte image detection");
+    const std::string jpeg_header(
+        "\xFF\xD8\xFF\xC0\x00\x11\x08\x00\x02\x00\x03\x03\x01\x11\x00\x02\x11\x00\x03\x11\x00\xFF\xD9",
+        23);
+    const auto jpeg_encoded = zeus::process_text(jpeg_header, zeus::ProcessingMode::Base64Encode);
     const auto data_url_jpeg = zeus::process_text(
-        "data:image/jpeg;base64,/9j/4A==", zeus::ProcessingMode::Base64);
+        "data:image/jpeg;base64," + jpeg_encoded.value, zeus::ProcessingMode::Base64);
     require(data_url_jpeg.binary_extension == ".jpg" &&
                 data_url_jpeg.image_preview_source.rfind("data:image/jpeg;base64,", 0) == 0,
             "verified JPEG bytes from a Base64 Data URL should expose an in-memory preview");
+    require(data_url_jpeg.value.find("Dimensions: 3 × 2 px") != std::string::npos,
+            "a JPEG SOF marker should provide width and height without decoding pixels");
+    std::string oversized_png("\x89PNG\r\n\x1A\n\x00\x00\x00\x0DIHDR", 16);
+    oversized_png += std::string("\x00\x00\x23\x29\x00\x00\x00\x01", 8);
+    const auto oversized_encoded = zeus::process_text(
+        oversized_png, zeus::ProcessingMode::Base64Encode);
+    const auto oversized_data_url = zeus::process_text(
+        "data:image/png;base64," + oversized_encoded.value, zeus::ProcessingMode::Base64);
+    require(oversized_data_url.binary_extension == ".png" &&
+                oversized_data_url.image_preview_source.empty(),
+            "an image above the preview dimension limit should remain exportable without rendering");
     require(zeus::process_text("data:text/plain,Hello").detected ==
                 zeus::ContentKind::Text,
             "a non-Base64 Data URL should remain ordinary text");

@@ -242,7 +242,9 @@ void test_binary_base64_retains_export_payload() {
 
 void test_base64_data_url_analysis() {
     app::processing::AnalysisRequest request;
-    request.input = "data:image/png;base64,iVBORw0KGgo=";
+    request.input =
+        "data:image/png;base64,"
+        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9Zr6sAAAAASUVORK5CYII=";
     const auto result = app::processing::analyze(request);
 
     expect(result.process.ok && result.process.decoded &&
@@ -254,6 +256,8 @@ void test_base64_data_url_analysis() {
            "desktop analysis should expose verified Data URL images for in-memory preview");
     expect(result.document && result.document->text().find("PNG image") != std::string::npos,
            "Base64 Data URL binary output should retain its safe result summary");
+    expect(result.document && result.document->text().find("Dimensions: 1 × 1 px") != std::string::npos,
+           "Base64 Data URL image summaries should expose decoded dimensions");
 }
 
 void test_recommended_input_size_boundary() {

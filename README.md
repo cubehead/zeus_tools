@@ -50,8 +50,8 @@ Windows uses a portable package and does not include an NSIS/MSI installer.
 - Converts JSON ↔ YAML/XML/TOML, TOML/INI → JSON and JSON → CSV.
 - Escapes/unescapes JSON and Unicode text, and decodes Base64 or URL encoding
   one layer at a time, with an explicit continuation action for nested content.
-- Previews verified PNG/JPEG Base64 Data URLs directly in memory, while keeping
-  a searchable summary and the original-byte export path.
+- Previews size-checked PNG/JPEG Base64 Data URLs directly in memory, while
+  keeping dimensions, a searchable summary and the original-byte export path.
 - Shows CSV in a virtualized table with delimiter and header controls.
 - Searches text and CSV cells with case-sensitive and regular-expression modes.
 - Resizes the input and result workspaces with a bounded horizontal splitter.

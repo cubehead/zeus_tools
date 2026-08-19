@@ -400,6 +400,8 @@ std::string escape_json_text(const std::string& input) {
 struct BinaryFormat {
     const char* label = nullptr;
     const char* extension = ".bin";
+    std::size_t width = 0;
+    std::size_t height = 0;
 };
 
 bool starts_with_bytes(
@@ -413,11 +415,82 @@ bool starts_with_bytes(
     return true;
 }
 
+std::uint32_t read_u32_be(const std::string& value, std::size_t offset) {
+    return (static_cast<std::uint32_t>(static_cast<unsigned char>(value[offset])) << 24U) |
+           (static_cast<std::uint32_t>(static_cast<unsigned char>(value[offset + 1])) << 16U) |
+           (static_cast<std::uint32_t>(static_cast<unsigned char>(value[offset + 2])) << 8U) |
+           static_cast<std::uint32_t>(static_cast<unsigned char>(value[offset + 3]));
+}
+
+std::uint16_t read_u16_be(const std::string& value, std::size_t offset) {
+    return static_cast<std::uint16_t>(
+        (static_cast<std::uint16_t>(static_cast<unsigned char>(value[offset])) << 8U) |
+        static_cast<std::uint16_t>(static_cast<unsigned char>(value[offset + 1])));
+}
+
+bool png_dimensions(const std::string& value, std::size_t& width, std::size_t& height) {
+    if (value.size() < 24 || value.compare(12, 4, "IHDR") != 0 ||
+        read_u32_be(value, 8) != 13) {
+        return false;
+    }
+    width = read_u32_be(value, 16);
+    height = read_u32_be(value, 20);
+    return width != 0 && height != 0;
+}
+
+bool jpeg_dimensions(const std::string& value, std::size_t& width, std::size_t& height) {
+    if (!starts_with_bytes(value, {0xFF, 0xD8})) return false;
+    std::size_t offset = 2;
+    while (offset < value.size()) {
+        while (offset < value.size() &&
+               static_cast<unsigned char>(value[offset]) == 0xFFU) {
+            ++offset;
+        }
+        if (offset >= value.size()) return false;
+        const unsigned char marker = static_cast<unsigned char>(value[offset++]);
+        if (marker == 0x00U || marker == 0xD8U || marker == 0xD9U || marker == 0x01U ||
+            (marker >= 0xD0U && marker <= 0xD7U)) {
+            continue;
+        }
+        if (offset + 2 > value.size()) return false;
+        const std::size_t segment_size = read_u16_be(value, offset);
+        if (segment_size < 2 || segment_size > value.size() - offset) return false;
+        const bool start_of_frame =
+            (marker >= 0xC0U && marker <= 0xC3U) ||
+            (marker >= 0xC5U && marker <= 0xC7U) ||
+            (marker >= 0xC9U && marker <= 0xCBU) ||
+            (marker >= 0xCDU && marker <= 0xCFU);
+        if (start_of_frame) {
+            if (segment_size < 7) return false;
+            height = read_u16_be(value, offset + 3);
+            width = read_u16_be(value, offset + 5);
+            return width != 0 && height != 0;
+        }
+        if (marker == 0xDAU) return false;
+        offset += segment_size;
+    }
+    return false;
+}
+
+bool safe_preview_dimensions(const BinaryFormat& format) {
+    constexpr std::size_t kMaxPreviewDimension = 8192;
+    constexpr std::uint64_t kMaxPreviewPixels = 40ULL * 1024ULL * 1024ULL;
+    return format.width != 0 && format.height != 0 &&
+        format.width <= kMaxPreviewDimension && format.height <= kMaxPreviewDimension &&
+        static_cast<std::uint64_t>(format.width) * format.height <= kMaxPreviewPixels;
+}
+
 BinaryFormat detect_binary_format(const std::string& value) {
     if (starts_with_bytes(value, {0x89, 'P', 'N', 'G', 0x0D, 0x0A, 0x1A, 0x0A})) {
-        return {"PNG image", ".png"};
+        BinaryFormat format{"PNG image", ".png"};
+        png_dimensions(value, format.width, format.height);
+        return format;
     }
-    if (starts_with_bytes(value, {0xFF, 0xD8, 0xFF})) return {"JPEG image", ".jpg"};
+    if (starts_with_bytes(value, {0xFF, 0xD8, 0xFF})) {
+        BinaryFormat format{"JPEG image", ".jpg"};
+        jpeg_dimensions(value, format.width, format.height);
+        return format;
+    }
     if (value.compare(0, 6, "GIF87a") == 0 || value.compare(0, 6, "GIF89a") == 0) {
         return {"GIF image", ".gif"};
     }
@@ -448,6 +521,9 @@ std::string binary_summary(const std::string& value, const BinaryFormat& format)
     std::ostringstream stream;
     stream << "Binary data · " << value.size() << " bytes\n";
     if (format.label != nullptr) stream << "Type: " << format.label << "\n";
+    if (format.width != 0 && format.height != 0) {
+        stream << "Dimensions: " << format.width << " × " << format.height << " px\n";
+    }
     stream << "Hex preview: ";
     const std::size_t preview_size = std::min<std::size_t>(value.size(), 64);
     for (std::size_t i = 0; i < preview_size; ++i) {
@@ -550,7 +626,8 @@ ProcessResult decoded_result(
             (binary_format.label == nullptr ? "Binary" : binary_format.label);
         result.binary_data = std::make_shared<const std::string>(std::move(decoded));
         result.binary_extension = binary_format.extension;
-        if (data_url && (result.binary_extension == ".png" || result.binary_extension == ".jpg")) {
+        if (data_url && safe_preview_dimensions(binary_format) &&
+            (result.binary_extension == ".png" || result.binary_extension == ".jpg")) {
             const char* mime = result.binary_extension == ".png" ? "image/png" : "image/jpeg";
             result.image_preview_source = std::string("data:") + mime + ";base64," +
                 encode_base64(*result.binary_data);
