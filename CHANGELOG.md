@@ -8,6 +8,8 @@ semantic versioning after the first stable release.
 
 ### Added
 
+- Added conservative one-layer Base64 Data URL detection for text and binary
+  payloads, including type-aware export for self-described binary input.
 - Added raw `.bin` export for Base64 results that decode to non-displayable
   bytes, while keeping the result viewer searchable and free of binary text.
 - Added magic-byte recognition for common Base64-decoded images, documents,

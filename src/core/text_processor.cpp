@@ -16,6 +16,7 @@
 #include <iomanip>
 #include <initializer_list>
 #include <sstream>
+#include <string_view>
 #include <vector>
 
 namespace zeus {
@@ -94,10 +95,43 @@ int base64_value(unsigned char ch) {
     return -1;
 }
 
-bool decode_base64(const std::string& input, std::string& output) {
+bool ascii_iequals(std::string_view left, std::string_view right) {
+    if (left.size() != right.size()) return false;
+    return std::equal(left.begin(), left.end(), right.begin(), [](char a, char b) {
+        const auto lower = [](unsigned char ch) {
+            return static_cast<unsigned char>(std::tolower(ch));
+        };
+        return lower(static_cast<unsigned char>(a)) == lower(static_cast<unsigned char>(b));
+    });
+}
+
+bool decode_base64(
+    const std::string& input,
+    std::string& output,
+    bool* data_url = nullptr) {
+    if (data_url != nullptr) *data_url = false;
+    std::string_view encoded = input;
+    if (input.size() >= 5 && ascii_iequals(std::string_view(input).substr(0, 5), "data:")) {
+        const std::size_t comma = input.find(',');
+        if (comma == std::string::npos) return false;
+        const std::string_view metadata(input.data() + 5, comma - 5);
+        if (std::any_of(metadata.begin(), metadata.end(), [](unsigned char ch) {
+                return std::isspace(ch) != 0;
+            })) {
+            return false;
+        }
+        const std::size_t marker = metadata.rfind(';');
+        if (marker == std::string_view::npos ||
+            !ascii_iequals(metadata.substr(marker + 1), "base64")) {
+            return false;
+        }
+        encoded = std::string_view(input).substr(comma + 1);
+        if (data_url != nullptr) *data_url = true;
+    }
+
     std::string compact;
-    compact.reserve(input.size());
-    for (unsigned char ch : input) {
+    compact.reserve(encoded.size());
+    for (unsigned char ch : encoded) {
         if (std::isspace(ch)) continue;
         compact.push_back(static_cast<char>(ch));
     }
@@ -781,8 +815,10 @@ ProcessResult run_codec_processor(
             return decoded_result(ContentKind::UrlEncoded, "URL Decode", std::move(decoded));
         }
         decoded.clear();
-        if (decode_base64(trimmed, decoded)) {
-            return decoded_result(ContentKind::Base64, "Base64", std::move(decoded));
+        bool data_url = false;
+        if (decode_base64(trimmed, decoded, &data_url)) {
+            return decoded_result(ContentKind::Base64,
+                data_url ? "Base64 Data URL" : "Base64", std::move(decoded));
         }
         ProcessResult result = failure(ContentKind::Text, "NO_ENCODED_LAYER",
             "Current result is not a supported encoded layer");
@@ -804,8 +840,10 @@ ProcessResult run_codec_processor(
 
     if (mode == ProcessingMode::Base64) {
         std::string decoded;
-        if (decode_base64(trimmed, decoded)) {
-            return decoded_result(ContentKind::Base64, "Base64", std::move(decoded));
+        bool data_url = false;
+        if (decode_base64(trimmed, decoded, &data_url)) {
+            return decoded_result(ContentKind::Base64,
+                data_url ? "Base64 Data URL" : "Base64", std::move(decoded));
         }
         return failure(ContentKind::Base64, "INVALID_BASE64",
                        "Input is not valid standard or URL-safe Base64");
@@ -1022,9 +1060,11 @@ ProcessResult detect_automatically(const std::string& input, const std::string& 
     }
 
     decoded.clear();
-    if (decode_base64(trimmed, decoded) && trimmed.size() >= 12 &&
-        is_displayable_text(decoded)) {
-        return decoded_result(ContentKind::Base64, "Base64", std::move(decoded));
+    bool data_url = false;
+    if (decode_base64(trimmed, decoded, &data_url) &&
+        (data_url || (trimmed.size() >= 12 && is_displayable_text(decoded)))) {
+        return decoded_result(ContentKind::Base64,
+            data_url ? "Base64 Data URL" : "Base64", std::move(decoded));
     }
 
     ProcessResult result;

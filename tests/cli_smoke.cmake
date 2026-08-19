@@ -43,6 +43,18 @@ if(NOT stdin_status EQUAL 0 OR NOT stdin_output MATCHES "\"name\": \"Zeus\"")
     message(FATAL_ERROR "CLI stdin processing failed: ${stdin_error}; output=${stdin_output}")
 endif()
 
+execute_process(
+    COMMAND "${ZEUS_CLI}" --input base64
+            "${ZEUS_FIXTURES}/cli-base64-data-url.txt"
+    RESULT_VARIABLE data_url_status
+    OUTPUT_VARIABLE data_url_output
+    ERROR_VARIABLE data_url_error)
+if(NOT data_url_status EQUAL 0 OR NOT data_url_output STREQUAL "Hello, Zeus!")
+    message(FATAL_ERROR
+        "CLI Base64 Data URL failed (${data_url_status}): "
+        "${data_url_error}; output=${data_url_output}")
+endif()
+
 get_filename_component(cli_directory "${ZEUS_CLI}" DIRECTORY)
 set(oversized_path "${cli_directory}/zeus-cli-oversized-input.txt")
 string(REPEAT "x" 10485761 oversized_input)

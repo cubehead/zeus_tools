@@ -651,6 +651,29 @@ int main() {
             "standard and URL-safe Base64 payloads should both decode");
     require(!zeus::process_text("+_8=", zeus::ProcessingMode::Base64).ok,
             "a payload mixing standard and URL-safe Base64 alphabets must be rejected");
+    const auto data_url_text = zeus::process_text(
+        "data:text/plain;charset=utf-8;base64,SGVsbG8sIFpldXMh");
+    require(data_url_text.ok && data_url_text.decoded &&
+                data_url_text.detected == zeus::ContentKind::Base64 &&
+                data_url_text.value == "Hello, Zeus!" &&
+                data_url_text.label.find("Data URL") != std::string::npos,
+            "a Base64 Data URL should auto-decode its payload once");
+    const auto uppercase_data_url = zeus::process_text(
+        "DATA:text/plain;BASE64,SGVsbG8=", zeus::ProcessingMode::Base64);
+    require(uppercase_data_url.ok && uppercase_data_url.value == "Hello",
+            "Base64 Data URL scheme and marker matching should be ASCII case-insensitive");
+    const auto data_url_png = zeus::process_text(
+        "data:image/png;base64,iVBORw0KGgo=");
+    require(data_url_png.ok && data_url_png.binary_data &&
+                data_url_png.binary_extension == ".png",
+            "a self-described binary Base64 Data URL should auto-decode for safe export");
+    require(zeus::process_text("data:text/plain,Hello").detected ==
+                zeus::ContentKind::Text,
+            "a non-Base64 Data URL should remain ordinary text");
+    require(!zeus::process_text(
+                "data:text/plain;base64;charset=utf-8,SGVsbG8=",
+                zeus::ProcessingMode::Base64).ok,
+            "the Base64 marker must be the final Data URL metadata token");
     struct BinaryFixture {
         std::string bytes;
         const char* extension;

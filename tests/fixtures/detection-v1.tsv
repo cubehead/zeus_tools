@@ -15,6 +15,8 @@ jwt	JWT	true	eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibm
 escaped-json	JSON String	true	{\"name\":\"Zeus\",\"enabled\":true}
 base64-json	Base64	true	eyJuYW1lIjoiWmV1cyBUb29scyIsImFjdGl2ZSI6dHJ1ZX0=
 base64-text	Base64	true	SGVsbG8gV29ybGQh
+base64-data-url-text	Base64	true	data:text/plain;base64,SGVsbG8sIFpldXMh
+base64-data-url-png	Base64	true	data:image/png;base64,iVBORw0KGgo=
 url-encoded	URL Encode	true	message%3D%E4%BD%A0%E5%A5%BD%26active%3Dtrue
 html-entity	HTML Entity	true	Zeus &amp; Tools
 unicode-escaped	Unicode Escape	true	Hello \u4F60\u597D \uD83E\uDDEA

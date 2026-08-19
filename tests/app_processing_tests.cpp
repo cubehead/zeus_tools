@@ -240,6 +240,20 @@ void test_binary_base64_retains_export_payload() {
            "binary output should keep a searchable safe summary document");
 }
 
+void test_base64_data_url_analysis() {
+    app::processing::AnalysisRequest request;
+    request.input = "data:image/png;base64,iVBORw0KGgo=";
+    const auto result = app::processing::analyze(request);
+
+    expect(result.process.ok && result.process.decoded &&
+               result.detected == zeus::ContentKind::Base64,
+           "Base64 Data URLs should participate in automatic desktop detection");
+    expect(result.process.binary_data && result.process.binary_extension == ".png",
+           "Base64 Data URL analysis should preserve type-aware export bytes");
+    expect(result.document && result.document->text().find("PNG image") != std::string::npos,
+           "Base64 Data URL binary output should retain its safe result summary");
+}
+
 void test_recommended_input_size_boundary() {
     expect(!app::processing::exceeds_recommended_input_size(
                app::processing::kRecommendedMaxInputBytes),
@@ -518,6 +532,7 @@ int main() {
     test_ini_analysis();
     test_decode_one_layer();
     test_binary_base64_retains_export_payload();
+    test_base64_data_url_analysis();
     test_recommended_input_size_boundary();
     test_large_input_pages_preserve_utf8_boundaries();
     test_processing_registry();
