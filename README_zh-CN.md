@@ -48,6 +48,8 @@ Windows。
 - 支持 JSON ↔ YAML/XML/TOML、TOML/INI → JSON 和 JSON → CSV 转换。
 - 支持 JSON 与 Unicode 转义/反转义；Base64 或 URL 编码每次只解码一层，
   并可通过明确的继续操作手动处理嵌套内容。
+- 对经魔数确认的 PNG/JPEG Base64 Data URL 直接进行内存图片预览，同时保留
+  可搜索摘要和原始字节导出。
 - 使用虚拟化表格显示 CSV，支持分隔符和表头设置。
 - 可搜索文本和 CSV 单元格，支持区分大小写和正则表达式模式。
 - 可拖动水平分隔条调整输入区和结果区，且保留合理的最小显示比例。
@@ -93,7 +95,7 @@ Windows。
 | TOML | 严格解析、格式化、高亮和章节折叠 | 与 JSON 双向转换 |
 | INI/Properties | 保守解析赋值并格式化 | 转为 JSON，不擅自推断值类型 |
 | CSV | 识别逗号、Tab、分号或竖线 | 手动设置分隔符/表头、虚拟表格、复制 TSV |
-| Base64 | 高置信度时解码一层 | 支持标准、URL 安全及 Base64 Data URL；二进制按类型导出原始文件 |
+| Base64 | 高置信度时解码一层 | 支持标准、URL 安全及 Data URL；PNG/JPEG 内存预览，二进制按类型导出原始文件 |
 | URL 编码 | 高置信度时解码一层 | 编码任意 UTF-8 文本 |
 | HTML Entity / Hex | 只自动解码具有明确特征的内容 | 编码任意 UTF-8 文本 |
 | Unicode Escape | 每次解码一层合法的 `\uXXXX` 序列 | 转义 UTF-8，并正确生成 emoji 代理对 |

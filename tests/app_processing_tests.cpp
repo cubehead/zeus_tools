@@ -250,6 +250,8 @@ void test_base64_data_url_analysis() {
            "Base64 Data URLs should participate in automatic desktop detection");
     expect(result.process.binary_data && result.process.binary_extension == ".png",
            "Base64 Data URL analysis should preserve type-aware export bytes");
+    expect(result.process.image_preview_source.rfind("data:image/png;base64,", 0) == 0,
+           "desktop analysis should expose verified Data URL images for in-memory preview");
     expect(result.document && result.document->text().find("PNG image") != std::string::npos,
            "Base64 Data URL binary output should retain its safe result summary");
 }

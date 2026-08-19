@@ -207,6 +207,16 @@ if(ZEUS_BUILD_APP)
         message(FATAL_ERROR "Failed to preserve Windows IME compositions in EUI-NEO")
     endif()
 
+    execute_process(
+        COMMAND ${CMAKE_COMMAND}
+                -DSOURCE_DIR=${ZEUS_EUI_SOURCE_ROOT}
+                -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/patch_eui_data_image.cmake
+        RESULT_VARIABLE ZEUS_EUI_DATA_IMAGE_PATCH_RESULT
+    )
+    if(NOT ZEUS_EUI_DATA_IMAGE_PATCH_RESULT EQUAL 0)
+        message(FATAL_ERROR "Failed to add in-memory Data URL image support to EUI-NEO")
+    endif()
+
     set(ZEUS_APP_SOURCES
         "${ZEUS_EUI_APP_MAIN}"
         src/app/app.cpp

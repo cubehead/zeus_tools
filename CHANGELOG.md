@@ -8,6 +8,8 @@ semantic versioning after the first stable release.
 
 ### Added
 
+- Added direct in-memory preview for PNG/JPEG Base64 Data URLs whose decoded
+  magic bytes confirm the image type; searchable summaries and raw export remain available.
 - Added conservative one-layer Base64 Data URL detection for text and binary
   payloads, including type-aware export for self-described binary input.
 - Added raw `.bin` export for Base64 results that decode to non-displayable

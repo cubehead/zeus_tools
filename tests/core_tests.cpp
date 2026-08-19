@@ -667,6 +667,21 @@ int main() {
     require(data_url_png.ok && data_url_png.binary_data &&
                 data_url_png.binary_extension == ".png",
             "a self-described binary Base64 Data URL should auto-decode for safe export");
+    require(data_url_png.image_preview_source.rfind("data:image/png;base64,", 0) == 0,
+            "verified PNG bytes from a Base64 Data URL should expose an in-memory preview");
+    const auto ordinary_png = zeus::process_text(
+        "iVBORw0KGgo=", zeus::ProcessingMode::Base64);
+    require(ordinary_png.image_preview_source.empty(),
+            "ordinary Base64 image bytes should not opt into automatic image preview");
+    const auto fake_png = zeus::process_text(
+        "data:image/png;base64,JVBERi0xLjcK", zeus::ProcessingMode::Base64);
+    require(fake_png.binary_extension == ".pdf" && fake_png.image_preview_source.empty(),
+            "Data URL MIME metadata must not override magic-byte image detection");
+    const auto data_url_jpeg = zeus::process_text(
+        "data:image/jpeg;base64,/9j/4A==", zeus::ProcessingMode::Base64);
+    require(data_url_jpeg.binary_extension == ".jpg" &&
+                data_url_jpeg.image_preview_source.rfind("data:image/jpeg;base64,", 0) == 0,
+            "verified JPEG bytes from a Base64 Data URL should expose an in-memory preview");
     require(zeus::process_text("data:text/plain,Hello").detected ==
                 zeus::ContentKind::Text,
             "a non-Base64 Data URL should remain ordinary text");
@@ -698,7 +713,8 @@ int main() {
             encoded.value, zeus::ProcessingMode::Base64);
         require(decoded.binary_data && *decoded.binary_data == fixture.bytes &&
                     decoded.binary_extension == fixture.extension &&
-                    decoded.value.find("Type: ") != std::string::npos,
+                    decoded.value.find("Type: ") != std::string::npos &&
+                    decoded.image_preview_source.empty(),
                 "binary magic-byte detection should preserve bytes, type and extension");
     }
 

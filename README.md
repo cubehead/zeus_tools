@@ -50,6 +50,8 @@ Windows uses a portable package and does not include an NSIS/MSI installer.
 - Converts JSON ↔ YAML/XML/TOML, TOML/INI → JSON and JSON → CSV.
 - Escapes/unescapes JSON and Unicode text, and decodes Base64 or URL encoding
   one layer at a time, with an explicit continuation action for nested content.
+- Previews verified PNG/JPEG Base64 Data URLs directly in memory, while keeping
+  a searchable summary and the original-byte export path.
 - Shows CSV in a virtualized table with delimiter and header controls.
 - Searches text and CSV cells with case-sensitive and regular-expression modes.
 - Resizes the input and result workspaces with a bounded horizontal splitter.
@@ -97,7 +99,7 @@ font rendering may differ on Windows.
 | TOML | Strict parse, format, highlight and section folding | Convert to/from JSON |
 | INI/Properties | Conservative assignment parsing and formatting | Convert to JSON without guessing value types |
 | CSV | Detect comma, Tab, semicolon or pipe | Override delimiter/header, virtual table, TSV copy |
-| Base64 | Decode one high-confidence layer | Standard, URL-safe and Base64 Data URL input; type-aware raw export |
+| Base64 | Decode one high-confidence layer | Standard, URL-safe and Data URL input; in-memory PNG/JPEG preview and type-aware raw export |
 | URL encoding | Decode one high-confidence layer | Encode arbitrary UTF-8 text |
 | HTML Entity / Hex | Decode only explicit encoded input | Encode arbitrary UTF-8 text |
 | Unicode Escape | Decode valid `\uXXXX` sequences one layer | Escape UTF-8, including emoji surrogate pairs |

@@ -96,6 +96,10 @@ void initialize_documentation_scenario() {
             "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9."
             "eyJzdWIiOiJkb2NzLXVzZXIiLCJuYW1lIjoiWmV1cyBEZW1vIiwicm9sZXMiOlsiZGV2ZWxvcGVyIiwicmV2aWV3ZXIiXSwib2ZmbGluZSI6dHJ1ZSwiaWF0IjoxNzg2Njk0NDAwfQ."
             "docs-signature";
+    } else if (scenario == "image") {
+        app_state.input_text =
+            "data:image/png;base64,"
+            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9Zr6sAAAAASUVORK5CYII=";
     } else if (scenario == "toml") {
         app_state.input_text =
             "title = \"Zeus Tools\"\n"
@@ -419,6 +423,7 @@ void analyze_input(bool debounce) {
         app_state.result.csv.reset();
         app_state.result.binary_data.reset();
         app_state.result.binary_extension.clear();
+        app_state.result.image_preview_source.clear();
         app_state.result.decode_chain.clear();
         app_state.result.can_continue_decode = false;
         app_state.result.status = tr(i18n::Text::WaitingForInput);
@@ -446,6 +451,7 @@ void analyze_input(bool debounce) {
         app_state.result.csv.reset();
         app_state.result.binary_data.reset();
         app_state.result.binary_extension.clear();
+        app_state.result.image_preview_source.clear();
         app_state.result.decode_chain.clear();
         app_state.result.can_continue_decode = false;
         app_state.result.status = tr(i18n::Text::Invalid);
@@ -512,6 +518,7 @@ void analyze_input(bool debounce) {
             app_state.result.csv = payload.csv;
             app_state.result.binary_data = payload.process.binary_data;
             app_state.result.binary_extension = payload.process.binary_extension;
+            app_state.result.image_preview_source = payload.process.image_preview_source;
             const auto& result = payload.process;
             app_state.result.decode_chain = payload.decode_chain;
             app_state.result.can_continue_decode = payload.can_continue_decode;
@@ -626,6 +633,7 @@ void continue_decode_one_layer() {
             app_state.result.csv.reset();
             app_state.result.binary_data = payload.process.binary_data;
             app_state.result.binary_extension = payload.process.binary_extension;
+            app_state.result.image_preview_source = payload.process.image_preview_source;
             app_state.result.issue.clear();
             app_state.result.issue_detail.clear();
             app_state.result.status = app_state.result.decode_chain + " · " +
@@ -886,6 +894,7 @@ void compute_crypto_output(zeus::DigestAlgorithm algorithm) {
     app_state.result.csv.reset();
     app_state.result.binary_data.reset();
     app_state.result.binary_extension.clear();
+    app_state.result.image_preview_source.clear();
     app_state.result.can_continue_decode = false;
     app_state.result.decode_chain.clear();
     app_state.result.issue.clear();

@@ -65,6 +65,39 @@ void build_result_panel(eui::Ui& ui, const ViewContext& context) {
             .theme(tokens)
             .searchMatches(app_state.search.csv_matches, app_state.search.active_match)
             .build();
+    } else if (!app_state.result.image_preview_source.empty()) {
+        const float inner_x = margin + 8.0f;
+        const float inner_width = content_width - 16.0f;
+        const float inner_height = result_height - 12.0f;
+        const float summary_height = std::clamp(inner_height * 0.24f, 76.0f, 124.0f);
+        const float preview_height = std::max(60.0f, inner_height - summary_height - 8.0f);
+
+        ui.rect("result.image.preview.background")
+            .position(inner_x, result_y + 6.0f)
+            .size(inner_width, preview_height)
+            .color(dark_theme ? eui::Color{0.045f, 0.052f, 0.064f, 1.0f}
+                              : eui::Color{0.94f, 0.95f, 0.97f, 1.0f})
+            .radius(6.0f)
+            .build();
+        ui.image("result.image.preview")
+            .position(inner_x + 10.0f, result_y + 16.0f)
+            .size(inner_width - 20.0f, std::max(40.0f, preview_height - 20.0f))
+            .source(app_state.result.image_preview_source)
+            .contain()
+            .build();
+        zeus::app_components::richTextView(ui, "result.document")
+            .position(inner_x, result_y + 14.0f + preview_height)
+            .size(inner_width, summary_height)
+            .document(document)
+            .selection(app_state.result.selection)
+            .folds(app_state.result.folds)
+            .scroll(app_state.result.scroll)
+            .rowHeight(row_height)
+            .dark(dark_theme)
+            .theme(tokens)
+            .searchMatches(app_state.search.document_matches, app_state.search.active_match)
+            .onCopy([] { copy_result(true); })
+            .build();
     } else {
         zeus::app_components::richTextView(ui, "result.document")
             .position(margin + 8.0f, result_y + 6.0f)

@@ -526,7 +526,11 @@ bool inspect_jwt(const std::string& input, std::string& output) {
     return true;
 }
 
-ProcessResult decoded_result(ContentKind source_kind, const char* source_label, std::string decoded) {
+ProcessResult decoded_result(
+    ContentKind source_kind,
+    const char* source_label,
+    std::string decoded,
+    bool data_url = false) {
     ProcessResult result;
     result.detected = source_kind;
     result.decoded = true;
@@ -546,6 +550,11 @@ ProcessResult decoded_result(ContentKind source_kind, const char* source_label, 
             (binary_format.label == nullptr ? "Binary" : binary_format.label);
         result.binary_data = std::make_shared<const std::string>(std::move(decoded));
         result.binary_extension = binary_format.extension;
+        if (data_url && (result.binary_extension == ".png" || result.binary_extension == ".jpg")) {
+            const char* mime = result.binary_extension == ".png" ? "image/png" : "image/jpeg";
+            result.image_preview_source = std::string("data:") + mime + ";base64," +
+                encode_base64(*result.binary_data);
+        }
         result.value = binary_summary(*result.binary_data, binary_format);
     }
     return result;
@@ -818,7 +827,7 @@ ProcessResult run_codec_processor(
         bool data_url = false;
         if (decode_base64(trimmed, decoded, &data_url)) {
             return decoded_result(ContentKind::Base64,
-                data_url ? "Base64 Data URL" : "Base64", std::move(decoded));
+                data_url ? "Base64 Data URL" : "Base64", std::move(decoded), data_url);
         }
         ProcessResult result = failure(ContentKind::Text, "NO_ENCODED_LAYER",
             "Current result is not a supported encoded layer");
@@ -843,7 +852,7 @@ ProcessResult run_codec_processor(
         bool data_url = false;
         if (decode_base64(trimmed, decoded, &data_url)) {
             return decoded_result(ContentKind::Base64,
-                data_url ? "Base64 Data URL" : "Base64", std::move(decoded));
+                data_url ? "Base64 Data URL" : "Base64", std::move(decoded), data_url);
         }
         return failure(ContentKind::Base64, "INVALID_BASE64",
                        "Input is not valid standard or URL-safe Base64");
@@ -1064,7 +1073,7 @@ ProcessResult detect_automatically(const std::string& input, const std::string& 
     if (decode_base64(trimmed, decoded, &data_url) &&
         (data_url || (trimmed.size() >= 12 && is_displayable_text(decoded)))) {
         return decoded_result(ContentKind::Base64,
-            data_url ? "Base64 Data URL" : "Base64", std::move(decoded));
+            data_url ? "Base64 Data URL" : "Base64", std::move(decoded), data_url);
     }
 
     ProcessResult result;

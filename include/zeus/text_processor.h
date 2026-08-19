@@ -73,6 +73,9 @@ struct ProcessResult {
     // non-displayable bytes. `value` remains a safe text summary.
     std::shared_ptr<const std::string> binary_data;
     std::string binary_extension;
+    // Set only for verified PNG/JPEG bytes decoded from a Base64 Data URL.
+    // Desktop views may render this in memory without writing a temporary file.
+    std::string image_preview_source;
     std::string error_code;
     std::string error_message;
     std::size_t error_line = 0;
