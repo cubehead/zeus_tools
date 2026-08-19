@@ -129,6 +129,12 @@ bool decode_hmac_key(
     }
 
     if (compact.empty()) return true;
+    const bool standard_alphabet = compact.find_first_of("+/") != std::string::npos;
+    const bool url_safe_alphabet = compact.find_first_of("-_") != std::string::npos;
+    if (standard_alphabet && url_safe_alphabet) {
+        error = "Base64 key mixes standard and URL-safe alphabets";
+        return false;
+    }
     const auto padding = compact.find('=');
     if (padding != std::string::npos) {
         const std::size_t padding_count = compact.size() - padding;

@@ -29,6 +29,8 @@ semantic versioning after the first stable release.
 
 ### Fixed
 
+- Rejected non-standard Base64 payloads and HMAC keys that mix the standard
+  `+/` alphabet with the URL-safe `-_` alphabet, while accepting either form.
 - Reduced Windows button/dropdown typography and action-strip spacing so
   format-specific and common actions remain visible at the default window width.
 - Fixed digest and HMAC results becoming empty on compilers that evaluate the

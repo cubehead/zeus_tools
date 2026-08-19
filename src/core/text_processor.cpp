@@ -102,6 +102,9 @@ bool decode_base64(const std::string& input, std::string& output) {
         compact.push_back(static_cast<char>(ch));
     }
     if (compact.empty() || compact.size() % 4 == 1) return false;
+    const bool standard_alphabet = compact.find_first_of("+/") != std::string::npos;
+    const bool url_safe_alphabet = compact.find_first_of("-_") != std::string::npos;
+    if (standard_alphabet && url_safe_alphabet) return false;
     const auto padding_at = compact.find('=');
     if (padding_at != std::string::npos) {
         if (compact.size() % 4 != 0 || compact.size() - padding_at > 2) return false;

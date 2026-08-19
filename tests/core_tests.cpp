@@ -192,6 +192,17 @@ int main() {
                 hmac_message, "a2V5=", zeus::HmacKeyEncoding::Base64,
                 zeus::DigestAlgorithm::Sha256).ok,
             "non-canonical Base64 key padding should return an error");
+    require(zeus::compute_hmac_encoded(
+                hmac_message, "+/8=", zeus::HmacKeyEncoding::Base64,
+                zeus::DigestAlgorithm::Sha256).ok &&
+                zeus::compute_hmac_encoded(
+                    hmac_message, "-_8=", zeus::HmacKeyEncoding::Base64,
+                    zeus::DigestAlgorithm::Sha256).ok,
+            "standard and URL-safe Base64 HMAC keys should both be accepted");
+    require(!zeus::compute_hmac_encoded(
+                hmac_message, "+_8=", zeus::HmacKeyEncoding::Base64,
+                zeus::DigestAlgorithm::Sha256).ok,
+            "mixed Base64 alphabets must be rejected for HMAC keys");
     require(zeus::digest_algorithm_is_weak(zeus::DigestAlgorithm::Md5) &&
                 zeus::digest_algorithm_is_weak(zeus::DigestAlgorithm::Sha1) &&
                 !zeus::digest_algorithm_is_weak(zeus::DigestAlgorithm::Sha256) &&
@@ -635,6 +646,11 @@ int main() {
             "binary Base64 must retain the exact decoded bytes for explicit export");
     require(binary_base64.binary_extension == ".bin",
             "unknown binary Base64 should use the safe generic extension");
+    require(zeus::process_text("+/8=", zeus::ProcessingMode::Base64).ok &&
+                zeus::process_text("-_8=", zeus::ProcessingMode::Base64).ok,
+            "standard and URL-safe Base64 payloads should both decode");
+    require(!zeus::process_text("+_8=", zeus::ProcessingMode::Base64).ok,
+            "a payload mixing standard and URL-safe Base64 alphabets must be rejected");
     struct BinaryFixture {
         std::string bytes;
         const char* extension;
