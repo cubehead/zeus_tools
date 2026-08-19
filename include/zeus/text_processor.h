@@ -69,9 +69,10 @@ struct ProcessResult {
     ContentKind output_kind = ContentKind::Text;
     std::string label = "Text";
     std::string value;
-    // Present only when a decoder produced non-displayable bytes. `value`
-    // remains a safe text summary for UI/CLI presentation.
+    // Present only when a decoder produced a known binary format or
+    // non-displayable bytes. `value` remains a safe text summary.
     std::shared_ptr<const std::string> binary_data;
+    std::string binary_extension;
     std::string error_code;
     std::string error_message;
     std::size_t error_line = 0;

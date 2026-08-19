@@ -234,6 +234,8 @@ void test_binary_base64_retains_export_payload() {
            "explicit Base64 should decode binary input");
     expect(result.process.binary_data && result.process.binary_data->size() == 6,
            "desktop analysis should retain binary bytes for explicit export");
+    expect(result.process.binary_extension == ".bin",
+           "unknown binary data should retain a generic export extension");
     expect(result.document && result.document->text().find("Hex preview") != std::string::npos,
            "binary output should keep a searchable safe summary document");
 }

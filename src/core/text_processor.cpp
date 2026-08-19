@@ -14,6 +14,7 @@
 #include <cctype>
 #include <cstdint>
 #include <iomanip>
+#include <initializer_list>
 #include <sstream>
 #include <vector>
 
@@ -359,9 +360,58 @@ std::string escape_json_text(const std::string& input) {
     return output;
 }
 
-std::string binary_summary(const std::string& value) {
+struct BinaryFormat {
+    const char* label = nullptr;
+    const char* extension = ".bin";
+};
+
+bool starts_with_bytes(
+    const std::string& value,
+    std::initializer_list<unsigned char> signature) {
+    if (value.size() < signature.size()) return false;
+    std::size_t index = 0;
+    for (const unsigned char byte : signature) {
+        if (static_cast<unsigned char>(value[index++]) != byte) return false;
+    }
+    return true;
+}
+
+BinaryFormat detect_binary_format(const std::string& value) {
+    if (starts_with_bytes(value, {0x89, 'P', 'N', 'G', 0x0D, 0x0A, 0x1A, 0x0A})) {
+        return {"PNG image", ".png"};
+    }
+    if (starts_with_bytes(value, {0xFF, 0xD8, 0xFF})) return {"JPEG image", ".jpg"};
+    if (value.compare(0, 6, "GIF87a") == 0 || value.compare(0, 6, "GIF89a") == 0) {
+        return {"GIF image", ".gif"};
+    }
+    if (value.size() >= 12 && value.compare(0, 4, "RIFF") == 0) {
+        if (value.compare(8, 4, "WEBP") == 0) return {"WebP image", ".webp"};
+        if (value.compare(8, 4, "WAVE") == 0) return {"WAV audio", ".wav"};
+    }
+    if (value.compare(0, 5, "%PDF-") == 0) return {"PDF document", ".pdf"};
+    if (starts_with_bytes(value, {'P', 'K', 0x03, 0x04}) ||
+        starts_with_bytes(value, {'P', 'K', 0x05, 0x06}) ||
+        starts_with_bytes(value, {'P', 'K', 0x07, 0x08})) {
+        return {"ZIP archive", ".zip"};
+    }
+    if (starts_with_bytes(value, {0x1F, 0x8B})) return {"Gzip archive", ".gz"};
+    if (starts_with_bytes(value, {0x37, 0x7A, 0xBC, 0xAF, 0x27, 0x1C})) {
+        return {"7-Zip archive", ".7z"};
+    }
+    if (starts_with_bytes(value, {'R', 'a', 'r', '!', 0x1A, 0x07})) {
+        return {"RAR archive", ".rar"};
+    }
+    if (value.compare(0, 16, "SQLite format 3\0", 16) == 0) {
+        return {"SQLite database", ".sqlite"};
+    }
+    return {};
+}
+
+std::string binary_summary(const std::string& value, const BinaryFormat& format) {
     std::ostringstream stream;
-    stream << "Binary data · " << value.size() << " bytes\nHex preview: ";
+    stream << "Binary data · " << value.size() << " bytes\n";
+    if (format.label != nullptr) stream << "Type: " << format.label << "\n";
+    stream << "Hex preview: ";
     const std::size_t preview_size = std::min<std::size_t>(value.size(), 64);
     for (std::size_t i = 0; i < preview_size; ++i) {
         if (i != 0) stream << ' ';
@@ -444,19 +494,22 @@ ProcessResult decoded_result(ContentKind source_kind, const char* source_label, 
     result.detected = source_kind;
     result.decoded = true;
     const auto json = format_json(decoded, 2);
+    const BinaryFormat binary_format = detect_binary_format(decoded);
     if (json.ok) {
         result.output_kind = ContentKind::Json;
         result.label = std::string(source_label) + " → JSON";
         result.value = json.value;
-    } else if (is_displayable_text(decoded)) {
+    } else if (binary_format.label == nullptr && is_displayable_text(decoded)) {
         result.output_kind = ContentKind::Text;
         result.label = std::string(source_label) + " → Text";
         result.value = std::move(decoded);
     } else {
         result.output_kind = ContentKind::Text;
-        result.label = std::string(source_label) + " → Binary";
+        result.label = std::string(source_label) + " → " +
+            (binary_format.label == nullptr ? "Binary" : binary_format.label);
         result.binary_data = std::make_shared<const std::string>(std::move(decoded));
-        result.value = binary_summary(*result.binary_data);
+        result.binary_extension = binary_format.extension;
+        result.value = binary_summary(*result.binary_data, binary_format);
     }
     return result;
 }

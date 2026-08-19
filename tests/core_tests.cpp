@@ -21,6 +21,7 @@
 #include <sstream>
 #include <string>
 #include <string_view>
+#include <vector>
 
 namespace {
 
@@ -632,6 +633,35 @@ int main() {
                 static_cast<unsigned char>((*binary_base64.binary_data)[0]) == 0 &&
                 static_cast<unsigned char>((*binary_base64.binary_data)[5]) == 5,
             "binary Base64 must retain the exact decoded bytes for explicit export");
+    require(binary_base64.binary_extension == ".bin",
+            "unknown binary Base64 should use the safe generic extension");
+    struct BinaryFixture {
+        std::string bytes;
+        const char* extension;
+    };
+    const std::vector<BinaryFixture> binary_fixtures{
+        {std::string("\x89PNG\r\n\x1A\n", 8), ".png"},
+        {std::string("\xFF\xD8\xFF\xE0", 4), ".jpg"},
+        {"GIF89a", ".gif"},
+        {std::string("RIFF\0\0\0\0WEBP", 12), ".webp"},
+        {std::string("RIFF\0\0\0\0WAVE", 12), ".wav"},
+        {"%PDF-1.7\n", ".pdf"},
+        {std::string("PK\x03\x04", 4), ".zip"},
+        {std::string("\x1F\x8B\x08\0", 4), ".gz"},
+        {std::string("\x37\x7A\xBC\xAF\x27\x1C", 6), ".7z"},
+        {std::string("Rar!\x1A\x07\0", 7), ".rar"},
+        {std::string("SQLite format 3\0", 16), ".sqlite"},
+    };
+    for (const auto& fixture : binary_fixtures) {
+        const auto encoded = zeus::process_text(
+            fixture.bytes, zeus::ProcessingMode::Base64Encode);
+        const auto decoded = zeus::process_text(
+            encoded.value, zeus::ProcessingMode::Base64);
+        require(decoded.binary_data && *decoded.binary_data == fixture.bytes &&
+                    decoded.binary_extension == fixture.extension &&
+                    decoded.value.find("Type: ") != std::string::npos,
+                "binary magic-byte detection should preserve bytes, type and extension");
+    }
 
     const auto csv = zeus::parse_csv("name,description\nZeus,\"format, decode\"\n中文,工具");
     require(csv.ok && csv.document.rows.size() == 3,

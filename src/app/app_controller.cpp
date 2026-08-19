@@ -418,6 +418,7 @@ void analyze_input(bool debounce) {
             zeus::HighlightedDocument::plain(""));
         app_state.result.csv.reset();
         app_state.result.binary_data.reset();
+        app_state.result.binary_extension.clear();
         app_state.result.decode_chain.clear();
         app_state.result.can_continue_decode = false;
         app_state.result.status = tr(i18n::Text::WaitingForInput);
@@ -444,6 +445,7 @@ void analyze_input(bool debounce) {
             zeus::HighlightedDocument::plain(""));
         app_state.result.csv.reset();
         app_state.result.binary_data.reset();
+        app_state.result.binary_extension.clear();
         app_state.result.decode_chain.clear();
         app_state.result.can_continue_decode = false;
         app_state.result.status = tr(i18n::Text::Invalid);
@@ -509,6 +511,7 @@ void analyze_input(bool debounce) {
             app_state.result.document = payload.document;
             app_state.result.csv = payload.csv;
             app_state.result.binary_data = payload.process.binary_data;
+            app_state.result.binary_extension = payload.process.binary_extension;
             const auto& result = payload.process;
             app_state.result.decode_chain = payload.decode_chain;
             app_state.result.can_continue_decode = payload.can_continue_decode;
@@ -622,6 +625,7 @@ void continue_decode_one_layer() {
             app_state.result.document = payload.document;
             app_state.result.csv.reset();
             app_state.result.binary_data = payload.process.binary_data;
+            app_state.result.binary_extension = payload.process.binary_extension;
             app_state.result.issue.clear();
             app_state.result.issue_detail.clear();
             app_state.result.status = app_state.result.decode_chain + " · " +
@@ -784,11 +788,12 @@ static void export_result_impl() {
         !app_state.result.binary_data) return;
     const bool binary = static_cast<bool>(app_state.result.binary_data);
     const std::string extension = binary
-        ? ".bin"
+        ? (app_state.result.binary_extension.empty()
+              ? ".bin" : app_state.result.binary_extension)
         : std::string(processing::content_definition(
               app_state.result.output_kind).export_extension);
     const std::string path = platform::choose_export_file(
-        binary ? "zeus-decoded.bin" : "zeus-result" + extension);
+        binary ? "zeus-decoded" + extension : "zeus-result" + extension);
     if (path.empty()) return;
     std::string table_value;
     const std::string* value = nullptr;
@@ -880,6 +885,7 @@ void compute_crypto_output(zeus::DigestAlgorithm algorithm) {
         zeus::HighlightedDocument::plain(std::move(display)));
     app_state.result.csv.reset();
     app_state.result.binary_data.reset();
+    app_state.result.binary_extension.clear();
     app_state.result.can_continue_decode = false;
     app_state.result.decode_chain.clear();
     app_state.result.issue.clear();

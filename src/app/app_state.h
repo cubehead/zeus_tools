@@ -39,6 +39,7 @@ struct ResultState {
     std::shared_ptr<zeus::HighlightedDocument> document;
     std::shared_ptr<zeus::CsvDocument> csv;
     std::shared_ptr<const std::string> binary_data;
+    std::string binary_extension;
     zeus::TextSelection selection;
     zeus::TextFoldState folds;
     std::string decode_chain;
