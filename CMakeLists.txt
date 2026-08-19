@@ -368,6 +368,12 @@ if(ZEUS_BUILD_TESTS)
     target_link_libraries(zeus_app_processing_tests PRIVATE zeus_app_processing)
     add_test(NAME zeus_app_processing_tests COMMAND zeus_app_processing_tests)
 
+    if(ZEUS_BUILD_APP)
+        add_executable(zeus_data_image_tests tests/data_image_tests.cpp)
+        target_link_libraries(zeus_data_image_tests PRIVATE eui_neo)
+        add_test(NAME zeus_data_image_tests COMMAND zeus_data_image_tests)
+    endif()
+
     if(ZEUS_BUILD_CLI)
         add_test(NAME zeus_cli_smoke
             COMMAND ${CMAKE_COMMAND}
