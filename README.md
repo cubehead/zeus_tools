@@ -158,8 +158,9 @@ The project intentionally does not create an NSIS/MSI installer.
 - YAML intentionally accepts a single-document safe subset and rejects
   directives, tags, anchors, aliases and multi-document input.
 - MongoDB Shell input accepts only JSON structure plus the whitelisted
-  `NumberInt`, `NumberLong`, `NumberDecimal`/`Decimal128`, `ObjectId` and
-  `ISODate` constructors. Common single-quoted values and direct
+  `NumberInt`/`Int32`, `NumberLong`, `Double`, `NumberDecimal`/`Decimal128`,
+  `ObjectId`, `ISODate`, `UUID`, `Timestamp`, `BinData`, `MinKey` and `MaxKey`
+  constructors. Common single-quoted values and direct
   `NumberInt`/`NumberLong` integer literals are accepted; expressions are not.
   It does not run JavaScript or arbitrary shell code.
 - JWT inspection decodes claims but does not verify the signature.

@@ -14,6 +14,12 @@ semantic versioning after the first stable release.
   MongoDB Extended JSON without executing JavaScript.
 - Accepted common MongoDB Shell single-quoted constructor strings and direct
   integer literals for `NumberInt`/`NumberLong`, while rejecting expressions.
+- Added current `mongosh` `Int32`, `Double` and UUID constructor conversion to
+  their type-preserving Extended JSON representations.
+- Added canonical `Timestamp({t, i})` and legacy `Timestamp(t, i)` conversion
+  with unsigned 32-bit validation and no expression evaluation.
+- Added `BinData` conversion with byte-subtype and canonical Base64 validation,
+  plus argument-free `MinKey` and `MaxKey` conversion.
 - Reused JSON highlighting, folding, search, minify/escape and structured
   conversion actions for successfully converted MongoDB Shell input.
 

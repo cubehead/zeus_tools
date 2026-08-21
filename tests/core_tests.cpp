@@ -384,6 +384,44 @@ int main() {
                 common_mongo_literals.value.find(R"("$numberLong": "-9")") !=
                     std::string::npos,
             "MongoDB integer literals and single-quoted constructor values should be accepted");
+    const auto mongosh_literals = zeus::process_text(
+        R"({"count":Int32(7),"ratio":Double(1.25e-3),)"
+        R"("special":Double('-Infinity'),)"
+        R"("traceId":UUID('3b241101-e2bb-4255-8caf-4136c566a962')})",
+        zeus::ProcessingMode::MongoShell);
+    require(mongosh_literals.ok &&
+                mongosh_literals.value.find(R"("$numberInt": "7")") !=
+                    std::string::npos &&
+                mongosh_literals.value.find(R"("$numberDouble": "1.25e-3")") !=
+                    std::string::npos &&
+                mongosh_literals.value.find(
+                    R"("$uuid": "3b241101-e2bb-4255-8caf-4136c566a962")") !=
+                    std::string::npos,
+            "mongosh Int32, Double and UUID values should preserve their BSON types");
+    const auto timestamps = zeus::process_text(
+        R"({"current":Timestamp({"t":1724212800,"i":3}),)"
+        R"("legacy":Timestamp(1724212801,4)})",
+        zeus::ProcessingMode::MongoShell);
+    require(timestamps.ok &&
+                timestamps.value.find(
+                    R"("$timestamp": {)"
+                    "\n      \"t\": 1724212800,\n      \"i\": 3") !=
+                    std::string::npos &&
+                timestamps.value.find("\"t\": 1724212801") != std::string::npos,
+            "current and legacy Timestamp signatures should convert to canonical Extended JSON");
+    const auto binary_and_bounds = zeus::process_text(
+        R"({"payload":BinData(4,'AQIDBA=='),"lowest":MinKey(),"highest":new MaxKey()})",
+        zeus::ProcessingMode::MongoShell);
+    require(binary_and_bounds.ok &&
+                binary_and_bounds.value.find(R"("base64": "AQIDBA==")") !=
+                    std::string::npos &&
+                binary_and_bounds.value.find(R"("subType": "04")") !=
+                    std::string::npos &&
+                binary_and_bounds.value.find(R"("$minKey": 1)") !=
+                    std::string::npos &&
+                binary_and_bounds.value.find(R"("$maxKey": 1)") !=
+                    std::string::npos,
+            "BinData, MinKey and MaxKey should convert to canonical Extended JSON");
     require(!zeus::process_text(
                 R"({"value":new NumberInt("2147483648")})",
                 zeus::ProcessingMode::MongoShell).ok,
@@ -396,6 +434,21 @@ int main() {
                 R"({"value":NumberInt(1 + 2)})",
                 zeus::ProcessingMode::MongoShell).ok,
             "MongoDB constructor arguments must not evaluate expressions");
+    require(!zeus::process_text(
+                R"({"value":UUID('not-a-uuid')})",
+                zeus::ProcessingMode::MongoShell).ok,
+            "invalid UUID constructor values should be rejected");
+    require(!zeus::process_text(
+                R"({"value":Timestamp({"t":4294967296,"i":1})})",
+                zeus::ProcessingMode::MongoShell).ok,
+            "Timestamp components outside the unsigned 32-bit range should be rejected");
+    require(!zeus::process_text(
+                R"({"value":BinData(256,"AQIDBA==")})",
+                zeus::ProcessingMode::MongoShell).ok &&
+                !zeus::process_text(
+                    R"({"value":BinData(4,"AQIDB-_=")})",
+                    zeus::ProcessingMode::MongoShell).ok,
+            "BinData should reject invalid subtypes and non-canonical Base64");
     require(zeus::process_text(R"(NumberInt("7") is documentation text)").detected ==
                 zeus::ContentKind::Text,
             "constructor-like prose should not be accepted without complete JSON structure");

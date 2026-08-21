@@ -17,11 +17,18 @@ struct ConstructorDefinition {
 
 constexpr ConstructorDefinition kConstructors[] = {
     {"NumberInt", "$numberInt"},
+    {"Int32", "$numberInt"},
     {"NumberLong", "$numberLong"},
+    {"Double", "$numberDouble"},
     {"NumberDecimal", "$numberDecimal"},
     {"Decimal128", "$numberDecimal"},
     {"ObjectId", "$oid"},
     {"ISODate", "$date"},
+    {"UUID", "$uuid"},
+    {"Timestamp", "$timestamp"},
+    {"BinData", "$binary"},
+    {"MinKey", "$minKey"},
+    {"MaxKey", "$maxKey"},
 };
 
 bool is_identifier_character(unsigned char ch) {
@@ -221,8 +228,9 @@ std::string quote_json_string(std::string_view value) {
     return output;
 }
 
-bool constructor_accepts_integer_literal(std::string_view constructor) {
-    return constructor == "NumberInt" || constructor == "NumberLong";
+bool constructor_accepts_number_literal(std::string_view constructor) {
+    return constructor == "NumberInt" || constructor == "Int32" ||
+        constructor == "NumberLong" || constructor == "Double";
 }
 
 bool read_constructor_argument(
@@ -236,7 +244,7 @@ bool read_constructor_argument(
         return read_quoted_string(
             input, position, input[position], raw, decoded, error_offset);
     }
-    if (!constructor_accepts_integer_literal(constructor)) {
+    if (!constructor_accepts_number_literal(constructor)) {
         error_offset = position;
         return false;
     }
@@ -245,12 +253,24 @@ bool read_constructor_argument(
     if (position < input.size() && (input[position] == '+' || input[position] == '-')) {
         ++position;
     }
-    const std::size_t digits = position;
-    while (position < input.size() &&
-           std::isdigit(static_cast<unsigned char>(input[position])) != 0) {
-        ++position;
+    const std::size_t value_start = position;
+    if (constructor == "Double" && position < input.size() &&
+        std::isalpha(static_cast<unsigned char>(input[position])) != 0) {
+        while (position < input.size() &&
+               std::isalpha(static_cast<unsigned char>(input[position])) != 0) {
+            ++position;
+        }
+    } else {
+        while (position < input.size()) {
+            const char ch = input[position];
+            if (std::isdigit(static_cast<unsigned char>(ch)) == 0 &&
+                ch != '.' && ch != 'e' && ch != 'E' && ch != '+' && ch != '-') {
+                break;
+            }
+            ++position;
+        }
     }
-    if (position == digits) {
+    if (position == value_start) {
         error_offset = position;
         return false;
     }
@@ -312,6 +332,15 @@ bool is_object_id(std::string_view value) {
     return true;
 }
 
+bool is_uuid(std::string_view value) {
+    if (value.size() != 36) return false;
+    for (std::size_t index = 0; index < value.size(); ++index) {
+        const bool separator = index == 8 || index == 13 || index == 18 || index == 23;
+        if (separator ? value[index] != '-' : hex_value(value[index]) < 0) return false;
+    }
+    return true;
+}
+
 bool is_iso_date(std::string_view value) {
     if (value.size() < 20 || value[4] != '-' || value[7] != '-' ||
         (value[10] != 'T' && value[10] != 't')) {
@@ -326,14 +355,157 @@ bool is_iso_date(std::string_view value) {
 }
 
 bool valid_argument(std::string_view constructor, std::string_view value) {
-    if (constructor == "NumberInt") return is_integer_in_range<std::int32_t>(value);
+    if (constructor == "NumberInt" || constructor == "Int32") {
+        return is_integer_in_range<std::int32_t>(value);
+    }
     if (constructor == "NumberLong") return is_integer_in_range<std::int64_t>(value);
+    if (constructor == "Double") return is_decimal128_string(value);
     if (constructor == "NumberDecimal" || constructor == "Decimal128") {
         return is_decimal128_string(value);
     }
     if (constructor == "ObjectId") return is_object_id(value);
     if (constructor == "ISODate") return is_iso_date(value);
+    if (constructor == "UUID") return is_uuid(value);
     return false;
+}
+
+bool read_uint32_literal(
+    std::string_view input,
+    std::size_t& position,
+    std::uint32_t& value) {
+    const std::size_t start = position;
+    while (position < input.size() &&
+           std::isdigit(static_cast<unsigned char>(input[position])) != 0) {
+        ++position;
+    }
+    if (position == start) return false;
+    const char* first = input.data() + start;
+    const char* last = input.data() + position;
+    const auto parsed = std::from_chars(first, last, value, 10);
+    return parsed.ec == std::errc{} && parsed.ptr == last;
+}
+
+bool read_timestamp_field(
+    std::string_view input,
+    std::size_t& position,
+    char& field) {
+    if (position < input.size() && (input[position] == '"' || input[position] == '\'')) {
+        std::string raw;
+        std::string decoded;
+        std::size_t error_offset = position;
+        if (!read_quoted_string(
+                input, position, input[position], raw, decoded, error_offset) ||
+            decoded.size() != 1 || (decoded[0] != 't' && decoded[0] != 'i')) {
+            return false;
+        }
+        field = decoded[0];
+        return true;
+    }
+    if (position < input.size() && (input[position] == 't' || input[position] == 'i')) {
+        field = input[position++];
+        return position == input.size() ||
+            !is_identifier_character(static_cast<unsigned char>(input[position]));
+    }
+    return false;
+}
+
+bool read_timestamp_arguments(
+    std::string_view input,
+    std::size_t& position,
+    std::uint32_t& seconds,
+    std::uint32_t& increment) {
+    skip_space(input, position);
+    if (position >= input.size()) return false;
+    if (input[position] != '{') {
+        if (!read_uint32_literal(input, position, seconds)) return false;
+        skip_space(input, position);
+        if (position >= input.size() || input[position++] != ',') return false;
+        skip_space(input, position);
+        return read_uint32_literal(input, position, increment);
+    }
+
+    ++position;
+    bool have_seconds = false;
+    bool have_increment = false;
+    for (int member = 0; member < 2; ++member) {
+        skip_space(input, position);
+        char field = '\0';
+        if (!read_timestamp_field(input, position, field)) return false;
+        skip_space(input, position);
+        if (position >= input.size() || input[position++] != ':') return false;
+        skip_space(input, position);
+        std::uint32_t value = 0;
+        if (!read_uint32_literal(input, position, value)) return false;
+        if (field == 't') {
+            if (have_seconds) return false;
+            seconds = value;
+            have_seconds = true;
+        } else {
+            if (have_increment) return false;
+            increment = value;
+            have_increment = true;
+        }
+        skip_space(input, position);
+        if (member == 0) {
+            if (position >= input.size() || input[position++] != ',') return false;
+        }
+    }
+    skip_space(input, position);
+    if (position >= input.size() || input[position++] != '}') return false;
+    return have_seconds && have_increment;
+}
+
+int base64_value(char ch) {
+    if (ch >= 'A' && ch <= 'Z') return ch - 'A';
+    if (ch >= 'a' && ch <= 'z') return ch - 'a' + 26;
+    if (ch >= '0' && ch <= '9') return ch - '0' + 52;
+    if (ch == '+') return 62;
+    if (ch == '/') return 63;
+    return -1;
+}
+
+bool is_canonical_base64(std::string_view value) {
+    if (value.empty()) return true;
+    if (value.size() % 4 != 0) return false;
+    std::size_t padding = 0;
+    if (value.back() == '=') ++padding;
+    if (value.size() > 1 && value[value.size() - 2] == '=') ++padding;
+    for (std::size_t index = 0; index < value.size() - padding; ++index) {
+        if (base64_value(value[index]) < 0) return false;
+    }
+    for (std::size_t index = value.size() - padding; index < value.size(); ++index) {
+        if (value[index] != '=') return false;
+    }
+    if (padding > 2 || value.size() - padding < 2) return false;
+    if (padding == 2) {
+        return (base64_value(value[value.size() - 3]) & 0x0F) == 0;
+    }
+    if (padding == 1) {
+        return (base64_value(value[value.size() - 2]) & 0x03) == 0;
+    }
+    return true;
+}
+
+bool read_bin_data_arguments(
+    std::string_view input,
+    std::size_t& position,
+    std::uint32_t& subtype,
+    std::string& payload) {
+    skip_space(input, position);
+    if (!read_uint32_literal(input, position, subtype) || subtype > 255U) return false;
+    skip_space(input, position);
+    if (position >= input.size() || input[position++] != ',') return false;
+    skip_space(input, position);
+    if (position >= input.size() || (input[position] != '"' && input[position] != '\'')) {
+        return false;
+    }
+    std::string raw;
+    std::size_t error_offset = position;
+    if (!read_quoted_string(
+            input, position, input[position], raw, payload, error_offset)) {
+        return false;
+    }
+    return is_canonical_base64(payload);
 }
 
 const ConstructorDefinition* constructor_at(
@@ -396,6 +568,67 @@ bool convert_constructor(
         return false;
     }
     ++cursor;
+    if (definition->name == "Timestamp") {
+        std::uint32_t seconds = 0;
+        std::uint32_t increment = 0;
+        if (!read_timestamp_arguments(input, cursor, seconds, increment)) {
+            issue = issue_at(input, cursor, "MONGO_SHELL_ARGUMENT",
+                             "Timestamp requires unsigned t and i values");
+            return false;
+        }
+        skip_space(input, cursor);
+        if (cursor >= input.size() || input[cursor] != ')') {
+            issue = issue_at(input, cursor, "MONGO_SHELL_ARGUMENT",
+                             "Timestamp accepts only t and i values");
+            return false;
+        }
+        ++cursor;
+        output += "{\"$timestamp\":{\"t\":";
+        output += std::to_string(seconds);
+        output += ",\"i\":";
+        output += std::to_string(increment);
+        output += "}}";
+        position = cursor;
+        return true;
+    }
+    if (definition->name == "BinData") {
+        std::uint32_t subtype = 0;
+        std::string payload;
+        if (!read_bin_data_arguments(input, cursor, subtype, payload)) {
+            issue = issue_at(input, cursor, "MONGO_SHELL_ARGUMENT",
+                             "BinData requires a byte subtype and canonical Base64 payload");
+            return false;
+        }
+        skip_space(input, cursor);
+        if (cursor >= input.size() || input[cursor] != ')') {
+            issue = issue_at(input, cursor, "MONGO_SHELL_ARGUMENT",
+                             "BinData accepts only subtype and Base64 values");
+            return false;
+        }
+        ++cursor;
+        constexpr char hex[] = "0123456789abcdef";
+        output += "{\"$binary\":{\"base64\":";
+        output += quote_json_string(payload);
+        output += ",\"subType\":\"";
+        output.push_back(hex[(subtype >> 4U) & 0x0FU]);
+        output.push_back(hex[subtype & 0x0FU]);
+        output += "\"}}";
+        position = cursor;
+        return true;
+    }
+    if (definition->name == "MinKey" || definition->name == "MaxKey") {
+        skip_space(input, cursor);
+        if (cursor >= input.size() || input[cursor] != ')') {
+            issue = issue_at(input, cursor, "MONGO_SHELL_ARGUMENT",
+                             "MinKey and MaxKey do not accept arguments");
+            return false;
+        }
+        ++cursor;
+        output += definition->name == "MinKey"
+            ? "{\"$minKey\":1}" : "{\"$maxKey\":1}";
+        position = cursor;
+        return true;
+    }
     skip_space(input, cursor);
     std::string decoded;
     std::size_t error_offset = cursor;
@@ -408,7 +641,7 @@ bool convert_constructor(
     skip_space(input, cursor);
     if (cursor >= input.size() || input[cursor] != ')') {
         issue = issue_at(input, cursor, "MONGO_SHELL_ARGUMENT",
-                         "MongoDB constructor accepts one quoted value");
+                         "MongoDB constructor accepts one literal value");
         return false;
     }
     ++cursor;

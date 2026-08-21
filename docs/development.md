@@ -11,7 +11,8 @@
 - 上方多行原始输入。
 - 严格 JSON 格式化及行列错误信息。
 - MongoDB Shell/BSON 使用独立的非执行转换器：完整输入必须是 JSON 结构，只替换
-  `NumberInt`、`NumberLong`、`NumberDecimal`/`Decimal128`、`ObjectId` 和 `ISODate`
+  `NumberInt`/`Int32`、`NumberLong`、`Double`、`NumberDecimal`/`Decimal128`、
+  `ObjectId`、`ISODate`、`UUID`、`Timestamp`、`BinData`、`MinKey` 和 `MaxKey`
   白名单构造器，并输出 MongoDB Extended JSON；参数支持 Mongo Shell 常见单引号，
   `NumberInt`/`NumberLong` 还支持直接整数，但表达式会被拒绝；转换结果复用 JSON 高亮、折叠、搜索与操作。
 - XML 自动识别、严格解析、格式化、行列错误和 token 高亮；混合内容不注入语义空白，`DOCTYPE`/`ENTITY` 在解析前拒绝。

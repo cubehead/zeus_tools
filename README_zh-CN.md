@@ -151,9 +151,10 @@ zeus-tools-cli --list-actions
   配置。
 - YAML 有意只接受单文档安全子集，并拒绝指令、标签、锚点、别名和多文档
   输入。
-- MongoDB Shell 输入仅接受 JSON 结构，以及白名单内的 `NumberInt`、
-  `NumberLong`、`NumberDecimal`/`Decimal128`、`ObjectId` 和 `ISODate`
-  构造器；支持常见的单引号参数，以及 `NumberInt`/`NumberLong` 直接整数参数，
+- MongoDB Shell 输入仅接受 JSON 结构，以及白名单内的 `NumberInt`/`Int32`、
+  `NumberLong`、`Double`、`NumberDecimal`/`Decimal128`、`ObjectId`、`ISODate` 和 `UUID`
+  及 `Timestamp`、`BinData`、`MinKey`、`MaxKey` 构造器；支持常见的单引号参数，
+  以及 `NumberInt`/`NumberLong` 直接整数参数，
   但不接受表达式；不会执行 JavaScript 或任意 Shell 代码。
 - JWT 检查会解码声明，但不会验证签名。
 - Base64/URL 自动解码在一层后停止。使用“再解一层”可手动处理下一个检测到
