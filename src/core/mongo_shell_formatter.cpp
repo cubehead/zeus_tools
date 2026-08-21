@@ -24,6 +24,7 @@ constexpr ConstructorDefinition kConstructors[] = {
     {"Decimal128", "$numberDecimal"},
     {"ObjectId", "$oid"},
     {"ISODate", "$date"},
+    {"Date", "$date"},
     {"UUID", "$uuid"},
     {"Timestamp", "$timestamp"},
     {"BinData", "$binary"},
@@ -230,7 +231,7 @@ std::string quote_json_string(std::string_view value) {
 
 bool constructor_accepts_number_literal(std::string_view constructor) {
     return constructor == "NumberInt" || constructor == "Int32" ||
-        constructor == "NumberLong" || constructor == "Double";
+        constructor == "NumberLong" || constructor == "Double" || constructor == "Date";
 }
 
 bool read_constructor_argument(
@@ -365,6 +366,9 @@ bool valid_argument(std::string_view constructor, std::string_view value) {
     }
     if (constructor == "ObjectId") return is_object_id(value);
     if (constructor == "ISODate") return is_iso_date(value);
+    if (constructor == "Date") {
+        return is_iso_date(value) || is_integer_in_range<std::int64_t>(value);
+    }
     if (constructor == "UUID") return is_uuid(value);
     return false;
 }
@@ -649,6 +653,20 @@ bool convert_constructor(
         issue = issue_at(input, start, "MONGO_SHELL_VALUE",
                          "MongoDB constructor value is invalid or out of range");
         return false;
+    }
+
+    if (definition->name == "Date") {
+        output += "{\"$date\":";
+        if (is_integer_in_range<std::int64_t>(decoded)) {
+            output += "{\"$numberLong\":";
+            output += quote_json_string(decoded);
+            output += '}';
+        } else {
+            output += quote_json_string(decoded);
+        }
+        output += '}';
+        position = cursor;
+        return true;
     }
 
     output += "{\"";

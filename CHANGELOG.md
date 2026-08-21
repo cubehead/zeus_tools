@@ -20,6 +20,8 @@ semantic versioning after the first stable release.
   with unsigned 32-bit validation and no expression evaluation.
 - Added `BinData` conversion with byte-subtype and canonical Base64 validation,
   plus argument-free `MinKey` and `MaxKey` conversion.
+- Added deterministic ISO/millisecond `Date` conversion and retained MongoDB
+  diagnostics for malformed constructor input inside an object or array.
 - Reused JSON highlighting, folding, search, minify/escape and structured
   conversion actions for successfully converted MongoDB Shell input.
 

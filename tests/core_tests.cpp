@@ -422,6 +422,15 @@ int main() {
                 binary_and_bounds.value.find(R"("$maxKey": 1)") !=
                     std::string::npos,
             "BinData, MinKey and MaxKey should convert to canonical Extended JSON");
+    const auto dates = zeus::process_text(
+        R"({"released":new Date('2026-08-21T10:15:30Z'),"epoch":new Date(0)})",
+        zeus::ProcessingMode::MongoShell);
+    require(dates.ok &&
+                dates.value.find(R"("$date": "2026-08-21T10:15:30Z")") !=
+                    std::string::npos &&
+                dates.value.find(R"("$numberLong": "0")") !=
+                    std::string::npos,
+            "ISO and millisecond Date values should use their correct Extended JSON forms");
     require(!zeus::process_text(
                 R"({"value":new NumberInt("2147483648")})",
                 zeus::ProcessingMode::MongoShell).ok,
@@ -449,6 +458,16 @@ int main() {
                     R"({"value":BinData(4,"AQIDB-_=")})",
                     zeus::ProcessingMode::MongoShell).ok,
             "BinData should reject invalid subtypes and non-canonical Base64");
+    require(!zeus::process_text(
+                R"({"value":new Date()})",
+                zeus::ProcessingMode::MongoShell).ok,
+            "nondeterministic empty Date constructors should be rejected");
+    const auto malformed_auto_mongo = zeus::process_text(
+        R"({"value":new NumberInt("2147483648")})");
+    require(!malformed_auto_mongo.ok &&
+                malformed_auto_mongo.detected == zeus::ContentKind::MongoShell &&
+                malformed_auto_mongo.error_code == "MONGO_SHELL_VALUE",
+            "structured MongoDB-like input should retain concise conversion errors in Auto mode");
     require(zeus::process_text(R"(NumberInt("7") is documentation text)").detected ==
                 zeus::ContentKind::Text,
             "constructor-like prose should not be accepted without complete JSON structure");

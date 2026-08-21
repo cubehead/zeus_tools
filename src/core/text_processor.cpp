@@ -1102,6 +1102,12 @@ ProcessResult detect_automatically(const std::string& input, const std::string& 
             result.value = converted.json.value;
             return result;
         }
+        const bool structured_envelope = trimmed.size() >= 2 &&
+            ((trimmed.front() == '{' && trimmed.back() == '}') ||
+             (trimmed.front() == '[' && trimmed.back() == ']'));
+        if (structured_envelope) {
+            return format_failure(ContentKind::MongoShell, converted.json, input);
+        }
     }
 
     if (!trimmed.empty() && trimmed.front() == '<') {
