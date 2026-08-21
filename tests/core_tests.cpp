@@ -373,6 +373,17 @@ int main() {
         R"({"value":new NumberInt("7")})", zeus::ProcessingMode::MongoShell);
     require(explicit_mongo.ok && explicit_mongo.value.find("$numberInt") != std::string::npos,
             "manual MongoDB input should convert to Extended JSON");
+    const auto common_mongo_literals = zeus::process_text(
+        R"({"count":NumberInt(421864),"debt":new NumberLong(-9),)"
+        R"("id":ObjectId('507f1f77bcf86cd799439011'),)"
+        R"("createdAt":ISODate('2026-08-21T10:15:30Z')})",
+        zeus::ProcessingMode::MongoShell);
+    require(common_mongo_literals.ok &&
+                common_mongo_literals.value.find(R"("$numberInt": "421864")") !=
+                    std::string::npos &&
+                common_mongo_literals.value.find(R"("$numberLong": "-9")") !=
+                    std::string::npos,
+            "MongoDB integer literals and single-quoted constructor values should be accepted");
     require(!zeus::process_text(
                 R"({"value":new NumberInt("2147483648")})",
                 zeus::ProcessingMode::MongoShell).ok,
@@ -381,6 +392,10 @@ int main() {
                 R"({"value":new Evil("1")})",
                 zeus::ProcessingMode::MongoShell).ok,
             "unknown MongoDB Shell constructors should be rejected");
+    require(!zeus::process_text(
+                R"({"value":NumberInt(1 + 2)})",
+                zeus::ProcessingMode::MongoShell).ok,
+            "MongoDB constructor arguments must not evaluate expressions");
     require(zeus::process_text(R"(NumberInt("7") is documentation text)").detected ==
                 zeus::ContentKind::Text,
             "constructor-like prose should not be accepted without complete JSON structure");

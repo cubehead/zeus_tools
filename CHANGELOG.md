@@ -12,6 +12,8 @@ semantic versioning after the first stable release.
   override. Whitelisted `NumberInt`, `NumberLong`, `NumberDecimal`/`Decimal128`,
   `ObjectId` and `ISODate` constructors are converted to type-preserving
   MongoDB Extended JSON without executing JavaScript.
+- Accepted common MongoDB Shell single-quoted constructor strings and direct
+  integer literals for `NumberInt`/`NumberLong`, while rejecting expressions.
 - Reused JSON highlighting, folding, search, minify/escape and structured
   conversion actions for successfully converted MongoDB Shell input.
 

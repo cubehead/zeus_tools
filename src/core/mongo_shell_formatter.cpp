@@ -98,13 +98,14 @@ bool read_hex_quad(std::string_view input, std::size_t& position, std::uint32_t&
     return true;
 }
 
-bool read_json_string(
+bool read_quoted_string(
     std::string_view input,
     std::size_t& position,
+    char quote,
     std::string& raw,
     std::string& decoded,
     std::size_t& error_offset) {
-    if (position >= input.size() || input[position] != '"') {
+    if (position >= input.size() || input[position] != quote) {
         error_offset = position;
         return false;
     }
@@ -112,7 +113,7 @@ bool read_json_string(
     decoded.clear();
     while (position < input.size()) {
         const unsigned char ch = static_cast<unsigned char>(input[position++]);
-        if (ch == '"') {
+        if (ch == static_cast<unsigned char>(quote)) {
             raw.assign(input.substr(start, position - start));
             return true;
         }
@@ -131,6 +132,13 @@ bool read_json_string(
         const char escaped = input[position++];
         switch (escaped) {
         case '"': decoded.push_back('"'); break;
+        case '\'':
+            if (quote != '\'') {
+                error_offset = position - 1;
+                return false;
+            }
+            decoded.push_back('\'');
+            break;
         case '\\': decoded.push_back('\\'); break;
         case '/': decoded.push_back('/'); break;
         case 'b': decoded.push_back('\b'); break;
@@ -173,6 +181,82 @@ bool read_json_string(
     }
     error_offset = position;
     return false;
+}
+
+bool read_json_string(
+    std::string_view input,
+    std::size_t& position,
+    std::string& raw,
+    std::string& decoded,
+    std::size_t& error_offset) {
+    return read_quoted_string(input, position, '"', raw, decoded, error_offset);
+}
+
+std::string quote_json_string(std::string_view value) {
+    constexpr char hex[] = "0123456789abcdef";
+    std::string output;
+    output.reserve(value.size() + 2);
+    output.push_back('"');
+    for (unsigned char ch : value) {
+        switch (ch) {
+        case '"': output += "\\\""; break;
+        case '\\': output += "\\\\"; break;
+        case '\b': output += "\\b"; break;
+        case '\f': output += "\\f"; break;
+        case '\n': output += "\\n"; break;
+        case '\r': output += "\\r"; break;
+        case '\t': output += "\\t"; break;
+        default:
+            if (ch < 0x20U) {
+                output += "\\u00";
+                output.push_back(hex[(ch >> 4U) & 0x0FU]);
+                output.push_back(hex[ch & 0x0FU]);
+            } else {
+                output.push_back(static_cast<char>(ch));
+            }
+            break;
+        }
+    }
+    output.push_back('"');
+    return output;
+}
+
+bool constructor_accepts_integer_literal(std::string_view constructor) {
+    return constructor == "NumberInt" || constructor == "NumberLong";
+}
+
+bool read_constructor_argument(
+    std::string_view input,
+    std::size_t& position,
+    std::string_view constructor,
+    std::string& decoded,
+    std::size_t& error_offset) {
+    if (position < input.size() && (input[position] == '"' || input[position] == '\'')) {
+        std::string raw;
+        return read_quoted_string(
+            input, position, input[position], raw, decoded, error_offset);
+    }
+    if (!constructor_accepts_integer_literal(constructor)) {
+        error_offset = position;
+        return false;
+    }
+
+    const std::size_t start = position;
+    if (position < input.size() && (input[position] == '+' || input[position] == '-')) {
+        ++position;
+    }
+    const std::size_t digits = position;
+    while (position < input.size() &&
+           std::isdigit(static_cast<unsigned char>(input[position])) != 0) {
+        ++position;
+    }
+    if (position == digits) {
+        error_offset = position;
+        return false;
+    }
+    decoded.assign(input.substr(start, position - start));
+    if (!decoded.empty() && decoded.front() == '+') decoded.erase(decoded.begin());
+    return true;
 }
 
 template <typename Integer>
@@ -313,12 +397,12 @@ bool convert_constructor(
     }
     ++cursor;
     skip_space(input, cursor);
-    std::string raw;
     std::string decoded;
     std::size_t error_offset = cursor;
-    if (!read_json_string(input, cursor, raw, decoded, error_offset)) {
+    if (!read_constructor_argument(
+            input, cursor, definition->name, decoded, error_offset)) {
         issue = issue_at(input, error_offset, "MONGO_SHELL_ARGUMENT",
-                         "MongoDB constructor requires one quoted value");
+                         "MongoDB constructor requires one literal value");
         return false;
     }
     skip_space(input, cursor);
@@ -337,7 +421,7 @@ bool convert_constructor(
     output += "{\"";
     output += definition->extended_json_key;
     output += "\":";
-    output += raw;
+    output += quote_json_string(decoded);
     output += '}';
     position = cursor;
     return true;

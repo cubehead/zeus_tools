@@ -4,6 +4,7 @@ empty	Empty	true
 json-object	JSON	true	{"name":"Zeus Tools","active":true}
 json-array	JSON	true	[1,2,3]
 mongodb-number-int	MongoDB	true	[{"field":"count","before":new NumberInt("421864")}]
+mongodb-common-literals	MongoDB	true	{"count":NumberInt(421864),"id":ObjectId('507f1f77bcf86cd799439011')}
 json-string	JSON	true	"plain JSON string"
 xml-document	XML	true	<?xml version="1.0"?><root><item id="1"/></root>
 xml-invalid-structure	XML	false	<root><item></root>

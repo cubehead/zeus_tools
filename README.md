@@ -159,7 +159,9 @@ The project intentionally does not create an NSIS/MSI installer.
   directives, tags, anchors, aliases and multi-document input.
 - MongoDB Shell input accepts only JSON structure plus the whitelisted
   `NumberInt`, `NumberLong`, `NumberDecimal`/`Decimal128`, `ObjectId` and
-  `ISODate` constructors. It does not run JavaScript or arbitrary shell code.
+  `ISODate` constructors. Common single-quoted values and direct
+  `NumberInt`/`NumberLong` integer literals are accepted; expressions are not.
+  It does not run JavaScript or arbitrary shell code.
 - JWT inspection decodes claims but does not verify the signature.
 - Automatic Base64/URL decoding stops after one layer. Use `Decode +1` to
   process another detected layer manually; the source input remains unchanged.
