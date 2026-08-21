@@ -11,7 +11,7 @@
 macOS 最低系统版本由 `ZEUS_MACOS_MIN_VERSION` 统一控制，默认 12.0；配置会同时写入
 Mach-O deployment target 与 `LSMinimumSystemVersion`，产物校验器会拒绝两者不一致的包。
 
-`v0.2.0` 已发布 macOS arm64 DMG 和 Windows x64 Portable ZIP。macOS 产物在
+`v0.2.1` 已发布 macOS arm64 DMG 和 Windows x64 Portable ZIP。macOS 产物在
 本机完成构建与磁盘映像验证；Windows 产物使用 MinGW-w64 交叉构建，并完成
 ZIP、PE 架构、GUI 子系统、VersionInfo、资源和系统 DLL 依赖检查，但尚未
 替代 Windows 10/11 原生运行与 IME 验证。两个产物均未签名。
@@ -53,7 +53,7 @@ cmake --build build/package-macos --target package
 
 ```sh
 ./scripts/check-package.sh macos \
-  build/package-macos/packages/Zeus-Tools-0.2.0-macOS-arm64.dmg
+  build/package-macos/packages/Zeus-Tools-0.2.1-macOS-arm64.dmg
 ```
 
 如有 Developer ID Application 证书，在配置阶段显式传入：
@@ -66,10 +66,10 @@ cmake --preset package-macos \
 配置会在生成 DMG 前对 `.app` 启用 Hardened Runtime、时间戳和深度签名。公证凭据不写入仓库；建议使用 Keychain Profile：
 
 ```sh
-xcrun notarytool submit Zeus-Tools-0.2.0-macOS-arm64.dmg \
+xcrun notarytool submit Zeus-Tools-0.2.1-macOS-arm64.dmg \
   --keychain-profile ZEUS_NOTARY --wait
-xcrun stapler staple Zeus-Tools-0.2.0-macOS-arm64.dmg
-spctl --assess --type open --context context:primary-signature -v Zeus-Tools-0.2.0-macOS-arm64.dmg
+xcrun stapler staple Zeus-Tools-0.2.1-macOS-arm64.dmg
+spctl --assess --type open --context context:primary-signature -v Zeus-Tools-0.2.1-macOS-arm64.dmg
 ```
 
 若需 Intel 包，在 Intel runner 原生构建；若要 Universal 2，需先确认 EUI-NEO 及全部静态依赖均支持 `arm64;x86_64`，再使用 `-DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"`。
@@ -98,7 +98,7 @@ Windows 资源脚本会嵌入应用图标、产品名、语义版本、构建号
 
 ```sh
 ./scripts/check-package.sh windows \
-  build/package-windows/packages/Zeus-Tools-0.2.0-Windows-x86_64-portable.zip
+  build/package-windows/packages/Zeus-Tools-0.2.1-Windows-x86_64-portable.zip
 ```
 
 Windows 原生环境也可以先解压 ZIP，再使用相同命令把第二个参数指向解压根目录。
@@ -108,7 +108,7 @@ VersionInfo、CLI 和 GUI 启动验收：
 
 ```powershell
 .\scripts\check-package.ps1 `
-  build\package-windows\packages\Zeus-Tools-0.2.0-Windows-AMD64-portable.zip
+  build\package-windows\packages\Zeus-Tools-0.2.1-Windows-AMD64-portable.zip
 ```
 
 正式签名版本追加 `-RequireSignature`；只做服务器或无桌面环境检查时可追加
@@ -125,7 +125,7 @@ VersionInfo、CLI 和 GUI 启动验收：
 cmake --build build/package-windows --target package
 
 .\scripts\check-package.ps1 `
-  build\package-windows\packages\Zeus-Tools-0.2.0-Windows-AMD64-portable.zip `
+  build\package-windows\packages\Zeus-Tools-0.2.1-Windows-AMD64-portable.zip `
   -RequireSignature
 ```
 

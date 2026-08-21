@@ -1,11 +1,11 @@
 cmake_minimum_required(VERSION 3.20)
 
 get_filename_component(ZEUS_PROJECT_ROOT "${CMAKE_CURRENT_LIST_DIR}/.." ABSOLUTE)
-set(PROJECT_VERSION "0.2.0")
+set(PROJECT_VERSION "0.2.1")
 set(PROJECT_VERSION_MAJOR 0)
 set(PROJECT_VERSION_MINOR 2)
 set(PROJECT_VERSION_PATCH 0)
-set(ZEUS_BUILD_NUMBER 2)
+set(ZEUS_BUILD_NUMBER 3)
 set(ZEUS_WINDOWS_ICON_NATIVE "${ZEUS_PROJECT_ROOT}/resources/icons/zeus-tools.ico")
 set(ZEUS_TEST_RC "${ZEUS_PROJECT_ROOT}/build/windows-resource-validation.rc")
 set(ZEUS_TEST_OBJ "${ZEUS_PROJECT_ROOT}/build/windows-resource-validation.o")

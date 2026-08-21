@@ -1,6 +1,6 @@
 # Zeus Tools 当前开发计划
 
-> 状态：v0.2.0 Alpha 已发布，继续跨平台稳定化
+> 状态：v0.2.1 Alpha 已发布，继续跨平台稳定化
 >
 > 更新日期：2026-08-19
 >
@@ -90,6 +90,7 @@
 | 0.1 Alpha 功能闭环 | 已完成 | 核心格式、编码、CSV、搜索、选择、主题、语言和 crypto 可用。 |
 | v0.1.0 公开 Alpha | 已发布 | `v0.1.0` 标签和 GitHub Release 包含 macOS arm64 DMG、Windows x64 Portable ZIP、校验值与发布说明。 |
 | v0.2.0 扩展 Alpha | 已发布 | 新格式、编码、文件工作流、CLI、大文本保护和异常隔离进入双平台候选包。 |
+| v0.2.1 稳定化 Alpha | 已发布 | Data URL 图片预览、二进制导出、校验算法和 Windows 修复通过双平台包验证。 |
 | 0.2.x 稳定化 | 进行中 | 完成 Windows 10、macOS/Windows 10 IME、跨页选择及键盘可访问性验收。 |
 
 ## 4. 后续版本发布门禁

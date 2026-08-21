@@ -23,10 +23,12 @@ docs/product-requirements.md
 docs/release-checklist.md
 docs/releases/v0.1.0.md
 docs/releases/v0.2.0.md
+docs/releases/v0.2.1.md
 docs/assets/overview-dark.jpg
 docs/assets/csv-table.jpg
 docs/assets/digest-hmac.jpg
 docs/assets/jwt-inspect.jpg
+docs/assets/image-preview.jpg
 docs/licenses/EUI-NEO-APACHE-2.0.txt
 docs/licenses/FONT-AWESOME-FREE.txt
 docs/licenses/FREETYPE.txt

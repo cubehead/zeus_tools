@@ -23,7 +23,7 @@
   <a href="#截图">截图</a> ·
   <a href="#开源组件">开源组件</a> ·
   <a href="#构建前置条件">构建</a> ·
-  <a href="docs/releases/v0.2.0.md">发布说明</a>
+  <a href="docs/releases/v0.2.1.md">发布说明</a>
 </p>
 
 Zeus Tools 是一款离线、跨平台的开发者工具箱，用于格式化、检查、转换、

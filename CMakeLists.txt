@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.20)
 
-project(ZeusTools VERSION 0.2.0 LANGUAGES C CXX)
+project(ZeusTools VERSION 0.2.1 LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -21,7 +21,7 @@ option(ZEUS_ENABLE_PACKAGING "Configure native application bundles and CPack pac
 option(ZEUS_ENABLE_SANITIZERS "Enable AddressSanitizer and UndefinedBehaviorSanitizer" OFF)
 set(ZEUS_EUI_NEO_SOURCE_DIR "" CACHE PATH "Path to an existing EUI-NEO v0.5.3 checkout")
 set(ZEUS_APP_IDENTIFIER "io.github.zeustools.app" CACHE STRING "macOS application bundle identifier")
-set(ZEUS_BUILD_NUMBER "2" CACHE STRING "Numeric platform build number")
+set(ZEUS_BUILD_NUMBER "3" CACHE STRING "Numeric platform build number")
 set(ZEUS_MACOS_MIN_VERSION "12.0" CACHE STRING "Minimum supported macOS version")
 set(ZEUS_CODESIGN_IDENTITY "" CACHE STRING "Optional macOS Developer ID Application identity")
 set(ZEUS_DOCS_SCENARIO "" CACHE STRING "Optional synthetic README screenshot scenario")

@@ -23,7 +23,7 @@
   <a href="#screenshots">Screenshots</a> ·
   <a href="#built-with">Built with</a> ·
   <a href="#build-prerequisites">Build</a> ·
-  <a href="docs/releases/v0.2.0.md">Release notes</a>
+  <a href="docs/releases/v0.2.1.md">Release notes</a>
 </p>
 
 Zeus Tools is an offline, cross-platform developer toolbox for formatting,

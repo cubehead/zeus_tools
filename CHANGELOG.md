@@ -6,6 +6,8 @@ semantic versioning after the first stable release.
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-08-21
+
 ### Added
 
 - Added direct in-memory preview for PNG/JPEG Base64 Data URLs whose decoded
