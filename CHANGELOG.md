@@ -14,6 +14,8 @@ semantic versioning after the first stable release.
   parseable dimensions or above preview limits remain exportable without rendering.
 - Added a render-layer smoke test that decodes a PNG Data URL through EUI's
   in-memory image path and rejects malformed or unsupported preview sources.
+- Added a current synthetic-data screenshot of the Base64 Data URL image
+  preview and dimension summary to both README languages.
 - Added conservative one-layer Base64 Data URL detection for text and binary
   payloads, including type-aware export for self-described binary input.
 - Added raw `.bin` export for Base64 results that decode to non-displayable

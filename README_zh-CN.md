@@ -81,6 +81,10 @@ Windows。
 
 ![Zeus Tools 解码 JWT Header 与 Payload](docs/assets/jwt-inspect.jpg)
 
+### Base64 Data URL 图片预览
+
+![Zeus Tools 在内存中预览校验通过的 PNG Base64 Data URL](docs/assets/image-preview.jpg)
+
 截图使用合成数据，展示的是当前 macOS Alpha 界面。Windows 上的字体渲染
 可能有所不同。
 

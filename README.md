@@ -85,6 +85,10 @@ Windows uses a portable package and does not include an NSIS/MSI installer.
 
 ![Zeus Tools decoding a JWT header and payload](docs/assets/jwt-inspect.jpg)
 
+### Base64 Data URL image preview
+
+![Zeus Tools previewing a verified PNG Base64 Data URL in memory](docs/assets/image-preview.jpg)
+
 Screenshots use synthetic data and show the current macOS alpha UI. Platform
 font rendering may differ on Windows.
 
