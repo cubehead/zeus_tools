@@ -5,6 +5,7 @@
 #include "zeus/csv_document.h"
 #include "zeus/developer_tools.h"
 #include "zeus/ini_formatter.h"
+#include "zeus/mongo_shell_formatter.h"
 #include "zeus/toml_formatter.h"
 #include "zeus/xml_formatter.h"
 #include "zeus/yaml_formatter.h"
@@ -749,6 +750,22 @@ ProcessResult run_json_processor(
     return result;
 }
 
+ProcessResult run_mongo_shell_processor(
+    const std::string& input,
+    const std::string&,
+    ProcessingMode) {
+    const auto converted = convert_mongo_shell_to_extended_json(input, 2);
+    if (!converted.json.ok) {
+        return format_failure(ContentKind::MongoShell, converted.json, input);
+    }
+    ProcessResult result;
+    result.detected = ContentKind::MongoShell;
+    result.output_kind = ContentKind::Json;
+    result.label = "MongoDB → JSON";
+    result.value = converted.json.value;
+    return result;
+}
+
 ProcessResult run_conversion_processor(
     const std::string& input,
     const std::string&,
@@ -971,6 +988,7 @@ constexpr std::array<ProcessorRegistration,
     {ProcessingMode::JsonToYaml, "json.to_yaml", run_conversion_processor},
     {ProcessingMode::JsonToXml, "json.to_xml", run_conversion_processor},
     {ProcessingMode::JsonToCsv, "json.to_csv", run_conversion_processor},
+    {ProcessingMode::MongoShell, "mongodb.to_json", run_mongo_shell_processor},
     {ProcessingMode::Xml, "xml.format", run_format_processor},
     {ProcessingMode::XmlToJson, "xml.to_json", run_conversion_processor},
     {ProcessingMode::Yaml, "yaml.format", run_format_processor},
@@ -1072,6 +1090,18 @@ ProcessResult detect_automatically(const std::string& input, const std::string& 
         result.value = std::move(unescaped);
         result.decoded = true;
         return result;
+    }
+
+    if (looks_like_mongo_shell(input)) {
+        const auto converted = convert_mongo_shell_to_extended_json(input, 2);
+        if (converted.json.ok && converted.converted_constructors > 0) {
+            ProcessResult result;
+            result.detected = ContentKind::MongoShell;
+            result.output_kind = ContentKind::Json;
+            result.label = "MongoDB → JSON";
+            result.value = converted.json.value;
+            return result;
+        }
     }
 
     if (!trimmed.empty() && trimmed.front() == '<') {
@@ -1177,6 +1207,7 @@ const char* content_kind_name(ContentKind kind) {
     case ContentKind::Yaml: return "YAML";
     case ContentKind::Toml: return "TOML";
     case ContentKind::Ini: return "INI";
+    case ContentKind::MongoShell: return "MongoDB";
     case ContentKind::Jwt: return "JWT";
     case ContentKind::JsonEscaped: return "JSON String";
     case ContentKind::Base64: return "Base64";

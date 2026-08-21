@@ -103,8 +103,13 @@ AnalysisResult analyze(const AnalysisRequest& request) {
         request.action_id, output.detected, request.input);
     const zeus::ProcessingMode action_mode = action
         ? action->mode : zeus::ProcessingMode::Auto;
+    const bool mongo_json_action = output.detected == zeus::ContentKind::MongoShell &&
+        action != nullptr && !action->common &&
+        action_mode != zeus::ProcessingMode::Auto;
+    const std::string& action_source = mongo_json_action
+        ? base_result.value : request.input;
     output.process = action_mode == zeus::ProcessingMode::Auto
-        ? std::move(base_result) : zeus::process_text(request.input, action_mode);
+        ? std::move(base_result) : zeus::process_text(action_source, action_mode);
 
     const bool csv_requested = override_mode == zeus::ProcessingMode::Csv ||
         action_mode == zeus::ProcessingMode::Csv;

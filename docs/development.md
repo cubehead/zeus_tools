@@ -10,6 +10,9 @@
 - EUI-NEO v0.5.3 应用骨架。
 - 上方多行原始输入。
 - 严格 JSON 格式化及行列错误信息。
+- MongoDB Shell/BSON 使用独立的非执行转换器：完整输入必须是 JSON 结构，只替换
+  `NumberInt`、`NumberLong`、`NumberDecimal`/`Decimal128`、`ObjectId` 和 `ISODate`
+  白名单构造器，并输出 MongoDB Extended JSON；转换结果复用 JSON 高亮、折叠、搜索与操作。
 - XML 自动识别、严格解析、格式化、行列错误和 token 高亮；混合内容不注入语义空白，`DOCTYPE`/`ENTITY` 在解析前拒绝。
 - YAML 保守自动识别、规范化、错误行列和 token 高亮；首版采用单文档安全子集，限制 10 MB、128 层和 10 万节点，并拒绝 Directive、Tag、Anchor/Alias。
 - TOML 使用固定版本 toml++ 严格解析、规范化、行列错误、专用高亮和章节折叠，支持 JSON 双向转换；JSON `null` 等无 TOML 等价物会明确失败。
@@ -29,7 +32,7 @@
   CRC32 使用内置 IEEE 实现且明确标记为非密码学校验和，HMAC 仍只接受密码学哈希；
   macOS 使用 CommonCrypto、Windows 使用 CNG/BCrypt，无额外运行时依赖。HMAC 密钥
   仅保存在当前进程内存，MD5/SHA-1 明确标记为弱算法。
-- 自动检测与手动类型覆盖：可强制按 JSON、XML、YAML、CSV、Base64、URL Decode 或纯文本处理，且不修改原文；JSON、Base64、URL Encode 检测及单层解码处理链已接入。
+- 自动检测与手动类型覆盖：可强制按 JSON、MongoDB、XML、YAML、CSV、Base64、URL Decode 或纯文本处理，且不修改原文；JSON、MongoDB Shell、Base64、URL Encode 检测及单层解码处理链已接入。
 - JWT 三段式 Base64URL 自动识别：只读展示并高亮 Header、Payload 和原始 Signature；明确标记签名未验证，claims 可直接搜索和复制。
 - Base64 二进制安全摘要（字节数与 Hex 预览），避免把二进制直接渲染为乱码；
   导出按钮和 `Cmd/Ctrl+S` 会在该状态下保存原始字节。PNG、JPEG、GIF、WebP、

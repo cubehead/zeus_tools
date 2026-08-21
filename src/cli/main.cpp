@@ -37,7 +37,7 @@ void print_usage(std::ostream& output) {
         "result to stdout. Input is limited to 10 MiB.\n"
         "\n"
         "Options:\n"
-        "  -i, --input TYPE    Input override such as auto, json, yaml or csv\n"
+        "  -i, --input TYPE    Input override such as auto, json, mongodb or csv\n"
         "  -a, --action ID     Registered action such as json.minify or url.encode\n"
         "      --list-inputs   List supported input override IDs\n"
         "      --list-actions  List registered action IDs\n"

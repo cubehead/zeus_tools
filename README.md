@@ -43,8 +43,8 @@ Windows uses a portable package and does not include an NSIS/MSI installer.
 
 ## Highlights
 
-- Automatically detects JSON, XML, YAML, TOML, INI/Properties, CSV, JWT and
-  common encoded text.
+- Automatically detects JSON, MongoDB Shell/BSON values, XML, YAML, TOML,
+  INI/Properties, CSV, JWT and common encoded text.
 - Formats JSON, XML, YAML, TOML and INI/Properties with read-only syntax highlighting.
 - Folds nested JSON containers, XML elements and indented YAML blocks.
 - Converts JSON ↔ YAML/XML/TOML, TOML/INI → JSON and JSON → CSV.
@@ -97,6 +97,7 @@ font rendering may differ on Windows.
 | Input or tool | Automatic/default behavior | Additional actions |
 | --- | --- | --- |
 | JSON | Pretty format, syntax highlight and structural folding | Minify, escape, YAML/XML/TOML/CSV conversion |
+| MongoDB Shell / BSON | Safely convert whitelisted constructors to type-preserving Extended JSON | JSON highlight/folding/search and JSON conversions; no JavaScript execution |
 | Escaped JSON | Detect a JSON string or escaped object | Unescape exactly one layer |
 | XML | Strict parse, safe format, highlight and element folding | Convert to JSON; reject DTD/entities |
 | YAML | Conservative safe-subset parse, format and indentation folding | Convert to JSON |
@@ -131,6 +132,7 @@ limit.
 ```sh
 echo '{"name":"Zeus"}' | zeus-tools-cli
 zeus-tools-cli --input json --action json.minify data.json
+zeus-tools-cli --input mongodb mongo-shell-value.txt
 zeus-tools-cli --list-inputs
 zeus-tools-cli --list-actions
 ```
@@ -155,6 +157,9 @@ The project intentionally does not create an NSIS/MSI installer.
   not yet configured for a public production release.
 - YAML intentionally accepts a single-document safe subset and rejects
   directives, tags, anchors, aliases and multi-document input.
+- MongoDB Shell input accepts only JSON structure plus the whitelisted
+  `NumberInt`, `NumberLong`, `NumberDecimal`/`Decimal128`, `ObjectId` and
+  `ISODate` constructors. It does not run JavaScript or arbitrary shell code.
 - JWT inspection decodes claims but does not verify the signature.
 - Automatic Base64/URL decoding stops after one layer. Use `Decode +1` to
   process another detected layer manually; the source input remains unchanged.

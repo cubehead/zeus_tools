@@ -6,6 +6,15 @@ semantic versioning after the first stable release.
 
 ## [Unreleased]
 
+### Added
+
+- Added conservative MongoDB Shell/BSON detection and a manual `mongodb` input
+  override. Whitelisted `NumberInt`, `NumberLong`, `NumberDecimal`/`Decimal128`,
+  `ObjectId` and `ISODate` constructors are converted to type-preserving
+  MongoDB Extended JSON without executing JavaScript.
+- Reused JSON highlighting, folding, search, minify/escape and structured
+  conversion actions for successfully converted MongoDB Shell input.
+
 ## [0.2.1] - 2026-08-21
 
 ### Added

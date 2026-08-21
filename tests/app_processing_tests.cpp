@@ -30,6 +30,8 @@ std::string sample_for_kind(zeus::ContentKind kind) {
         return "name = \"Zeus\"\nvalue = 1";
     case zeus::ContentKind::Ini:
         return "[tool]\nname=Zeus\nvalue=1";
+    case zeus::ContentKind::MongoShell:
+        return R"({"count":new NumberInt("42"),"id":ObjectId("507f1f77bcf86cd799439011")})";
     case zeus::ContentKind::Jwt:
         return "eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0."
                "eyJuYW1lIjoiWmV1cyIsImFjdGl2ZSI6dHJ1ZX0.signature";
@@ -207,6 +209,34 @@ void test_ini_analysis() {
     expect(result.process.ok, "INI override should succeed");
     expect(result.detected == zeus::ContentKind::Ini,
            "INI override should control the detected kind");
+}
+
+void test_mongodb_shell_analysis() {
+    app::processing::AnalysisRequest request;
+    request.input = R"([{"field":"count","before":new NumberInt("421864")}])";
+    const auto result = app::processing::analyze(request);
+
+    expect(result.process.ok && result.detected == zeus::ContentKind::MongoShell,
+           "MongoDB Shell input should be detected by the desktop service");
+    expect(result.process.output_kind == zeus::ContentKind::Json && result.document,
+           "MongoDB Shell output should use the JSON presentation model");
+    expect(result.document->text().find("$numberInt") != std::string::npos &&
+               !result.document->fold_regions().empty(),
+           "converted Extended JSON should be highlighted, searchable and foldable");
+
+    request.input_type_id = "mongodb";
+    request.action_id = "json.minify";
+    const auto minified = app::processing::analyze(request);
+    expect(minified.process.ok && minified.detected == zeus::ContentKind::MongoShell &&
+               minified.process.value.find('\n') == std::string::npos,
+           "JSON actions should operate on converted MongoDB Shell input");
+
+    request.action_id = "base64.encode";
+    const auto encoded = app::processing::analyze(request);
+    const auto original_encoded = zeus::process_text(
+        request.input, zeus::ProcessingMode::Base64Encode);
+    expect(encoded.process.ok && encoded.process.value == original_encoded.value,
+           "common actions should continue to operate on the original MongoDB Shell text");
 }
 
 void test_decode_one_layer() {
@@ -457,7 +487,14 @@ void test_every_registered_action_executes() {
             std::string(zeus::content_kind_name(action.input_kind));
         expect(applicable == &action,
                context + " should resolve to its exact registry entry");
-        const auto direct = zeus::process_text(request.input, action.mode);
+        if (action.input_kind == zeus::ContentKind::MongoShell) {
+            request.input_type_id = "mongodb";
+        }
+        const std::string direct_input = action.input_kind == zeus::ContentKind::MongoShell &&
+                action.mode != zeus::ProcessingMode::Auto
+            ? zeus::process_text(request.input, zeus::ProcessingMode::MongoShell).value
+            : request.input;
+        const auto direct = zeus::process_text(direct_input, action.mode);
         expect(direct.ok, context + " should succeed in the core processor");
         const auto result = app::processing::analyze(request);
         expect(result.process.ok, context);
@@ -536,6 +573,7 @@ int main() {
     test_text_override_wins_over_auto_detection();
     test_toml_analysis();
     test_ini_analysis();
+    test_mongodb_shell_analysis();
     test_decode_one_layer();
     test_binary_base64_retains_export_payload();
     test_base64_data_url_analysis();

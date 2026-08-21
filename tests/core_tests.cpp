@@ -6,6 +6,7 @@
 #include "zeus/csv_document.h"
 #include "zeus/developer_tools.h"
 #include "zeus/ini_formatter.h"
+#include "zeus/mongo_shell_formatter.h"
 #include "zeus/text_document.h"
 #include "zeus/text_selection.h"
 #include "zeus/text_processor.h"
@@ -349,6 +350,40 @@ int main() {
             "auto mode should detect JSON");
     require(detected_json.output_kind == zeus::ContentKind::Json,
             "detected JSON should expose JSON as its output kind");
+
+    const std::string mongo_shell =
+        R"([{"field":"detailsDTOs[0].id","before":new NumberInt("421864"),)"
+        R"("long":NumberLong("9223372036854775807"),)"
+        R"("price":NumberDecimal("12.50"),)"
+        R"("id":ObjectId("507f1f77bcf86cd799439011"),)"
+        R"("createdAt":ISODate("2026-08-21T10:15:30Z")}])";
+    const auto converted_mongo = zeus::convert_mongo_shell_to_extended_json(mongo_shell);
+    require(converted_mongo.json.ok && converted_mongo.converted_constructors == 5,
+            "MongoDB Shell constructors should convert without executing JavaScript");
+    require(converted_mongo.json.value.find(R"("$numberInt": "421864")") !=
+                std::string::npos &&
+            converted_mongo.json.value.find(R"("$oid": "507f1f77bcf86cd799439011")") !=
+                std::string::npos,
+            "MongoDB Shell conversion should preserve BSON types as Extended JSON");
+    const auto detected_mongo = zeus::process_text(mongo_shell);
+    require(detected_mongo.ok && detected_mongo.detected == zeus::ContentKind::MongoShell &&
+                detected_mongo.output_kind == zeus::ContentKind::Json,
+            "automatic detection should recognize a complete MongoDB Shell document");
+    const auto explicit_mongo = zeus::process_text(
+        R"({"value":new NumberInt("7")})", zeus::ProcessingMode::MongoShell);
+    require(explicit_mongo.ok && explicit_mongo.value.find("$numberInt") != std::string::npos,
+            "manual MongoDB input should convert to Extended JSON");
+    require(!zeus::process_text(
+                R"({"value":new NumberInt("2147483648")})",
+                zeus::ProcessingMode::MongoShell).ok,
+            "NumberInt values outside the signed 32-bit range should be rejected");
+    require(!zeus::process_text(
+                R"({"value":new Evil("1")})",
+                zeus::ProcessingMode::MongoShell).ok,
+            "unknown MongoDB Shell constructors should be rejected");
+    require(zeus::process_text(R"(NumberInt("7") is documentation text)").detected ==
+                zeus::ContentKind::Text,
+            "constructor-like prose should not be accepted without complete JSON structure");
 
     const auto escaped_json_string = zeus::process_text(R"("{\"name\":\"Zeus\",\"enabled\":true}")");
     require(escaped_json_string.ok && escaped_json_string.detected == zeus::ContentKind::JsonEscaped &&

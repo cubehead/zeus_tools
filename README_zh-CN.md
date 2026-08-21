@@ -42,7 +42,7 @@ Windows。
 
 ## 功能亮点
 
-- 自动识别 JSON、XML、YAML、TOML、INI/Properties、CSV、JWT 和常见编码文本。
+- 自动识别 JSON、MongoDB Shell/BSON、XML、YAML、TOML、INI/Properties、CSV、JWT 和常见编码文本。
 - 格式化 JSON、XML、YAML、TOML 和 INI/Properties，并以只读方式显示语法高亮。
 - 支持折叠嵌套的 JSON 容器、XML 元素和按缩进划分的 YAML 块。
 - 支持 JSON ↔ YAML/XML/TOML、TOML/INI → JSON 和 JSON → CSV 转换。
@@ -93,6 +93,7 @@ Windows。
 | 输入或工具 | 自动/默认行为 | 其他操作 |
 | --- | --- | --- |
 | JSON | 美化格式、语法高亮和结构折叠 | 压缩、转义、转换为 YAML/XML/TOML/CSV |
+| MongoDB Shell / BSON | 将白名单构造器安全转换为保留类型的 Extended JSON | 复用 JSON 高亮、折叠、搜索和格式转换；不执行 JavaScript |
 | 已转义 JSON | 识别 JSON 字符串或已转义对象 | 只反转义一层 |
 | XML | 严格解析、安全格式化、高亮和元素折叠 | 转换为 JSON；拒绝 DTD/实体 |
 | YAML | 使用保守的安全子集解析、格式化和缩进折叠 | 转换为 JSON |
@@ -125,6 +126,7 @@ stderr，并使用与桌面应用相同的 10 MiB 输入上限。
 ```sh
 echo '{"name":"Zeus"}' | zeus-tools-cli
 zeus-tools-cli --input json --action json.minify data.json
+zeus-tools-cli --input mongodb mongo-shell-value.txt
 zeus-tools-cli --list-inputs
 zeus-tools-cli --list-actions
 ```
@@ -149,6 +151,9 @@ zeus-tools-cli --list-actions
   配置。
 - YAML 有意只接受单文档安全子集，并拒绝指令、标签、锚点、别名和多文档
   输入。
+- MongoDB Shell 输入仅接受 JSON 结构，以及白名单内的 `NumberInt`、
+  `NumberLong`、`NumberDecimal`/`Decimal128`、`ObjectId` 和 `ISODate`
+  构造器；不会执行 JavaScript 或任意 Shell 代码。
 - JWT 检查会解码声明，但不会验证签名。
 - Base64/URL 自动解码在一层后停止。使用“再解一层”可手动处理下一个检测到
   的编码层，且不会修改原始输入。
