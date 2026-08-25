@@ -24,6 +24,8 @@ semantic versioning after the first stable release.
   diagnostics for malformed constructor input inside an object or array.
 - Added safe normalization for common MongoDB Shell object syntax with unquoted
   identifier keys and single-quoted strings, while retaining strict full-document validation.
+- Added safe MongoDB `/pattern/options` literal conversion to Extended JSON v2
+  regular expressions, with escape preservation, sorted options and rejection of `g`.
 - Reused JSON highlighting, folding, search, minify/escape and structured
   conversion actions for successfully converted MongoDB Shell input.
 

@@ -1,5 +1,6 @@
 #include "zeus/mongo_shell_formatter.h"
 
+#include <algorithm>
 #include <charconv>
 #include <cctype>
 #include <cstdint>
@@ -516,6 +517,103 @@ bool read_bin_data_arguments(
     return is_canonical_base64(payload);
 }
 
+bool convert_regex_literal(
+    std::string_view input,
+    std::size_t& position,
+    std::string& output,
+    ParseIssue& issue) {
+    if (position >= input.size() || input[position] != '/') return false;
+    const std::size_t start = position++;
+    std::string pattern;
+    bool closed = false;
+    while (position < input.size()) {
+        const unsigned char ch = static_cast<unsigned char>(input[position++]);
+        if (ch == '/') {
+            closed = true;
+            break;
+        }
+        if (ch == '\n' || ch == '\r' || ch < 0x20U) {
+            issue = issue_at(input, position - 1, "MONGO_SHELL_REGEX",
+                             "MongoDB regex literals cannot contain raw control characters");
+            return false;
+        }
+        if (ch != '\\') {
+            pattern.push_back(static_cast<char>(ch));
+            continue;
+        }
+        if (position >= input.size() || input[position] == '\n' || input[position] == '\r') {
+            issue = issue_at(input, position, "MONGO_SHELL_REGEX",
+                             "MongoDB regex literal has an incomplete escape");
+            return false;
+        }
+        const char escaped = input[position++];
+        if (escaped == '/') {
+            pattern.push_back('/');
+        } else {
+            pattern.push_back('\\');
+            pattern.push_back(escaped);
+        }
+    }
+    if (!closed) {
+        issue = issue_at(input, start, "MONGO_SHELL_REGEX",
+                         "MongoDB regex literal is missing its closing slash");
+        return false;
+    }
+
+    std::string options;
+    while (position < input.size() &&
+           std::isalpha(static_cast<unsigned char>(input[position])) != 0) {
+        const char option = input[position++];
+        if (option != 'i' && option != 'm' && option != 's' &&
+            option != 'u' && option != 'x') {
+            issue = issue_at(input, position - 1, "MONGO_SHELL_REGEX_OPTION",
+                             "MongoDB regex option is not supported");
+            return false;
+        }
+        if (options.find(option) != std::string::npos) {
+            issue = issue_at(input, position - 1, "MONGO_SHELL_REGEX_OPTION",
+                             "MongoDB regex options must not repeat");
+            return false;
+        }
+        options.push_back(option);
+    }
+    std::sort(options.begin(), options.end());
+    output += "{\"$regularExpression\":{\"pattern\":";
+    output += quote_json_string(pattern);
+    output += ",\"options\":";
+    output += quote_json_string(options);
+    output += "}}";
+    return true;
+}
+
+bool has_regex_literal_position(std::string_view input) {
+    char quote = '\0';
+    bool escaped = false;
+    char previous = '\0';
+    for (char ch : input) {
+        if (quote != '\0') {
+            if (escaped) {
+                escaped = false;
+            } else if (ch == '\\') {
+                escaped = true;
+            } else if (ch == quote) {
+                quote = '\0';
+            }
+            continue;
+        }
+        if (ch == '"' || ch == '\'') {
+            quote = ch;
+            continue;
+        }
+        if (ch == '/' && (previous == '\0' || previous == ':' ||
+                          previous == '[' || previous == ',')) {
+            return true;
+        }
+        if (std::isspace(static_cast<unsigned char>(ch)) == 0) previous = ch;
+    }
+    return false;
+}
+
 const ConstructorDefinition* constructor_at(
     std::string_view input,
     std::size_t position) {
@@ -735,7 +833,7 @@ bool looks_like_mongo_shell(const std::string& input) {
             position = input.find(definition.name, position + 1);
         }
     }
-    return false;
+    return has_regex_literal_position(input);
 }
 
 MongoShellFormatResult convert_mongo_shell_to_extended_json(
@@ -756,6 +854,13 @@ MongoShellFormatResult convert_mongo_shell_to_extended_json(
             continue;
         }
         if (convert_unquoted_key(view, position, transformed)) continue;
+        if (view[position] == '/') {
+            if (convert_regex_literal(view, position, transformed, result.json.issue)) {
+                ++result.converted_constructors;
+                continue;
+            }
+            if (!result.json.issue.code.empty()) return result;
+        }
         const std::size_t before = position;
         if (convert_constructor(view, position, transformed, result.json.issue)) {
             ++result.converted_constructors;

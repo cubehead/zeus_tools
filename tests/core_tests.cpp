@@ -441,6 +441,17 @@ int main() {
                 shell_object_syntax.value.find(R"("nested": {)") !=
                     std::string::npos,
             "unquoted keys and single-quoted shell strings should normalize to strict JSON");
+    const auto regex_literals = zeus::process_text(
+        R"({name:/^zeus\/tools$/mi,digits:/\d+/,items:[/^one/i,/two$/]})");
+    require(regex_literals.ok &&
+                regex_literals.detected == zeus::ContentKind::MongoShell &&
+                regex_literals.value.find(R"("pattern": "^zeus/tools$")") !=
+                    std::string::npos &&
+                regex_literals.value.find(R"("options": "im")") !=
+                    std::string::npos &&
+                regex_literals.value.find(R"("pattern": "\\d+")") !=
+                    std::string::npos,
+            "MongoDB regex literals should preserve patterns and sort supported options");
     require(!zeus::process_text(
                 R"({"value":new NumberInt("2147483648")})",
                 zeus::ProcessingMode::MongoShell).ok,
@@ -476,6 +487,14 @@ int main() {
                 R"({value:someVariable,id:ObjectId('507f1f77bcf86cd799439011')})",
                 zeus::ProcessingMode::MongoShell).ok,
             "bare variables in MongoDB Shell objects should remain forbidden");
+    const auto unsupported_regex = zeus::process_text(R"({name:/zeus/g})");
+    require(!unsupported_regex.ok &&
+                unsupported_regex.detected == zeus::ContentKind::MongoShell &&
+                unsupported_regex.error_code == "MONGO_SHELL_REGEX_OPTION",
+            "unsupported global MongoDB regex options should report a concise error");
+    require(zeus::process_text(R"({"value":1/2})").detected !=
+                zeus::ContentKind::MongoShell,
+            "division-like invalid JSON should not be mistaken for a MongoDB regex literal");
     const auto malformed_auto_mongo = zeus::process_text(
         R"({"value":new NumberInt("2147483648")})");
     require(!malformed_auto_mongo.ok &&
