@@ -7,6 +7,7 @@ mongodb-number-int	MongoDB	true	[{"field":"count","before":new NumberInt("421864
 mongodb-common-literals	MongoDB	true	{"count":NumberInt(421864),"id":ObjectId('507f1f77bcf86cd799439011')}
 mongodb-mongosh-types	MongoDB	true	{"count":Int32(7),"ratio":Double(1.25),"id":UUID('3b241101-e2bb-4255-8caf-4136c566a962'),"ts":Timestamp({"t":1724212800,"i":3}),"data":BinData(4,'AQIDBA==')}
 mongodb-invalid-number-int	MongoDB	false	{"value":new NumberInt("2147483648")}
+mongodb-shell-object-syntax	MongoDB	true	{count:Int32(7),name:'Zeus Tools',nested:{active:true}}
 json-string	JSON	true	"plain JSON string"
 xml-document	XML	true	<?xml version="1.0"?><root><item id="1"/></root>
 xml-invalid-structure	XML	false	<root><item></root>

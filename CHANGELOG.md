@@ -22,6 +22,8 @@ semantic versioning after the first stable release.
   plus argument-free `MinKey` and `MaxKey` conversion.
 - Added deterministic ISO/millisecond `Date` conversion and retained MongoDB
   diagnostics for malformed constructor input inside an object or array.
+- Added safe normalization for common MongoDB Shell object syntax with unquoted
+  identifier keys and single-quoted strings, while retaining strict full-document validation.
 - Reused JSON highlighting, folding, search, minify/escape and structured
   conversion actions for successfully converted MongoDB Shell input.
 

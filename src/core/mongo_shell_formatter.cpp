@@ -36,6 +36,10 @@ bool is_identifier_character(unsigned char ch) {
     return std::isalnum(ch) != 0 || ch == '_' || ch == '$';
 }
 
+bool is_identifier_start(unsigned char ch) {
+    return std::isalpha(ch) != 0 || ch == '_' || ch == '$';
+}
+
 void skip_space(std::string_view input, std::size_t& position) {
     while (position < input.size() &&
            std::isspace(static_cast<unsigned char>(input[position])) != 0) {
@@ -546,6 +550,45 @@ bool copy_json_string(
     return true;
 }
 
+bool copy_shell_string(
+    std::string_view input,
+    std::size_t& position,
+    std::string& output,
+    ParseIssue& issue) {
+    std::string raw;
+    std::string decoded;
+    std::size_t error_offset = position;
+    if (!read_quoted_string(
+            input, position, '\'', raw, decoded, error_offset)) {
+        issue = issue_at(input, error_offset, "MONGO_SHELL_STRING",
+                         "Invalid single-quoted MongoDB Shell string");
+        return false;
+    }
+    output += quote_json_string(decoded);
+    return true;
+}
+
+bool convert_unquoted_key(
+    std::string_view input,
+    std::size_t& position,
+    std::string& output) {
+    if (position >= input.size() ||
+        !is_identifier_start(static_cast<unsigned char>(input[position]))) {
+        return false;
+    }
+    std::size_t end = position + 1;
+    while (end < input.size() &&
+           is_identifier_character(static_cast<unsigned char>(input[end]))) {
+        ++end;
+    }
+    std::size_t colon = end;
+    skip_space(input, colon);
+    if (colon >= input.size() || input[colon] != ':') return false;
+    output += quote_json_string(input.substr(position, end - position));
+    position = end;
+    return true;
+}
+
 bool convert_constructor(
     std::string_view input,
     std::size_t& position,
@@ -708,6 +751,11 @@ MongoShellFormatResult convert_mongo_shell_to_extended_json(
             if (!copy_json_string(view, position, transformed, result.json.issue)) return result;
             continue;
         }
+        if (view[position] == '\'') {
+            if (!copy_shell_string(view, position, transformed, result.json.issue)) return result;
+            continue;
+        }
+        if (convert_unquoted_key(view, position, transformed)) continue;
         const std::size_t before = position;
         if (convert_constructor(view, position, transformed, result.json.issue)) {
             ++result.converted_constructors;

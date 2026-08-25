@@ -156,6 +156,7 @@ zeus-tools-cli --list-actions
   及 `Timestamp`、`BinData`、`MinKey`、`MaxKey` 构造器；支持常见的单引号参数，
   以及 `NumberInt`/`NumberLong` 直接整数参数，
   但不接受表达式；不会执行 JavaScript 或任意 Shell 代码。
+  对象中的未加引号标识符键和单引号字符串会安全规范化为严格 JSON。
 - JWT 检查会解码声明，但不会验证签名。
 - Base64/URL 自动解码在一层后停止。使用“再解一层”可手动处理下一个检测到
   的编码层，且不会修改原始输入。

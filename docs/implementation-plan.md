@@ -19,6 +19,8 @@
   `NumberDecimal`/`Decimal128`、`ObjectId`、`ISODate`/`Date`、`UUID`、`Timestamp`、
   `BinData`、`MinKey` 与 `MaxKey` 安全转换为保留 BSON 类型的 Extended JSON；不执行 JavaScript，
   转换后复用 JSON 高亮、折叠、搜索和格式转换。
+- MongoDB Shell 对象允许常见的未加引号标识符键和单引号字符串；规范化后仍要求
+  完整文档通过严格 JSON 解析，变量、表达式和未知函数保持拒绝。
 - JSON/XML/YAML/TOML/INI 格式化、高亮、错误信息及结构折叠。
 - JSON ↔ YAML/XML/TOML、TOML/INI → JSON、JSON → CSV，以及 JSON Escape/Unescape。
 - HTML Entity、Hex、Unicode Escape 编解码和仅对精确 10/13 位输入提供的 Unix 时间转换。
@@ -59,7 +61,7 @@
   下降约 10%。
 - 提供 Clang/GCC AddressSanitizer + UndefinedBehaviorSanitizer 核心测试预设，当前
   四组核心、检测、处理注册表与 CLI 回归均通过；项目仍按约定不使用 GitHub CI。
-- 自动检测报告覆盖 61 个版本化样例；当前精确匹配率、可识别内容召回率和纯文本
+- 自动检测报告覆盖 62 个版本化样例；当前精确匹配率、可识别内容召回率和纯文本
   特异度均为 100%，并设置语料数量下限防止删减难例。
 - EUI-NEO、pugixml、yaml-cpp、toml++ 均固定到不可变提交。
 - macOS App/DMG 和 Windows Portable ZIP 配置；不生成 NSIS/MSI。

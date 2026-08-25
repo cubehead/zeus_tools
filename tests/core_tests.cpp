@@ -431,6 +431,16 @@ int main() {
                 dates.value.find(R"("$numberLong": "0")") !=
                     std::string::npos,
             "ISO and millisecond Date values should use their correct Extended JSON forms");
+    const auto shell_object_syntax = zeus::process_text(
+        R"({count:Int32(7),name:'Zeus Tools',nested:{active:true,id:ObjectId('507f1f77bcf86cd799439011')}})",
+        zeus::ProcessingMode::MongoShell);
+    require(shell_object_syntax.ok &&
+                shell_object_syntax.value.find(R"("count": {)") != std::string::npos &&
+                shell_object_syntax.value.find(R"("name": "Zeus Tools")") !=
+                    std::string::npos &&
+                shell_object_syntax.value.find(R"("nested": {)") !=
+                    std::string::npos,
+            "unquoted keys and single-quoted shell strings should normalize to strict JSON");
     require(!zeus::process_text(
                 R"({"value":new NumberInt("2147483648")})",
                 zeus::ProcessingMode::MongoShell).ok,
@@ -462,6 +472,10 @@ int main() {
                 R"({"value":new Date()})",
                 zeus::ProcessingMode::MongoShell).ok,
             "nondeterministic empty Date constructors should be rejected");
+    require(!zeus::process_text(
+                R"({value:someVariable,id:ObjectId('507f1f77bcf86cd799439011')})",
+                zeus::ProcessingMode::MongoShell).ok,
+            "bare variables in MongoDB Shell objects should remain forbidden");
     const auto malformed_auto_mongo = zeus::process_text(
         R"({"value":new NumberInt("2147483648")})");
     require(!malformed_auto_mongo.ok &&

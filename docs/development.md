@@ -15,6 +15,8 @@
   `ObjectId`、`ISODate`/`Date`、`UUID`、`Timestamp`、`BinData`、`MinKey` 和 `MaxKey`
   白名单构造器，并输出 MongoDB Extended JSON；参数支持 Mongo Shell 常见单引号，
   `NumberInt`/`NumberLong` 还支持直接整数，但表达式会被拒绝；转换结果复用 JSON 高亮、折叠、搜索与操作。
+  对象键可使用 ASCII 标识符形式，普通值可使用单引号字符串；转换完成后仍交给严格
+  JSON 解析器验证完整结构，不支持变量引用、运算符或任意函数调用。
 - XML 自动识别、严格解析、格式化、行列错误和 token 高亮；混合内容不注入语义空白，`DOCTYPE`/`ENTITY` 在解析前拒绝。
 - YAML 保守自动识别、规范化、错误行列和 token 高亮；首版采用单文档安全子集，限制 10 MB、128 层和 10 万节点，并拒绝 Directive、Tag、Anchor/Alias。
 - TOML 使用固定版本 toml++ 严格解析、规范化、行列错误、专用高亮和章节折叠，支持 JSON 双向转换；JSON `null` 等无 TOML 等价物会明确失败。

@@ -73,7 +73,7 @@
 ### 3.2 建议识别优先级
 
 1. JSON 严格解析。
-2. MongoDB Shell/BSON：完整结构在替换白名单构造器后必须是合法 JSON，并输出保留类型的 Extended JSON；不执行 JavaScript。
+2. MongoDB Shell/BSON：规范化单引号字符串与未加引号标识符键，并替换白名单构造器后，完整结构必须是合法 JSON；输出保留类型的 Extended JSON，不执行 JavaScript。
 3. JWT：严格三段式 Base64URL，Header/Payload 均为 JSON；只查看内容，不验证签名。
 4. XML 严格解析。
 5. URL Encode：包含有效百分号编码，且解码能产生可读 UTF-8 内容。
