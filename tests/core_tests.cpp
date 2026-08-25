@@ -463,6 +463,17 @@ int main() {
                 regex_literals.value.find(R"("pattern": "\\d+")") !=
                     std::string::npos,
             "MongoDB regex literals should preserve patterns and sort supported options");
+    const auto bson_regex = zeus::process_text(
+        R"({name:BSONRegExp('^zeus\\d+$','mi'),empty:BSONRegExp('plain','')})",
+        zeus::ProcessingMode::MongoShell);
+    require(bson_regex.ok &&
+                bson_regex.value.find(R"("pattern": "^zeus\\d+$")") !=
+                    std::string::npos &&
+                bson_regex.value.find(R"("options": "im")") !=
+                    std::string::npos &&
+                bson_regex.value.find(R"("options": "")") !=
+                    std::string::npos,
+            "BSONRegExp should preserve patterns and canonicalize supported flags");
     require(!zeus::process_text(
                 R"({"value":new NumberInt("2147483648")})",
                 zeus::ProcessingMode::MongoShell).ok,
@@ -507,6 +518,13 @@ int main() {
                 unsupported_regex.detected == zeus::ContentKind::MongoShell &&
                 unsupported_regex.error_code == "MONGO_SHELL_REGEX_OPTION",
             "unsupported global MongoDB regex options should report a concise error");
+    require(!zeus::process_text(
+                R"({name:BSONRegExp('zeus','g')})",
+                zeus::ProcessingMode::MongoShell).ok &&
+                !zeus::process_text(
+                    R"({name:BSONRegExp('zeus','ii')})",
+                    zeus::ProcessingMode::MongoShell).ok,
+            "BSONRegExp should reject unsupported or repeated flags");
     require(zeus::process_text(R"({"value":1/2})").detected !=
                 zeus::ContentKind::MongoShell,
             "division-like invalid JSON should not be mistaken for a MongoDB regex literal");

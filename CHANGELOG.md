@@ -28,6 +28,8 @@ semantic versioning after the first stable release.
   regular expressions, with escape preservation, sorted options and rejection of `g`.
 - Added inert one-argument BSON `Code` conversion and canonicalized signed integer
   wrapper output without evaluating code or accepting scope objects.
+- Added safe `BSONRegExp(pattern, flags)` conversion with canonical option ordering
+  and rejection of unsupported or repeated flags.
 - Reused JSON highlighting, folding, search, minify/escape and structured
   conversion actions for successfully converted MongoDB Shell input.
 

@@ -29,6 +29,7 @@ constexpr ConstructorDefinition kConstructors[] = {
     {"UUID", "$uuid"},
     {"Timestamp", "$timestamp"},
     {"BinData", "$binary"},
+    {"BSONRegExp", "$regularExpression"},
     {"Code", "$code"},
     {"MinKey", "$minKey"},
     {"MaxKey", "$maxKey"},
@@ -529,6 +530,47 @@ bool read_bin_data_arguments(
     return is_canonical_base64(payload);
 }
 
+bool normalize_bson_regex_options(std::string& options) {
+    for (std::size_t index = 0; index < options.size(); ++index) {
+        const char option = options[index];
+        if (option != 'i' && option != 'l' && option != 'm' &&
+            option != 's' && option != 'u' && option != 'x') {
+            return false;
+        }
+        if (options.find(option, index + 1) != std::string::npos) return false;
+    }
+    std::sort(options.begin(), options.end());
+    return true;
+}
+
+bool read_bson_regex_arguments(
+    std::string_view input,
+    std::size_t& position,
+    std::string& pattern,
+    std::string& options) {
+    skip_space(input, position);
+    if (position >= input.size() || (input[position] != '"' && input[position] != '\'')) {
+        return false;
+    }
+    std::string raw;
+    std::size_t error_offset = position;
+    if (!read_quoted_string(
+            input, position, input[position], raw, pattern, error_offset)) {
+        return false;
+    }
+    skip_space(input, position);
+    if (position >= input.size() || input[position++] != ',') return false;
+    skip_space(input, position);
+    if (position >= input.size() || (input[position] != '"' && input[position] != '\'')) {
+        return false;
+    }
+    if (!read_quoted_string(
+            input, position, input[position], raw, options, error_offset)) {
+        return false;
+    }
+    return normalize_bson_regex_options(options);
+}
+
 bool convert_regex_literal(
     std::string_view input,
     std::size_t& position,
@@ -770,6 +812,29 @@ bool convert_constructor(
         output.push_back(hex[(subtype >> 4U) & 0x0FU]);
         output.push_back(hex[subtype & 0x0FU]);
         output += "\"}}";
+        position = cursor;
+        return true;
+    }
+    if (definition->name == "BSONRegExp") {
+        std::string pattern;
+        std::string options;
+        if (!read_bson_regex_arguments(input, cursor, pattern, options)) {
+            issue = issue_at(input, cursor, "MONGO_SHELL_REGEX",
+                             "BSONRegExp requires a pattern and valid flags");
+            return false;
+        }
+        skip_space(input, cursor);
+        if (cursor >= input.size() || input[cursor] != ')') {
+            issue = issue_at(input, cursor, "MONGO_SHELL_ARGUMENT",
+                             "BSONRegExp accepts only pattern and flags");
+            return false;
+        }
+        ++cursor;
+        output += "{\"$regularExpression\":{\"pattern\":";
+        output += quote_json_string(pattern);
+        output += ",\"options\":";
+        output += quote_json_string(options);
+        output += "}}";
         position = cursor;
         return true;
     }
