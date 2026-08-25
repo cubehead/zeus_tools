@@ -26,6 +26,8 @@ semantic versioning after the first stable release.
   identifier keys and single-quoted strings, while retaining strict full-document validation.
 - Added safe MongoDB `/pattern/options` literal conversion to Extended JSON v2
   regular expressions, with escape preservation, sorted options and rejection of `g`.
+- Added inert one-argument BSON `Code` conversion and canonicalized signed integer
+  wrapper output without evaluating code or accepting scope objects.
 - Reused JSON highlighting, folding, search, minify/escape and structured
   conversion actions for successfully converted MongoDB Shell input.
 

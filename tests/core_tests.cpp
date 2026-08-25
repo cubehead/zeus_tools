@@ -422,6 +422,17 @@ int main() {
                 binary_and_bounds.value.find(R"("$maxKey": 1)") !=
                     std::string::npos,
             "BinData, MinKey and MaxKey should convert to canonical Extended JSON");
+    const auto code_and_canonical_integers = zeus::process_text(
+        R"({script:new Code('function () { return 1; }'),padded:NumberInt('001'),zero:NumberLong('-0')})",
+        zeus::ProcessingMode::MongoShell);
+    require(code_and_canonical_integers.ok &&
+                code_and_canonical_integers.value.find(
+                    R"("$code": "function () { return 1; }")") != std::string::npos &&
+                code_and_canonical_integers.value.find(R"("$numberInt": "1")") !=
+                    std::string::npos &&
+                code_and_canonical_integers.value.find(R"("$numberLong": "0")") !=
+                    std::string::npos,
+            "Code should remain inert text and integer wrappers should emit canonical values");
     const auto dates = zeus::process_text(
         R"({"released":new Date('2026-08-21T10:15:30Z'),"epoch":new Date(0)})",
         zeus::ProcessingMode::MongoShell);
@@ -483,6 +494,10 @@ int main() {
                 R"({"value":new Date()})",
                 zeus::ProcessingMode::MongoShell).ok,
             "nondeterministic empty Date constructors should be rejected");
+    require(!zeus::process_text(
+                R"({"value":new Code("return secret", {secret: 1})})",
+                zeus::ProcessingMode::MongoShell).ok,
+            "Code scope objects should remain unsupported until nested arguments are validated");
     require(!zeus::process_text(
                 R"({value:someVariable,id:ObjectId('507f1f77bcf86cd799439011')})",
                 zeus::ProcessingMode::MongoShell).ok,

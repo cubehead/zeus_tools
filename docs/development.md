@@ -12,8 +12,9 @@
 - 严格 JSON 格式化及行列错误信息。
 - MongoDB Shell/BSON 使用独立的非执行转换器：完整输入必须是 JSON 结构，只替换
   `NumberInt`/`Int32`、`NumberLong`、`Double`、`NumberDecimal`/`Decimal128`、
-  `ObjectId`、`ISODate`/`Date`、`UUID`、`Timestamp`、`BinData`、`MinKey` 和 `MaxKey`
-  白名单构造器，并输出 MongoDB Extended JSON；参数支持 Mongo Shell 常见单引号，
+  `ObjectId`、`ISODate`/`Date`、`UUID`、`Timestamp`、`BinData`、单参数 `Code`、
+  `MinKey` 与 `MaxKey` 白名单构造器，并输出 MongoDB Extended JSON；`Code` 不执行且
+  暂不接受 scope 对象；参数支持 Mongo Shell 常见单引号，
   `NumberInt`/`NumberLong` 还支持直接整数，但表达式会被拒绝；转换结果复用 JSON 高亮、折叠、搜索与操作。
   对象键可使用 ASCII 标识符形式，普通值可使用单引号字符串；转换完成后仍交给严格
   JSON 解析器验证完整结构，不支持变量引用、运算符或任意函数调用。

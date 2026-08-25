@@ -10,6 +10,7 @@ mongodb-invalid-number-int	MongoDB	false	{"value":new NumberInt("2147483648")}
 mongodb-shell-object-syntax	MongoDB	true	{count:Int32(7),name:'Zeus Tools',nested:{active:true}}
 mongodb-regex	MongoDB	true	{name:/^zeus/mi,digits:/\d+/}
 mongodb-regex-invalid-option	MongoDB	false	{name:/zeus/g}
+mongodb-code	MongoDB	true	{script:new Code('function () { return 1; }')}
 json-string	JSON	true	"plain JSON string"
 xml-document	XML	true	<?xml version="1.0"?><root><item id="1"/></root>
 xml-invalid-structure	XML	false	<root><item></root>

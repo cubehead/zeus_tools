@@ -159,11 +159,13 @@ The project intentionally does not create an NSIS/MSI installer.
   directives, tags, anchors, aliases and multi-document input.
 - MongoDB Shell input accepts only JSON structure plus the whitelisted
   `NumberInt`/`Int32`, `NumberLong`, `Double`, `NumberDecimal`/`Decimal128`,
-  `ObjectId`, `ISODate`/`Date`, `UUID`, `Timestamp`, `BinData`, `MinKey` and `MaxKey`
+  `ObjectId`, `ISODate`/`Date`, `UUID`, `Timestamp`, `BinData`, one-argument `Code`,
+  `MinKey` and `MaxKey`
   constructors. Common single-quoted values and direct
   `NumberInt`/`NumberLong` integer literals are accepted; expressions are not.
   Unquoted identifier keys and single-quoted object strings are normalized to strict JSON.
   It does not run JavaScript or arbitrary shell code.
+  `Code` content is preserved as inert text; scope objects are intentionally rejected.
   Empty time-dependent `Date()` calls are intentionally rejected.
   MongoDB `/pattern/options` literals convert to `$regularExpression`; supported
   options are `i`, `m`, `s`, `u` and `x`, while `g` is rejected.

@@ -29,6 +29,7 @@ constexpr ConstructorDefinition kConstructors[] = {
     {"UUID", "$uuid"},
     {"Timestamp", "$timestamp"},
     {"BinData", "$binary"},
+    {"Code", "$code"},
     {"MinKey", "$minKey"},
     {"MaxKey", "$maxKey"},
 };
@@ -295,6 +296,16 @@ bool is_integer_in_range(std::string_view value) {
     return result.ec == std::errc{} && result.ptr == last;
 }
 
+template <typename Integer>
+std::string canonical_integer_string(std::string_view value) {
+    Integer parsed{};
+    const char* first = value.data();
+    const char* last = value.data() + value.size();
+    const auto result = std::from_chars(first, last, parsed, 10);
+    if (result.ec != std::errc{} || result.ptr != last) return {};
+    return std::to_string(parsed);
+}
+
 bool is_decimal128_string(std::string_view value) {
     if (value == "NaN" || value == "Infinity" || value == "-Infinity") return true;
     std::size_t position = 0;
@@ -375,6 +386,7 @@ bool valid_argument(std::string_view constructor, std::string_view value) {
         return is_iso_date(value) || is_integer_in_range<std::int64_t>(value);
     }
     if (constructor == "UUID") return is_uuid(value);
+    if (constructor == "Code") return true;
     return false;
 }
 
@@ -800,7 +812,7 @@ bool convert_constructor(
         output += "{\"$date\":";
         if (is_integer_in_range<std::int64_t>(decoded)) {
             output += "{\"$numberLong\":";
-            output += quote_json_string(decoded);
+            output += quote_json_string(canonical_integer_string<std::int64_t>(decoded));
             output += '}';
         } else {
             output += quote_json_string(decoded);
@@ -813,7 +825,13 @@ bool convert_constructor(
     output += "{\"";
     output += definition->extended_json_key;
     output += "\":";
-    output += quote_json_string(decoded);
+    if (definition->name == "NumberInt" || definition->name == "Int32") {
+        output += quote_json_string(canonical_integer_string<std::int32_t>(decoded));
+    } else if (definition->name == "NumberLong") {
+        output += quote_json_string(canonical_integer_string<std::int64_t>(decoded));
+    } else {
+        output += quote_json_string(decoded);
+    }
     output += '}';
     position = cursor;
     return true;
