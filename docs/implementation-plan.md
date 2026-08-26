@@ -2,7 +2,7 @@
 
 > 状态：v0.2.1 Alpha 已发布，继续跨平台稳定化
 >
-> 更新日期：2026-08-25
+> 更新日期：2026-08-26
 >
 > 产品基线：[产品需求](./product-requirements.md)
 >
@@ -17,7 +17,7 @@
 - JSON、MongoDB Shell/BSON、XML、YAML、TOML、INI/Properties、CSV、JWT、常见编码和纯文本检测。
 - MongoDB Shell 中白名单内的 `NumberInt`/`Int32`、`NumberLong`、`Double`、
   `NumberDecimal`/`Decimal128`、`ObjectId`、`ISODate`/`Date`、`UUID`、`Timestamp`、
-  `BinData`、`BSONRegExp`、单参数 `Code`、`MinKey` 与 `MaxKey` 安全转换为保留 BSON 类型的 Extended JSON；
+  `BinData`、`HexData`、`BSONRegExp`、单参数 `Code`、`MinKey` 与 `MaxKey` 安全转换为保留 BSON 类型的 Extended JSON；
   `Code` 仅保留文本且不接受 scope，不执行 JavaScript，转换后复用 JSON 高亮、折叠、搜索和格式转换。
 - MongoDB Shell 对象允许常见的未加引号标识符键和单引号字符串；规范化后仍要求
   完整文档通过严格 JSON 解析，变量、表达式和未知函数保持拒绝。
@@ -63,7 +63,7 @@
   下降约 10%。
 - 提供 Clang/GCC AddressSanitizer + UndefinedBehaviorSanitizer 核心测试预设，当前
   四组核心、检测、处理注册表与 CLI 回归均通过；项目仍按约定不使用 GitHub CI。
-- 自动检测报告覆盖 67 个版本化样例；当前精确匹配率、可识别内容召回率和纯文本
+- 自动检测报告覆盖 69 个版本化样例；当前精确匹配率、可识别内容召回率和纯文本
   特异度均为 100%，并设置语料数量下限防止删减难例。
 - EUI-NEO、pugixml、yaml-cpp、toml++ 均固定到不可变提交。
 - macOS App/DMG 和 Windows Portable ZIP 配置；不生成 NSIS/MSI。
@@ -88,7 +88,7 @@
 | P0 | 剩余输入与 IME 验证 | Windows 11 中文 IME、emoji 与组合字符已通过；仍需完成 macOS 与 Windows 10 的剪贴板、选择、撤销和 IME 验收。 |
 | P0 | 10 MB UI 端到端验收 | 后台基准、超限保护、macOS/Windows 11 精确 10 MiB JSON/CSV、macOS RSS/整机峰值和 16 KiB 分页编辑已完成；仍需跨页连续选择和 Windows 10 复验。 |
 | P1 | 键盘与可访问性 | 已完成搜索聚焦和 Esc 关闭；已确认当前 EUI 自绘控件未暴露到 macOS AX 树，需先补框架辅助功能桥接，再完成全键盘导航、焦点顺序和屏幕阅读器检查。 |
-| P1 | 检测质量外部验证 | 仓库内 67 例基线与报告已完成；仍需收集经授权脱敏、未用于规则开发的真实样例，输出独立准确率与高置信度误判率。 |
+| P1 | 检测质量外部验证 | 仓库内 69 例基线与报告已完成；仍需收集经授权脱敏、未用于规则开发的真实样例，输出独立准确率与高置信度误判率。 |
 | P1 | 签名与公证 | v0.2.0 已明确采用未签名 Alpha 包；后续版本评估 macOS notarization 与 Windows Authenticode。 |
 
 ## 3. 当前里程碑

@@ -13,6 +13,8 @@ mongodb-regex-invalid-option	MongoDB	false	{name:/zeus/g}
 mongodb-code	MongoDB	true	{script:new Code('function () { return 1; }')}
 mongodb-bson-regexp	MongoDB	true	{name:BSONRegExp('^zeus','mi')}
 mongodb-bson-regexp-invalid	MongoDB	false	{name:BSONRegExp('zeus','g')}
+mongodb-hex-data	MongoDB	true	{payload:HexData(4,'123456abcdef')}
+mongodb-hex-data-invalid	MongoDB	false	{payload:HexData(4,'123xz')}
 json-string	JSON	true	"plain JSON string"
 xml-document	XML	true	<?xml version="1.0"?><root><item id="1"/></root>
 xml-invalid-structure	XML	false	<root><item></root>

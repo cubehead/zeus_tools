@@ -422,6 +422,17 @@ int main() {
                 binary_and_bounds.value.find(R"("$maxKey": 1)") !=
                     std::string::npos,
             "BinData, MinKey and MaxKey should convert to canonical Extended JSON");
+    const auto hex_binary = zeus::process_text(
+        R"({payload:HexData(4,'123456abcdef'),empty:HexData(0,'')})",
+        zeus::ProcessingMode::MongoShell);
+    require(hex_binary.ok &&
+                hex_binary.value.find(R"("base64": "EjRWq83v")") !=
+                    std::string::npos &&
+                hex_binary.value.find(R"("subType": "04")") !=
+                    std::string::npos &&
+                hex_binary.value.find(R"("base64": "")") !=
+                    std::string::npos,
+            "HexData should strictly decode complete bytes and reuse standard Base64 output");
     const auto code_and_canonical_integers = zeus::process_text(
         R"({script:new Code('function () { return 1; }'),padded:NumberInt('001'),zero:NumberLong('-0')})",
         zeus::ProcessingMode::MongoShell);
@@ -501,6 +512,13 @@ int main() {
                     R"({"value":BinData(4,"AQIDB-_=")})",
                     zeus::ProcessingMode::MongoShell).ok,
             "BinData should reject invalid subtypes and non-canonical Base64");
+    require(!zeus::process_text(
+                R"({"value":HexData(0,"123xz")})",
+                zeus::ProcessingMode::MongoShell).ok &&
+                !zeus::process_text(
+                    R"({"value":HexData(256,"12")})",
+                    zeus::ProcessingMode::MongoShell).ok,
+            "HexData should reject partial, odd-length and out-of-range input");
     require(!zeus::process_text(
                 R"({"value":new Date()})",
                 zeus::ProcessingMode::MongoShell).ok,

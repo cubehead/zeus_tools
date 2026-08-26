@@ -1,5 +1,6 @@
 #include "zeus/text_processor.h"
 
+#include "zeus/base64_codec.h"
 #include "zeus/json_formatter.h"
 #include "zeus/structured_converter.h"
 #include "zeus/csv_document.h"
@@ -163,26 +164,6 @@ bool decode_base64(
     }
     if (bits != 0 && (buffer & ((1U << bits) - 1U)) != 0) return false;
     return true;
-}
-
-std::string encode_base64(const std::string& input) {
-    constexpr char alphabet[] =
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-    std::string output;
-    output.reserve(((input.size() + 2) / 3) * 4);
-    for (std::size_t i = 0; i < input.size(); i += 3) {
-        const auto a = static_cast<unsigned char>(input[i]);
-        const auto b = i + 1 < input.size() ? static_cast<unsigned char>(input[i + 1]) : 0U;
-        const auto c = i + 2 < input.size() ? static_cast<unsigned char>(input[i + 2]) : 0U;
-        const std::uint32_t value = (static_cast<std::uint32_t>(a) << 16U) |
-                                    (static_cast<std::uint32_t>(b) << 8U) |
-                                    static_cast<std::uint32_t>(c);
-        output.push_back(alphabet[(value >> 18U) & 0x3FU]);
-        output.push_back(alphabet[(value >> 12U) & 0x3FU]);
-        output.push_back(i + 1 < input.size() ? alphabet[(value >> 6U) & 0x3FU] : '=');
-        output.push_back(i + 2 < input.size() ? alphabet[value & 0x3FU] : '=');
-    }
-    return output;
 }
 
 int hex_value(char ch) {

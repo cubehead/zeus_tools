@@ -30,6 +30,8 @@ semantic versioning after the first stable release.
   wrapper output without evaluating code or accepting scope objects.
 - Added safe `BSONRegExp(pattern, flags)` conversion with canonical option ordering
   and rejection of unsupported or repeated flags.
+- Added strict `HexData(subtype, hex)` conversion to canonical Extended JSON
+  binary values, backed by the shared Base64 encoder.
 - Reused JSON highlighting, folding, search, minify/escape and structured
   conversion actions for successfully converted MongoDB Shell input.
 

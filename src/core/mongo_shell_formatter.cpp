@@ -1,5 +1,7 @@
 #include "zeus/mongo_shell_formatter.h"
 
+#include "zeus/base64_codec.h"
+
 #include <algorithm>
 #include <charconv>
 #include <cctype>
@@ -29,6 +31,7 @@ constexpr ConstructorDefinition kConstructors[] = {
     {"UUID", "$uuid"},
     {"Timestamp", "$timestamp"},
     {"BinData", "$binary"},
+    {"HexData", "$binary"},
     {"BSONRegExp", "$regularExpression"},
     {"Code", "$code"},
     {"MinKey", "$minKey"},
@@ -530,6 +533,51 @@ bool read_bin_data_arguments(
     return is_canonical_base64(payload);
 }
 
+bool read_hex_data_arguments(
+    std::string_view input,
+    std::size_t& position,
+    std::uint32_t& subtype,
+    std::string& bytes) {
+    skip_space(input, position);
+    if (!read_uint32_literal(input, position, subtype) || subtype > 255U) return false;
+    skip_space(input, position);
+    if (position >= input.size() || input[position++] != ',') return false;
+    skip_space(input, position);
+    if (position >= input.size() || (input[position] != '"' && input[position] != '\'')) {
+        return false;
+    }
+    std::string raw;
+    std::string payload;
+    std::size_t error_offset = position;
+    if (!read_quoted_string(
+            input, position, input[position], raw, payload, error_offset) ||
+        payload.size() % 2 != 0) {
+        return false;
+    }
+    bytes.clear();
+    bytes.reserve(payload.size() / 2);
+    for (std::size_t index = 0; index < payload.size(); index += 2) {
+        const int high = hex_value(payload[index]);
+        const int low = hex_value(payload[index + 1]);
+        if (high < 0 || low < 0) return false;
+        bytes.push_back(static_cast<char>((high << 4) | low));
+    }
+    return true;
+}
+
+void append_binary_extended_json(
+    std::string& output,
+    std::uint32_t subtype,
+    std::string_view base64) {
+    constexpr char hex[] = "0123456789abcdef";
+    output += "{\"$binary\":{\"base64\":";
+    output += quote_json_string(base64);
+    output += ",\"subType\":\"";
+    output.push_back(hex[(subtype >> 4U) & 0x0FU]);
+    output.push_back(hex[subtype & 0x0FU]);
+    output += "\"}}";
+}
+
 bool normalize_bson_regex_options(std::string& options) {
     for (std::size_t index = 0; index < options.size(); ++index) {
         const char option = options[index];
@@ -805,13 +853,26 @@ bool convert_constructor(
             return false;
         }
         ++cursor;
-        constexpr char hex[] = "0123456789abcdef";
-        output += "{\"$binary\":{\"base64\":";
-        output += quote_json_string(payload);
-        output += ",\"subType\":\"";
-        output.push_back(hex[(subtype >> 4U) & 0x0FU]);
-        output.push_back(hex[subtype & 0x0FU]);
-        output += "\"}}";
+        append_binary_extended_json(output, subtype, payload);
+        position = cursor;
+        return true;
+    }
+    if (definition->name == "HexData") {
+        std::uint32_t subtype = 0;
+        std::string bytes;
+        if (!read_hex_data_arguments(input, cursor, subtype, bytes)) {
+            issue = issue_at(input, cursor, "MONGO_SHELL_ARGUMENT",
+                             "HexData requires a byte subtype and complete hexadecimal bytes");
+            return false;
+        }
+        skip_space(input, cursor);
+        if (cursor >= input.size() || input[cursor] != ')') {
+            issue = issue_at(input, cursor, "MONGO_SHELL_ARGUMENT",
+                             "HexData accepts only subtype and hexadecimal data");
+            return false;
+        }
+        ++cursor;
+        append_binary_extended_json(output, subtype, encode_base64(bytes));
         position = cursor;
         return true;
     }

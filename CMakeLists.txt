@@ -89,6 +89,7 @@ if(APPLE AND ZEUS_BUILD_APP)
 endif()
 
 add_library(zeus_core
+    src/core/base64_codec.cpp
     src/core/crypto_service.cpp
     src/core/csv_document.cpp
     src/core/developer_tools.cpp

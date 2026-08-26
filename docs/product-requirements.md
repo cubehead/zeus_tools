@@ -111,7 +111,7 @@
 | FR-20 | 亮色/暗色主题 | MVP | 提供 System、Light、Dark 三态；首次启动默认跟随系统，用户可覆盖并持久化选择。 | 切换立即生效；代码高亮、搜索命中、选区和错误状态在两种主题下均可读；只保存主题偏好，不保存用户内容。 |
 | FR-21 | TOML | 0.2 | 自动识别、严格格式化、高亮和章节折叠，支持 JSON 双向转换。 | 错误包含行列；无 TOML 等价物的 JSON 值明确失败，不静默丢失。 |
 | FR-22 | INI/Properties | 0.2 | 保守识别、格式化并转换为 JSON。 | 所有值保持字符串；重复键报错；不擅自推断数字或布尔值。 |
-| FR-23 | MongoDB Shell/BSON | 0.2.x | 自动识别或手动指定 MongoDB Shell 输入，将白名单 BSON 构造器和正则字面量转换为 Extended JSON。 | 支持 `NumberInt`/`Int32`、`NumberLong`、`Double`、`NumberDecimal`/`Decimal128`、`ObjectId`、`ISODate`/`Date`、`UUID`、`Timestamp`、`BinData`、`BSONRegExp`、单参数 `Code`、`MinKey`、`MaxKey` 及 `/pattern/options`；`Code` 仅保留文本且拒绝 scope；保留类型；未知构造器、非法选项或任意 JavaScript 安全失败。 |
+| FR-23 | MongoDB Shell/BSON | 0.2.x | 自动识别或手动指定 MongoDB Shell 输入，将白名单 BSON 构造器和正则字面量转换为 Extended JSON。 | 支持 `NumberInt`/`Int32`、`NumberLong`、`Double`、`NumberDecimal`/`Decimal128`、`ObjectId`、`ISODate`/`Date`、`UUID`、`Timestamp`、`BinData`、`HexData`、`BSONRegExp`、单参数 `Code`、`MinKey`、`MaxKey` 及 `/pattern/options`；`Code` 仅保留文本且拒绝 scope；保留类型；未知构造器、非法选项或任意 JavaScript 安全失败。 |
 | FR-23 | HTML Entity/Hex/时间 | 0.2 | 提供 HTML Entity 与 Hex 编解码；精确 10/13 位数字提供 Unix 时间操作。 | 普通哈希、订单号和一般数字不被自动转换；时间同时显示 UTC 和本地值。 |
 | FR-24 | 命令行管道 | 0.2 | 提供离线 stdin/单文件到 stdout 的 CLI，并支持手动输入类型与稳定操作 ID。 | 结果与桌面处理服务一致；诊断只写 stderr；输入限制为 10 MiB；无网络与历史记录。 |
 | FR-24 | 文件打开与拖入 | 0.2 | 用户主动打开或拖入单个 UTF-8 文本文件。 | 支持 UTF-8 BOM；10 MB 以上和二进制文件简洁失败；不保存路径或最近文件。 |
