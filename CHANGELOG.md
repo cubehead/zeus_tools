@@ -14,7 +14,8 @@ semantic versioning after the first stable release.
 - Added cyclic Tab/Shift+Tab focus traversal, visible focus outlines and
   Enter/Space button activation. CSV result cells also support arrow-key
   navigation and keyboard copy; read-only text results support arrow,
-  Home/End and Space/Shift+Space scrolling.
+  Home/End and Space/Shift+Space scrolling. Structured results use Left/Right
+  to collapse or expand the first foldable node in the current viewport.
 - Reset the editable input viewport to the beginning when a file is opened,
   instead of leaving the cursor and vertical scroll at the end of the document.
 - Added conservative MongoDB Shell/BSON detection and a manual `mongodb` input

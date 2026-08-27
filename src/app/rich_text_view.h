@@ -364,7 +364,7 @@ public:
                 core::platform::requestUiUpdate();
             })
             .onTextInput([document, selection, visible_lines, scroll, row_height,
-                          viewport_height, on_copy](const core::KeyboardEvent& event) {
+                          viewport_height, folds, on_copy](const core::KeyboardEvent& event) {
                 if (event.selectAll) {
                     selection->select_all(*document);
                     core::platform::requestUiUpdate();
@@ -385,6 +385,32 @@ public:
                 if (event.space) {
                     const float page = std::max(row_height, viewport_height - row_height);
                     next += event.shift ? -page : page;
+                }
+                if (folds != nullptr && (event.left || event.right)) {
+                    const std::size_t first = std::min(
+                        visible_lines->size(),
+                        static_cast<std::size_t>(std::max(0.0f, *scroll) / row_height));
+                    const std::size_t count = static_cast<std::size_t>(
+                        std::ceil(viewport_height / row_height)) + 1;
+                    const std::size_t end = std::min(visible_lines->size(), first + count);
+                    for (std::size_t index = first; index < end; ++index) {
+                        const std::size_t line = (*visible_lines)[index];
+                        if (document->fold_region_at(line) == nullptr) continue;
+                        const bool collapsed = folds->is_collapsed(line);
+                        const bool should_toggle =
+                            (event.left && !collapsed) || (event.right && collapsed);
+                        if (should_toggle && folds->toggle(*document, line)) {
+                            selection->clear();
+                            const auto updated_lines = folds->visible_lines(*document);
+                            const float updated_maximum = std::max(
+                                0.0f,
+                                static_cast<float>(updated_lines.size()) * row_height -
+                                    viewport_height);
+                            next = std::min(next, updated_maximum);
+                            core::platform::requestUiUpdate();
+                        }
+                        break;
+                    }
                 }
                 next = std::clamp(next, 0.0f, maximum);
                 if (next != *scroll) {
