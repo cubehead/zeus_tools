@@ -100,3 +100,4 @@ if ($LASTEXITCODE -ne 1) {
 }
 
 Write-Host 'Repository publication checks passed.'
+exit 0

@@ -63,7 +63,7 @@ zeus_replace_once(
 zeus_replace_once(
     "components/input.h"
     "hit.onTextInput([&state, allowMultiline, onChange, onEnter, width, inset, fontSize, fontFamily, textHeight](const core::KeyboardEvent& event) {"
-    "hit.onTextInput([&state, allowMultiline, onChange, onEnter, onSelectionChange, onCopy, onSelectAll, width, inset, fontSize, fontFamily, textHeight](const core::KeyboardEvent& event) {")
+    "hit.onTextInput([&state, allowMultiline, onChange, onEnter, onSelectionChange, onCopy, onSelectAll, onHistory, width, inset, fontSize, fontFamily, textHeight](const core::KeyboardEvent& event) {")
 
 zeus_replace_once(
     "components/input.h"
@@ -99,3 +99,28 @@ zeus_replace_once(
     "components/input.h"
     "    std::function<void()> onCopy_;"
     "    std::function<void()> onCopy_;\n    std::function<void()> onSelectAll_;")
+
+zeus_replace_once(
+    "components/input.h"
+    "    InputBuilder& onSelectAll(std::function<void()> callback) {\n        onSelectAll_ = std::move(callback);\n        return *this;\n    }"
+    "    InputBuilder& onSelectAll(std::function<void()> callback) {\n        onSelectAll_ = std::move(callback);\n        return *this;\n    }\n    InputBuilder& onHistory(std::function<bool(bool)> callback) {\n        onHistory_ = std::move(callback);\n        return *this;\n    }")
+
+zeus_replace_once(
+    "components/input.h"
+    "        const std::function<void()> onSelectAll = onSelectAll_;"
+    "        const std::function<void()> onSelectAll = onSelectAll_;\n        const std::function<bool(bool)> onHistory = onHistory_;")
+
+zeus_replace_once(
+    "components/input.h"
+    "hit.onTextInput([&state, allowMultiline, onChange, onEnter, onSelectionChange, onCopy, onSelectAll, width, inset, fontSize, fontFamily, textHeight](const core::KeyboardEvent& event) {"
+    "hit.onTextInput([&state, allowMultiline, onChange, onEnter, onSelectionChange, onCopy, onSelectAll, onHistory, width, inset, fontSize, fontFamily, textHeight](const core::KeyboardEvent& event) {")
+
+zeus_replace_once(
+    "components/input.h"
+    "                        if (event.undo || event.redo) {"
+    "                        if ((event.undo || event.redo) && onHistory && onHistory(event.redo)) {\n                            return;\n                        }\n                        if (event.undo || event.redo) {")
+
+zeus_replace_once(
+    "components/input.h"
+    "    std::function<void()> onSelectAll_;"
+    "    std::function<void()> onSelectAll_;\n    std::function<bool(bool)> onHistory_;")

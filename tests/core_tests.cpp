@@ -531,6 +531,19 @@ int main() {
                 zeus::ProcessingMode::MongoShell).ok,
             "Long values outside the signed 64-bit range should be rejected");
     require(!zeus::process_text(
+                R"({"value":NumberDecimal("1e999999")})",
+                zeus::ProcessingMode::MongoShell).ok &&
+                !zeus::process_text(
+                    R"({"value":NumberDecimal("1234567890123456789012345678901234567890")})",
+                    zeus::ProcessingMode::MongoShell).ok &&
+                zeus::process_text(
+                    R"({"value":NumberDecimal("1e6144")})",
+                    zeus::ProcessingMode::MongoShell).ok &&
+                zeus::process_text(
+                    R"({"value":NumberDecimal("1e-6176")})",
+                    zeus::ProcessingMode::MongoShell).ok,
+            "Decimal128 values should enforce representable precision and exponent bounds");
+    require(!zeus::process_text(
                 R"({"value":new Evil("1")})",
                 zeus::ProcessingMode::MongoShell).ok,
             "unknown MongoDB Shell constructors should be rejected");
@@ -581,6 +594,19 @@ int main() {
                 R"({"value":new Date()})",
                 zeus::ProcessingMode::MongoShell).ok,
             "nondeterministic empty Date constructors should be rejected");
+    require(!zeus::process_text(
+                R"({"value":ISODate("2024-99-99Txx:yy:zzZ")})",
+                zeus::ProcessingMode::MongoShell).ok &&
+                !zeus::process_text(
+                    R"({"value":ISODate("2023-02-29T10:15:30Z")})",
+                    zeus::ProcessingMode::MongoShell).ok &&
+                !zeus::process_text(
+                    R"({"value":ISODate("2024-02-29T24:00:00Z")})",
+                    zeus::ProcessingMode::MongoShell).ok &&
+                zeus::process_text(
+                    R"({"value":ISODate("2024-02-29T23:59:59.123+08:00")})",
+                    zeus::ProcessingMode::MongoShell).ok,
+            "ISODate should validate calendar, clock and timezone fields");
     require(!zeus::process_text(
                 R"({"value":new Code("return secret", {secret: 1})})",
                 zeus::ProcessingMode::MongoShell).ok,

@@ -6,6 +6,7 @@
 #include "zeus/text_processor.h"
 #include "zeus/text_selection.h"
 #include "zeus/theme_preference.h"
+#include "large_input_paging.h"
 
 #include <cstddef>
 #include <limits>
@@ -80,6 +81,16 @@ struct LargeInputSelectionState {
     bool ignore_next_change = false;
 };
 
+struct LargeInputHistoryEntry {
+    large_input::TextEdit edit;
+    std::size_t anchor_before = 0;
+    std::size_t caret_before = 0;
+    std::size_t anchor_after = 0;
+    std::size_t caret_after = 0;
+    std::size_t page_before = 0;
+    std::size_t page_after = 0;
+};
+
 struct AppState {
     std::string input_text;
     SearchState search;
@@ -95,6 +106,9 @@ struct AppState {
     std::size_t large_input_page = 0;
     std::vector<std::size_t> large_input_page_boundaries;
     LargeInputSelectionState large_input_selection;
+    std::vector<LargeInputHistoryEntry> large_input_undo;
+    std::vector<LargeInputHistoryEntry> large_input_redo;
+    bool large_input_history_active = false;
     bool language_dropdown_open = false;
     bool about_dialog_open = false;
     std::size_t full_repaint_revision = 0;

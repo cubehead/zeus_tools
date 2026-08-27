@@ -8,6 +8,7 @@
 #include <cctype>
 #include <cstdint>
 #include <initializer_list>
+#include <limits>
 #include <string_view>
 #include <utility>
 
@@ -323,23 +324,28 @@ bool is_decimal128_string(std::string_view value) {
     if (position < value.size() && (value[position] == '+' || value[position] == '-')) {
         ++position;
     }
-    bool digits = false;
+    std::string digits;
     while (position < value.size() && std::isdigit(static_cast<unsigned char>(value[position]))) {
-        digits = true;
+        digits.push_back(value[position]);
         ++position;
     }
+    std::size_t fractional_digits = 0;
     if (position < value.size() && value[position] == '.') {
         ++position;
         while (position < value.size() &&
                std::isdigit(static_cast<unsigned char>(value[position]))) {
-            digits = true;
+            digits.push_back(value[position]);
+            ++fractional_digits;
             ++position;
         }
     }
-    if (!digits) return false;
+    if (digits.empty()) return false;
+    std::int64_t explicit_exponent = 0;
     if (position < value.size() && (value[position] == 'e' || value[position] == 'E')) {
         ++position;
+        bool negative_exponent = false;
         if (position < value.size() && (value[position] == '+' || value[position] == '-')) {
+            negative_exponent = value[position] == '-';
             ++position;
         }
         const std::size_t exponent_start = position;
@@ -348,8 +354,46 @@ bool is_decimal128_string(std::string_view value) {
             ++position;
         }
         if (position == exponent_start) return false;
+        std::uint64_t magnitude = 0;
+        const auto parsed = std::from_chars(
+            value.data() + static_cast<std::ptrdiff_t>(exponent_start),
+            value.data() + static_cast<std::ptrdiff_t>(position), magnitude, 10);
+        if (parsed.ec != std::errc{}) return false;
+        const std::uint64_t maximum = static_cast<std::uint64_t>(
+            std::numeric_limits<std::int64_t>::max());
+        if (negative_exponent) {
+            if (magnitude > maximum + 1U) return false;
+            explicit_exponent = magnitude == maximum + 1U
+                ? std::numeric_limits<std::int64_t>::min()
+                : -static_cast<std::int64_t>(magnitude);
+        } else {
+            if (magnitude > maximum) return false;
+            explicit_exponent = static_cast<std::int64_t>(magnitude);
+        }
     }
-    return position == value.size();
+    if (position != value.size() ||
+        fractional_digits > static_cast<std::size_t>(std::numeric_limits<std::int64_t>::max()) ||
+        explicit_exponent < std::numeric_limits<std::int64_t>::min() +
+            static_cast<std::int64_t>(fractional_digits)) {
+        return false;
+    }
+    std::int64_t exponent = explicit_exponent - static_cast<std::int64_t>(fractional_digits);
+    const auto first_nonzero = digits.find_first_not_of('0');
+    if (first_nonzero == std::string::npos) return exponent >= -6176 && exponent <= 6111;
+    digits.erase(0, first_nonzero);
+    while (digits.size() > 34 && digits.back() == '0') {
+        digits.pop_back();
+        if (exponent == std::numeric_limits<std::int64_t>::max()) return false;
+        ++exponent;
+    }
+    if (digits.size() > 34 || exponent < -6176) return false;
+    if (exponent > 6111) {
+        const std::int64_t shift = exponent - 6111;
+        if (shift > static_cast<std::int64_t>(34 - digits.size())) return false;
+        exponent = 6111;
+        digits.append(static_cast<std::size_t>(shift), '0');
+    }
+    return exponent + static_cast<std::int64_t>(digits.size()) - 1 <= 6144;
 }
 
 bool is_object_id(std::string_view value) {
@@ -370,16 +414,59 @@ bool is_uuid(std::string_view value) {
 }
 
 bool is_iso_date(std::string_view value) {
+    const auto decimal = [value](std::size_t offset, std::size_t count, unsigned& result) {
+        if (offset + count > value.size()) return false;
+        result = 0;
+        for (std::size_t index = offset; index < offset + count; ++index) {
+            const unsigned char ch = static_cast<unsigned char>(value[index]);
+            if (std::isdigit(ch) == 0) return false;
+            result = result * 10U + static_cast<unsigned>(ch - '0');
+        }
+        return true;
+    };
     if (value.size() < 20 || value[4] != '-' || value[7] != '-' ||
-        (value[10] != 'T' && value[10] != 't')) {
+        (value[10] != 'T' && value[10] != 't') || value[13] != ':' || value[16] != ':') {
         return false;
     }
-    for (std::size_t index : {0U, 1U, 2U, 3U, 5U, 6U, 8U, 9U}) {
-        if (!std::isdigit(static_cast<unsigned char>(value[index]))) return false;
+    unsigned year = 0;
+    unsigned month = 0;
+    unsigned day = 0;
+    unsigned hour = 0;
+    unsigned minute = 0;
+    unsigned second = 0;
+    if (!decimal(0, 4, year) || !decimal(5, 2, month) || !decimal(8, 2, day) ||
+        !decimal(11, 2, hour) || !decimal(14, 2, minute) || !decimal(17, 2, second) ||
+        month == 0 || month > 12 || hour > 23 || minute > 59 || second > 59) {
+        return false;
     }
-    return value.back() == 'Z' || value.back() == 'z' ||
-        (value.size() >= 6 && (value[value.size() - 6] == '+' ||
-                              value[value.size() - 6] == '-'));
+    constexpr unsigned days_per_month[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+    unsigned maximum_day = days_per_month[month - 1];
+    const bool leap = year % 4 == 0 && (year % 100 != 0 || year % 400 == 0);
+    if (month == 2 && leap) ++maximum_day;
+    if (day == 0 || day > maximum_day) return false;
+
+    std::size_t position = 19;
+    if (position < value.size() && value[position] == '.') {
+        const std::size_t fraction_start = ++position;
+        while (position < value.size() &&
+               std::isdigit(static_cast<unsigned char>(value[position])) != 0) {
+            ++position;
+        }
+        if (position == fraction_start) return false;
+    }
+    if (position >= value.size()) return false;
+    if ((value[position] == 'Z' || value[position] == 'z') && position + 1 == value.size()) {
+        return true;
+    }
+    if ((value[position] != '+' && value[position] != '-') || position + 6 != value.size() ||
+        value[position + 3] != ':') {
+        return false;
+    }
+    unsigned offset_hour = 0;
+    unsigned offset_minute = 0;
+    return decimal(position + 1, 2, offset_hour) &&
+        decimal(position + 4, 2, offset_minute) &&
+        offset_hour <= 23 && offset_minute <= 59;
 }
 
 bool valid_argument(std::string_view constructor, std::string_view value) {

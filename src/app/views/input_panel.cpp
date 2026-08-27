@@ -91,12 +91,18 @@ void build_input_panel(eui::Ui& ui, const ViewContext& context) {
         .fontFamily(fonts::code())
         .fontSize(14.5f)
         .theme(tokens)
+        .onHistory([](bool redo) {
+            return apply_large_input_history(redo);
+        })
         .onChange([](const std::string& value) {
             app_state.input_text = value;
             app_state.oversized_input_approved = false;
             app_state.large_input_page = 0;
             app_state.large_input_page_boundaries.clear();
             app_state.large_input_selection = {};
+            app_state.large_input_undo.clear();
+            app_state.large_input_redo.clear();
+            app_state.large_input_history_active = false;
             app_state.processing_action_id = "auto";
             analyze_input(true);
         })

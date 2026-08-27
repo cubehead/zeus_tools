@@ -337,6 +337,19 @@ void test_large_input_pages_preserve_utf8_boundaries() {
                !app::large_input::replacement_text("abcdef", "abcdef", 5, 4) &&
                !app::large_input::replacement_text("abcdef", "abcdef", 2, 7),
            "large-input edit inference should reject unrelated changes and invalid ranges");
+    auto edit = app::large_input::text_edit("page-one|page-two", "page-ONE|page-two");
+    std::string edited_document = "prefix:page-one|page-two:suffix";
+    expect(edit && edit->start == 5 && edit->removed == "one" && edit->inserted == "ONE",
+           "large-input history should retain only the changed document segment");
+    edit->start += 7;
+    expect(app::large_input::apply_text_edit(edited_document, *edit, true) &&
+               edited_document == "prefix:page-ONE|page-two:suffix" &&
+               app::large_input::apply_text_edit(edited_document, *edit, false) &&
+               edited_document == "prefix:page-one|page-two:suffix",
+           "large-input document edits should apply and reverse without losing other pages");
+    expect(!app::large_input::apply_text_edit(edited_document, *edit, false) &&
+               !app::large_input::text_edit("same", "same"),
+           "large-input history should reject stale edits and no-op changes");
     auto resized = boundaries;
     const std::size_t original_total = resized.back();
     const std::size_t original_first = resized[1] - resized[0];
@@ -415,7 +428,7 @@ void test_windows_action_bar_fits_default_window() {
     constexpr float available_width = 1280.0f - 18.0f * 2.0f - 32.0f;
     constexpr bool windows = true;
 
-    const auto width = [](float value) {
+    const auto width = [windows](float value) {
         return app::fonts::action_width_for_platform(value, windows);
     };
     const auto continues_decode = [](zeus::ContentKind kind) {

@@ -6,6 +6,16 @@ semantic versioning after the first stable release.
 
 ## [Unreleased]
 
+### Fixed
+
+- Preserved full-document undo and redo history while editing paged large input,
+  including replacements whose selection crosses page boundaries.
+- Tightened MongoDB `NumberDecimal`/`Decimal128` validation to the Decimal128
+  precision and exponent limits, and validated `ISODate` calendar, clock and
+  timezone fields before conversion.
+- Restored MSVC test compilation and made the successful PowerShell repository
+  check return an explicit zero process exit code.
+
 ### Added
 
 - Added boundary-aware selection continuation for the 16 KiB large-input

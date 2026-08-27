@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <iterator>
 #include <string>
+#include <utility>
 
 namespace app::views {
 
@@ -79,6 +80,38 @@ std::pair<std::size_t, std::size_t> global_selection_range() {
             std::max(selection.anchor, selection.caret)};
 }
 
+std::size_t history_entry_bytes(const LargeInputHistoryEntry& entry) {
+    return entry.edit.removed.size() + entry.edit.inserted.size();
+}
+
+void trim_history(std::vector<LargeInputHistoryEntry>& history) {
+    constexpr std::size_t max_entries = 100;
+    constexpr std::size_t max_bytes = 32U * 1024U * 1024U;
+    std::size_t bytes = 0;
+    for (const auto& entry : history) bytes += history_entry_bytes(entry);
+    while (history.size() > max_entries || (bytes > max_bytes && history.size() > 1)) {
+        bytes -= history_entry_bytes(history.front());
+        history.erase(history.begin());
+    }
+}
+
+void push_history(
+    large_input::TextEdit edit,
+    std::size_t anchor_before,
+    std::size_t caret_before,
+    std::size_t page_before,
+    std::size_t anchor_after,
+    std::size_t caret_after,
+    std::size_t page_after) {
+    app_state.large_input_undo.push_back(LargeInputHistoryEntry{
+        std::move(edit), anchor_before, caret_before, anchor_after, caret_after,
+        page_before, page_after,
+    });
+    trim_history(app_state.large_input_undo);
+    app_state.large_input_redo.clear();
+    app_state.large_input_history_active = true;
+}
+
 void update_page_after_edit(std::size_t caret) {
     app_state.large_input_page_boundaries = large_input::page_boundaries(app_state.input_text);
     const auto upper = std::upper_bound(
@@ -105,8 +138,15 @@ bool replace_cross_page_selection(
     const auto inserted = large_input::replacement_text(
         old_page, new_page, local_start, local_end);
     if (!inserted) return false;
-    app_state.input_text.replace(
-        selection_start, selection_end - selection_start, *inserted);
+    const std::size_t anchor_before = app_state.large_input_selection.anchor;
+    const std::size_t caret_before = app_state.large_input_selection.caret;
+    const std::size_t page_before = app_state.large_input_page;
+    large_input::TextEdit edit{
+        selection_start,
+        app_state.input_text.substr(selection_start, selection_end - selection_start),
+        *inserted,
+    };
+    if (!large_input::apply_text_edit(app_state.input_text, edit, true)) return false;
     const std::size_t caret = selection_start + inserted->size();
     app_state.large_input_selection.anchor = caret;
     app_state.large_input_selection.caret = caret;
@@ -114,9 +154,44 @@ bool replace_cross_page_selection(
     app_state.large_input_selection.pointer_extending = false;
     app_state.large_input_selection.ignore_next_change = true;
     update_page_after_edit(caret);
+    push_history(
+        std::move(edit), anchor_before, caret_before, page_before,
+        caret, caret, app_state.large_input_page);
     return true;
 }
 } // namespace
+
+bool apply_large_input_history(bool redo) {
+    auto& source = redo ? app_state.large_input_redo : app_state.large_input_undo;
+    auto& destination = redo ? app_state.large_input_undo : app_state.large_input_redo;
+    if (!app_state.large_input_history_active || source.empty()) {
+        return app_state.large_input_history_active;
+    }
+
+    LargeInputHistoryEntry entry = source.back();
+    if (!large_input::apply_text_edit(app_state.input_text, entry.edit, redo)) {
+        app_state.large_input_undo.clear();
+        app_state.large_input_redo.clear();
+        app_state.large_input_history_active = false;
+        return true;
+    }
+    source.pop_back();
+    destination.push_back(entry);
+    trim_history(destination);
+    app_state.large_input_page_boundaries = large_input::page_boundaries(app_state.input_text);
+    app_state.large_input_page = std::min(
+        redo ? entry.page_after : entry.page_before,
+        app_state.large_input_page_boundaries.size() - 2);
+    auto& selection = app_state.large_input_selection;
+    selection.anchor = redo ? entry.anchor_after : entry.anchor_before;
+    selection.caret = redo ? entry.caret_after : entry.caret_before;
+    selection.continuation_pending = false;
+    selection.pointer_extending = false;
+    selection.ignore_next_change = false;
+    controller::analyze_input(true);
+    controller::request_full_repaint();
+    return true;
+}
 
 void build_large_input_editor(eui::Ui& ui, const ViewContext& context) {
     using namespace controller;
@@ -150,8 +225,13 @@ void build_large_input_editor(eui::Ui& ui, const ViewContext& context) {
         .theme(tokens)
         .onChange([range, page_text](const std::string& value) {
             if (!replace_cross_page_selection(range, page_text, value)) {
-                const std::size_t old_size = range.end - range.start;
-                app_state.input_text.replace(range.start, old_size, value);
+                auto edit = large_input::text_edit(page_text, value);
+                if (!edit) return;
+                const std::size_t anchor_before = app_state.large_input_selection.anchor;
+                const std::size_t caret_before = app_state.large_input_selection.caret;
+                const std::size_t page_before = app_state.large_input_page;
+                edit->start += range.start;
+                if (!large_input::apply_text_edit(app_state.input_text, *edit, true)) return;
                 large_input::resize_page(
                     app_state.large_input_page_boundaries,
                     app_state.large_input_page,
@@ -163,10 +243,20 @@ void build_large_input_editor(eui::Ui& ui, const ViewContext& context) {
                         range.start / large_input::kPageBytes,
                         app_state.large_input_page_boundaries.size() - 2);
                 }
+                const std::size_t caret = edit->start + edit->inserted.size();
+                app_state.large_input_selection.anchor = caret;
+                app_state.large_input_selection.caret = caret;
+                push_history(
+                    std::move(*edit), anchor_before, caret_before, page_before,
+                    caret, caret, app_state.large_input_page);
             }
             app_state.oversized_input_approved = false;
             app_state.processing_action_id = "auto";
             analyze_input(true);
+        })
+        .onHistory([](bool redo) {
+            apply_large_input_history(redo);
+            return true;
         })
         .onSelectionStart([range](int start, int end) {
             auto& selection = app_state.large_input_selection;

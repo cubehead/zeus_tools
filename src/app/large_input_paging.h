@@ -17,6 +17,44 @@ struct PageRange {
     std::size_t end = 0;
 };
 
+struct TextEdit {
+    std::size_t start = 0;
+    std::string removed;
+    std::string inserted;
+};
+
+inline std::optional<TextEdit> text_edit(
+    std::string_view before,
+    std::string_view after) {
+    std::size_t prefix = 0;
+    while (prefix < before.size() && prefix < after.size() &&
+           before[prefix] == after[prefix]) {
+        ++prefix;
+    }
+    std::size_t suffix = 0;
+    while (suffix < before.size() - prefix && suffix < after.size() - prefix &&
+           before[before.size() - 1 - suffix] == after[after.size() - 1 - suffix]) {
+        ++suffix;
+    }
+    if (prefix == before.size() && prefix == after.size()) return std::nullopt;
+    return TextEdit{
+        prefix,
+        std::string(before.substr(prefix, before.size() - prefix - suffix)),
+        std::string(after.substr(prefix, after.size() - prefix - suffix)),
+    };
+}
+
+inline bool apply_text_edit(std::string& text, const TextEdit& edit, bool forward) {
+    const std::string& expected = forward ? edit.removed : edit.inserted;
+    const std::string& replacement = forward ? edit.inserted : edit.removed;
+    if (edit.start > text.size() || expected.size() > text.size() - edit.start ||
+        text.compare(edit.start, expected.size(), expected) != 0) {
+        return false;
+    }
+    text.replace(edit.start, expected.size(), replacement);
+    return true;
+}
+
 constexpr std::size_t page_offset(std::size_t offset, const PageRange& range) noexcept {
     return std::clamp(offset, range.start, range.end) - range.start;
 }

@@ -138,6 +138,9 @@ void build_header_bar(eui::Ui& ui, const ViewContext& context) {
                     app_state.large_input_page = 0;
                     app_state.large_input_page_boundaries.clear();
                     app_state.large_input_selection = {};
+                    app_state.large_input_undo.clear();
+                    app_state.large_input_redo.clear();
+                    app_state.large_input_history_active = false;
                     app_state.search.query.clear();
                     app_state.processing_action_id = "auto";
                     app_state.input_type_id = "auto";
