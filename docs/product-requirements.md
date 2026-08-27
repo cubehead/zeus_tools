@@ -199,7 +199,7 @@
 | v0.1.0 公开 Alpha | 已发布 | 已创建标签并上传 macOS arm64 DMG、Windows x64 Portable ZIP、SHA-256 与双语说明。 |
 | v0.2.0 扩展 Alpha | 已发布 | 新格式、编码、文件工作流、CLI、大文本保护及更严格的异常隔离进入公开包。 |
 | v0.2.1 稳定化 Alpha | 已发布 | Data URL 图片预览、二进制导出、CRC32/SHA-384 和 Windows 稳定性改进。 |
-| 0.2.x 稳定化 | 进行中 | Windows 11 原生构建、启动和 IME、大文本跨页选择及基础键盘导航已完成；剩余 Windows 10、macOS/Windows 10 IME 和屏幕阅读器辅助功能验收。 |
+| 0.2.x 稳定化 | 进行中 | Windows 11 原生构建、启动和 IME、大文本跨页选择及基础键盘导航已完成；macOS UTF-8 字符、剪贴板和撤销/重做链路已通过，剩余 Windows 10、macOS 候选词组合态和屏幕阅读器辅助功能验收。 |
 
 具体任务和完成标准见[当前开发计划](./implementation-plan.md)。
 
