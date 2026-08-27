@@ -152,12 +152,12 @@ zeus-tools-cli --list-actions
 - YAML 有意只接受单文档安全子集，并拒绝指令、标签、锚点、别名和多文档
   输入。
 - MongoDB Shell 输入仅接受 JSON 结构，以及白名单内的 `NumberInt`/`Int32`、
-  `NumberLong`、`Double`、`NumberDecimal`/`Decimal128`、`ObjectId` 及其 Base64/Hex 工厂形式、
+  `NumberLong`/`Long`、`Double`、`NumberDecimal`/`Decimal128`、`ObjectId` 及其 Base64/Hex 工厂形式、
   `ISODate`/`Date` 和 `UUID`
   及 `Timestamp`、`BinData`、`HexData`、`Binary.createFromBase64`/
   `Binary.createFromHexString`、`BSONRegExp`、单参数 `Code`、`MinKey`、`MaxKey` 构造器；
   支持常见的单引号参数，
-  以及 `NumberInt`/`NumberLong` 直接整数参数，
+  以及 `NumberInt`/`NumberLong`/`Long` 直接整数参数，
   但不接受表达式；不会执行 JavaScript 或任意 Shell 代码。
   `Code` 内容只作为惰性文本保留，暂不接受 scope 对象。
   对象中的未加引号标识符键和单引号字符串会安全规范化为严格 JSON。

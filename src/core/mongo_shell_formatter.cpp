@@ -23,6 +23,7 @@ constexpr ConstructorDefinition kConstructors[] = {
     {"NumberInt", "$numberInt"},
     {"Int32", "$numberInt"},
     {"NumberLong", "$numberLong"},
+    {"Long", "$numberLong"},
     {"Double", "$numberDouble"},
     {"NumberDecimal", "$numberDecimal"},
     {"Decimal128", "$numberDecimal"},
@@ -246,7 +247,8 @@ std::string quote_json_string(std::string_view value) {
 
 bool constructor_accepts_number_literal(std::string_view constructor) {
     return constructor == "NumberInt" || constructor == "Int32" ||
-        constructor == "NumberLong" || constructor == "Double" || constructor == "Date";
+        constructor == "NumberLong" || constructor == "Long" ||
+        constructor == "Double" || constructor == "Date";
 }
 
 bool read_constructor_argument(
@@ -384,7 +386,9 @@ bool valid_argument(std::string_view constructor, std::string_view value) {
     if (constructor == "NumberInt" || constructor == "Int32") {
         return is_integer_in_range<std::int32_t>(value);
     }
-    if (constructor == "NumberLong") return is_integer_in_range<std::int64_t>(value);
+    if (constructor == "NumberLong" || constructor == "Long") {
+        return is_integer_in_range<std::int64_t>(value);
+    }
     if (constructor == "Double") return is_decimal128_string(value);
     if (constructor == "NumberDecimal" || constructor == "Decimal128") {
         return is_decimal128_string(value);
@@ -1118,7 +1122,7 @@ bool convert_constructor(
     output += "\":";
     if (definition->name == "NumberInt" || definition->name == "Int32") {
         output += quote_json_string(canonical_integer_string<std::int32_t>(decoded));
-    } else if (definition->name == "NumberLong") {
+    } else if (definition->name == "NumberLong" || definition->name == "Long") {
         output += quote_json_string(canonical_integer_string<std::int64_t>(decoded));
     } else if (definition->name == "ObjectId") {
         std::transform(decoded.begin(), decoded.end(), decoded.begin(), [](unsigned char ch) {

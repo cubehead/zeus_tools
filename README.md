@@ -158,13 +158,13 @@ The project intentionally does not create an NSIS/MSI installer.
 - YAML intentionally accepts a single-document safe subset and rejects
   directives, tags, anchors, aliases and multi-document input.
 - MongoDB Shell input accepts only JSON structure plus the whitelisted
-  `NumberInt`/`Int32`, `NumberLong`, `Double`, `NumberDecimal`/`Decimal128`,
+  `NumberInt`/`Int32`, `NumberLong`/`Long`, `Double`, `NumberDecimal`/`Decimal128`,
   `ObjectId` and its Base64/Hex factory forms, `ISODate`/`Date`, `UUID`,
   `Timestamp`, `BinData`, `HexData`,
   `Binary.createFromBase64`/`Binary.createFromHexString`, `BSONRegExp`,
   one-argument `Code`, `MinKey` and `MaxKey`
   constructors. Common single-quoted values and direct
-  `NumberInt`/`NumberLong` integer literals are accepted; expressions are not.
+  `NumberInt`/`NumberLong`/`Long` integer literals are accepted; expressions are not.
   Unquoted identifier keys and single-quoted object strings are normalized to strict JSON.
   It does not run JavaScript or arbitrary shell code.
   `Code` content is preserved as inert text; scope objects are intentionally rejected.

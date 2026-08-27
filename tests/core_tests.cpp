@@ -385,19 +385,22 @@ int main() {
                     std::string::npos,
             "MongoDB integer literals and single-quoted constructor values should be accepted");
     const auto mongosh_literals = zeus::process_text(
-        R"({"count":Int32(7),"ratio":Double(1.25e-3),)"
+        R"({"count":Int32(7),"long":Long(9223372036854775807),"ratio":Double(1.25e-3),)"
         R"("special":Double('-Infinity'),)"
         R"("traceId":UUID('3b241101-e2bb-4255-8caf-4136c566a962')})",
         zeus::ProcessingMode::MongoShell);
     require(mongosh_literals.ok &&
                 mongosh_literals.value.find(R"("$numberInt": "7")") !=
                     std::string::npos &&
+                mongosh_literals.value.find(
+                    R"("$numberLong": "9223372036854775807")") !=
+                    std::string::npos &&
                 mongosh_literals.value.find(R"("$numberDouble": "1.25e-3")") !=
                     std::string::npos &&
                 mongosh_literals.value.find(
                     R"("$uuid": "3b241101-e2bb-4255-8caf-4136c566a962")") !=
                     std::string::npos,
-            "mongosh Int32, Double and UUID values should preserve their BSON types");
+            "mongosh Int32, Long, Double and UUID values should preserve their BSON types");
     const auto timestamps = zeus::process_text(
         R"({"current":Timestamp({"t":1724212800,"i":3}),)"
         R"("legacy":Timestamp(1724212801,4)})",
@@ -513,6 +516,10 @@ int main() {
                 R"({"value":new NumberInt("2147483648")})",
                 zeus::ProcessingMode::MongoShell).ok,
             "NumberInt values outside the signed 32-bit range should be rejected");
+    require(!zeus::process_text(
+                R"({"value":Long("9223372036854775808")})",
+                zeus::ProcessingMode::MongoShell).ok,
+            "Long values outside the signed 64-bit range should be rejected");
     require(!zeus::process_text(
                 R"({"value":new Evil("1")})",
                 zeus::ProcessingMode::MongoShell).ok,
