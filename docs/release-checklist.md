@@ -42,7 +42,9 @@ This checklist is intentionally manual. The repository does not use GitHub CI.
       completes analysis once, then returns to idle CPU; stable RSS is recorded.
 - [x] macOS Physical footprint and process-lifetime peak are recorded for exact
       10 MiB JSON and CSV scenarios.
-- [ ] macOS IME/emoji/combining characters pass.
+- [x] macOS UTF-8 file input, emoji/combining-character rendering, selection,
+      copy/cut/paste and undo/redo pass.
+- [ ] macOS IME candidate-window composition passes with a system input method.
 - [x] Windows 11 IME/emoji/combining characters pass.
 - [ ] Windows 10 IME/emoji/combining characters pass.
 - [ ] Minimum supported macOS version starts the app.
