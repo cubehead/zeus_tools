@@ -15,6 +15,8 @@ mongodb-bson-regexp	MongoDB	true	{name:BSONRegExp('^zeus','mi')}
 mongodb-bson-regexp-invalid	MongoDB	false	{name:BSONRegExp('zeus','g')}
 mongodb-hex-data	MongoDB	true	{payload:HexData(4,'123456abcdef')}
 mongodb-hex-data-invalid	MongoDB	false	{payload:HexData(4,'123xz')}
+mongodb-binary-display	MongoDB	true	{payload:Binary.createFromBase64('EjRWq83v',4),hex:Binary.createFromHexString('123456abcdef')}
+mongodb-binary-display-invalid	MongoDB	false	{payload:Binary.createFromBase64('AQIDB-_=',4)}
 json-string	JSON	true	"plain JSON string"
 xml-document	XML	true	<?xml version="1.0"?><root><item id="1"/></root>
 xml-invalid-structure	XML	false	<root><item></root>

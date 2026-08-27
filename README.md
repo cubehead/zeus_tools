@@ -159,7 +159,8 @@ The project intentionally does not create an NSIS/MSI installer.
   directives, tags, anchors, aliases and multi-document input.
 - MongoDB Shell input accepts only JSON structure plus the whitelisted
   `NumberInt`/`Int32`, `NumberLong`, `Double`, `NumberDecimal`/`Decimal128`,
-  `ObjectId`, `ISODate`/`Date`, `UUID`, `Timestamp`, `BinData`, `HexData`, `BSONRegExp`,
+  `ObjectId`, `ISODate`/`Date`, `UUID`, `Timestamp`, `BinData`, `HexData`,
+  `Binary.createFromBase64`/`Binary.createFromHexString`, `BSONRegExp`,
   one-argument `Code`, `MinKey` and `MaxKey`
   constructors. Common single-quoted values and direct
   `NumberInt`/`NumberLong` integer literals are accepted; expressions are not.
@@ -173,6 +174,8 @@ The project intentionally does not create an NSIS/MSI installer.
   and rejects unsupported or repeated flags.
   `HexData(subtype, hex)` requires complete hexadecimal byte pairs instead of
   silently accepting a partial buffer, then emits canonical Base64 `$binary` data.
+  Current `mongosh` binary display forms are accepted, including the optional
+  subtype on `Binary.createFromBase64`; omitted subtypes default to `0`.
 - JWT inspection decodes claims but does not verify the signature.
 - Automatic Base64/URL decoding stops after one layer. Use `Decode +1` to
   process another detected layer manually; the source input remains unchanged.

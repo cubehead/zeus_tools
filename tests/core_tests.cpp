@@ -433,6 +433,19 @@ int main() {
                 hex_binary.value.find(R"("base64": "")") !=
                     std::string::npos,
             "HexData should strictly decode complete bytes and reuse standard Base64 output");
+    const auto displayed_binary = zeus::process_text(
+        R"({generic:Binary.createFromBase64('SGVsbG8='),uuid:Binary.createFromBase64('AQIDBA==',4),hex:Binary.createFromHexString('123456abcdef')})",
+        zeus::ProcessingMode::MongoShell);
+    require(displayed_binary.ok &&
+                displayed_binary.value.find(R"("base64": "SGVsbG8=")") !=
+                    std::string::npos &&
+                displayed_binary.value.find(R"("subType": "00")") !=
+                    std::string::npos &&
+                displayed_binary.value.find(R"("subType": "04")") !=
+                    std::string::npos &&
+                displayed_binary.value.find(R"("base64": "EjRWq83v")") !=
+                    std::string::npos,
+            "mongosh Binary display constructors should convert to canonical Extended JSON");
     const auto code_and_canonical_integers = zeus::process_text(
         R"({script:new Code('function () { return 1; }'),padded:NumberInt('001'),zero:NumberLong('-0')})",
         zeus::ProcessingMode::MongoShell);
@@ -519,6 +532,16 @@ int main() {
                     R"({"value":HexData(256,"12")})",
                     zeus::ProcessingMode::MongoShell).ok,
             "HexData should reject partial, odd-length and out-of-range input");
+    require(!zeus::process_text(
+                R"({"value":Binary.createFromBase64("AQIDB-_=")})",
+                zeus::ProcessingMode::MongoShell).ok &&
+                !zeus::process_text(
+                    R"({"value":Binary.createFromBase64("AQIDBA==",256)})",
+                    zeus::ProcessingMode::MongoShell).ok &&
+                !zeus::process_text(
+                    R"({"value":Binary.createFromHexString("123")})",
+                    zeus::ProcessingMode::MongoShell).ok,
+            "Binary display constructors should reject malformed payloads and subtypes");
     require(!zeus::process_text(
                 R"({"value":new Date()})",
                 zeus::ProcessingMode::MongoShell).ok,

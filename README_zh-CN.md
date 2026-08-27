@@ -153,7 +153,8 @@ zeus-tools-cli --list-actions
   输入。
 - MongoDB Shell 输入仅接受 JSON 结构，以及白名单内的 `NumberInt`/`Int32`、
   `NumberLong`、`Double`、`NumberDecimal`/`Decimal128`、`ObjectId`、`ISODate`/`Date` 和 `UUID`
-  及 `Timestamp`、`BinData`、`HexData`、`BSONRegExp`、单参数 `Code`、`MinKey`、`MaxKey` 构造器；
+  及 `Timestamp`、`BinData`、`HexData`、`Binary.createFromBase64`/
+  `Binary.createFromHexString`、`BSONRegExp`、单参数 `Code`、`MinKey`、`MaxKey` 构造器；
   支持常见的单引号参数，
   以及 `NumberInt`/`NumberLong` 直接整数参数，
   但不接受表达式；不会执行 JavaScript 或任意 Shell 代码。
@@ -165,6 +166,8 @@ zeus-tools-cli --list-actions
   未支持或重复的选项。
   `HexData(subtype, hex)` 要求完整的十六进制字节对，不会静默接受部分内容，
   随后输出规范的 Base64 `$binary` 数据。
+  支持当前 `mongosh` 的二进制回显形式；`Binary.createFromBase64` 可省略 subtype，
+  省略时按 `0` 处理。
 - JWT 检查会解码声明，但不会验证签名。
 - Base64/URL 自动解码在一层后停止。使用“再解一层”可手动处理下一个检测到
   的编码层，且不会修改原始输入。

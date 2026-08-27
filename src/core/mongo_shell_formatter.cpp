@@ -32,6 +32,8 @@ constexpr ConstructorDefinition kConstructors[] = {
     {"Timestamp", "$timestamp"},
     {"BinData", "$binary"},
     {"HexData", "$binary"},
+    {"Binary.createFromBase64", "$binary"},
+    {"Binary.createFromHexString", "$binary"},
     {"BSONRegExp", "$regularExpression"},
     {"Code", "$code"},
     {"MinKey", "$minKey"},
@@ -533,6 +535,19 @@ bool read_bin_data_arguments(
     return is_canonical_base64(payload);
 }
 
+bool decode_complete_hex(std::string_view payload, std::string& bytes) {
+    if (payload.size() % 2 != 0) return false;
+    bytes.clear();
+    bytes.reserve(payload.size() / 2);
+    for (std::size_t index = 0; index < payload.size(); index += 2) {
+        const int high = hex_value(payload[index]);
+        const int low = hex_value(payload[index + 1]);
+        if (high < 0 || low < 0) return false;
+        bytes.push_back(static_cast<char>((high << 4) | low));
+    }
+    return true;
+}
+
 bool read_hex_data_arguments(
     std::string_view input,
     std::size_t& position,
@@ -550,19 +565,54 @@ bool read_hex_data_arguments(
     std::string payload;
     std::size_t error_offset = position;
     if (!read_quoted_string(
-            input, position, input[position], raw, payload, error_offset) ||
-        payload.size() % 2 != 0) {
+            input, position, input[position], raw, payload, error_offset)) {
         return false;
     }
-    bytes.clear();
-    bytes.reserve(payload.size() / 2);
-    for (std::size_t index = 0; index < payload.size(); index += 2) {
-        const int high = hex_value(payload[index]);
-        const int low = hex_value(payload[index + 1]);
-        if (high < 0 || low < 0) return false;
-        bytes.push_back(static_cast<char>((high << 4) | low));
+    return decode_complete_hex(payload, bytes);
+}
+
+bool read_binary_base64_arguments(
+    std::string_view input,
+    std::size_t& position,
+    std::string& payload,
+    std::uint32_t& subtype) {
+    skip_space(input, position);
+    if (position >= input.size() || (input[position] != '"' && input[position] != '\'')) {
+        return false;
+    }
+    std::string raw;
+    std::size_t error_offset = position;
+    if (!read_quoted_string(
+            input, position, input[position], raw, payload, error_offset) ||
+        !is_canonical_base64(payload)) {
+        return false;
+    }
+    subtype = 0;
+    skip_space(input, position);
+    if (position < input.size() && input[position] == ',') {
+        ++position;
+        skip_space(input, position);
+        if (!read_uint32_literal(input, position, subtype) || subtype > 255U) return false;
     }
     return true;
+}
+
+bool read_binary_hex_arguments(
+    std::string_view input,
+    std::size_t& position,
+    std::string& bytes) {
+    skip_space(input, position);
+    if (position >= input.size() || (input[position] != '"' && input[position] != '\'')) {
+        return false;
+    }
+    std::string raw;
+    std::string payload;
+    std::size_t error_offset = position;
+    if (!read_quoted_string(
+            input, position, input[position], raw, payload, error_offset)) {
+        return false;
+    }
+    return decode_complete_hex(payload, bytes);
 }
 
 void append_binary_extended_json(
@@ -873,6 +923,43 @@ bool convert_constructor(
         }
         ++cursor;
         append_binary_extended_json(output, subtype, encode_base64(bytes));
+        position = cursor;
+        return true;
+    }
+    if (definition->name == "Binary.createFromBase64") {
+        std::string payload;
+        std::uint32_t subtype = 0;
+        if (!read_binary_base64_arguments(input, cursor, payload, subtype)) {
+            issue = issue_at(input, cursor, "MONGO_SHELL_ARGUMENT",
+                             "Binary.createFromBase64 requires canonical Base64 and an optional byte subtype");
+            return false;
+        }
+        skip_space(input, cursor);
+        if (cursor >= input.size() || input[cursor] != ')') {
+            issue = issue_at(input, cursor, "MONGO_SHELL_ARGUMENT",
+                             "Binary.createFromBase64 accepts only Base64 and an optional subtype");
+            return false;
+        }
+        ++cursor;
+        append_binary_extended_json(output, subtype, payload);
+        position = cursor;
+        return true;
+    }
+    if (definition->name == "Binary.createFromHexString") {
+        std::string bytes;
+        if (!read_binary_hex_arguments(input, cursor, bytes)) {
+            issue = issue_at(input, cursor, "MONGO_SHELL_ARGUMENT",
+                             "Binary.createFromHexString requires complete hexadecimal bytes");
+            return false;
+        }
+        skip_space(input, cursor);
+        if (cursor >= input.size() || input[cursor] != ')') {
+            issue = issue_at(input, cursor, "MONGO_SHELL_ARGUMENT",
+                             "Binary.createFromHexString accepts one hexadecimal string");
+            return false;
+        }
+        ++cursor;
+        append_binary_extended_json(output, 0, encode_base64(bytes));
         position = cursor;
         return true;
     }

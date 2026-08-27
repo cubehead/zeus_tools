@@ -32,6 +32,8 @@ semantic versioning after the first stable release.
   and rejection of unsupported or repeated flags.
 - Added strict `HexData(subtype, hex)` conversion to canonical Extended JSON
   binary values, backed by the shared Base64 encoder.
+- Added current `mongosh` `Binary.createFromBase64` and
+  `Binary.createFromHexString` display-form conversion with optional subtype handling.
 - Reused JSON highlighting, folding, search, minify/escape and structured
   conversion actions for successfully converted MongoDB Shell input.
 
