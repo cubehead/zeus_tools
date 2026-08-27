@@ -256,6 +256,16 @@ int main() {
             "folding the JSON root should hide all child lines");
     require(folds.reveal(document, 2) && !folds.is_collapsed(0),
             "revealing a hidden search result should expand its containing JSON region");
+    const std::size_t expanded_revision = folds.revision();
+    require(folds.set_collapsed(document, 0, true) && folds.is_collapsed(0),
+            "an expanded JSON container should support explicit collapse");
+    require(!folds.set_collapsed(document, 0, true) &&
+                folds.revision() == expanded_revision + 1,
+            "repeating explicit collapse should be idempotent");
+    require(folds.set_collapsed(document, 0, false) && !folds.is_collapsed(0),
+            "a collapsed JSON container should support explicit expansion");
+    require(!folds.set_collapsed(document, document.lines().size(), true),
+            "explicit collapse should reject lines without a fold region");
 
     const auto matches = document.search("zeus");
     require(matches.size() == 1, "case-insensitive search should find result");

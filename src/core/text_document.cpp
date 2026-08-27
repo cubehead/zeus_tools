@@ -561,9 +561,20 @@ void TextFoldState::clear() {
 bool TextFoldState::toggle(const HighlightedDocument& document, std::size_t start_line) {
     ensure_document(document);
     if (document.fold_region_at(start_line) == nullptr) return false;
-    const auto existing = collapsed_.find(start_line);
-    if (existing == collapsed_.end()) collapsed_.insert(start_line);
-    else collapsed_.erase(existing);
+    return set_collapsed(document, start_line, !is_collapsed(start_line));
+}
+
+bool TextFoldState::set_collapsed(
+    const HighlightedDocument& document,
+    std::size_t start_line,
+    bool collapsed) {
+    ensure_document(document);
+    if (document.fold_region_at(start_line) == nullptr ||
+        is_collapsed(start_line) == collapsed) {
+        return false;
+    }
+    if (collapsed) collapsed_.insert(start_line);
+    else collapsed_.erase(start_line);
     ++revision_;
     return true;
 }

@@ -396,10 +396,8 @@ public:
                     for (std::size_t index = first; index < end; ++index) {
                         const std::size_t line = (*visible_lines)[index];
                         if (document->fold_region_at(line) == nullptr) continue;
-                        const bool collapsed = folds->is_collapsed(line);
-                        const bool should_toggle =
-                            (event.left && !collapsed) || (event.right && collapsed);
-                        if (should_toggle && folds->toggle(*document, line)) {
+                        const bool target_collapsed = event.left;
+                        if (folds->set_collapsed(*document, line, target_collapsed)) {
                             selection->clear();
                             const auto updated_lines = folds->visible_lines(*document);
                             const float updated_maximum = std::max(

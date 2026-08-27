@@ -76,6 +76,10 @@ public:
     void ensure_document(const HighlightedDocument& document);
     void clear();
     bool toggle(const HighlightedDocument& document, std::size_t start_line);
+    bool set_collapsed(
+        const HighlightedDocument& document,
+        std::size_t start_line,
+        bool collapsed);
     bool is_collapsed(std::size_t start_line) const;
     bool reveal(const HighlightedDocument& document, std::size_t line);
     std::vector<std::size_t> visible_lines(const HighlightedDocument& document) const;
