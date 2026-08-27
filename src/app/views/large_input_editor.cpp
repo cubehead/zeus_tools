@@ -102,22 +102,12 @@ bool replace_cross_page_selection(
     }
     const std::size_t local_start = local_selection_offset(selection_start, range);
     const std::size_t local_end = local_selection_offset(selection_end, range);
-    const std::size_t retained = old_page.size() - (local_end - local_start);
-    if (new_page.size() < retained) return false;
-    const std::size_t inserted_size = new_page.size() - retained;
-    if (new_page.compare(0, local_start, old_page, 0, local_start) != 0 ||
-        new_page.compare(
-            local_start + inserted_size,
-            old_page.size() - local_end,
-            old_page,
-            local_end,
-            old_page.size() - local_end) != 0) {
-        return false;
-    }
-    const std::string inserted = new_page.substr(local_start, inserted_size);
+    const auto inserted = large_input::replacement_text(
+        old_page, new_page, local_start, local_end);
+    if (!inserted) return false;
     app_state.input_text.replace(
-        selection_start, selection_end - selection_start, inserted);
-    const std::size_t caret = selection_start + inserted.size();
+        selection_start, selection_end - selection_start, *inserted);
+    const std::size_t caret = selection_start + inserted->size();
     app_state.large_input_selection.anchor = caret;
     app_state.large_input_selection.caret = caret;
     app_state.large_input_selection.continuation_pending = false;

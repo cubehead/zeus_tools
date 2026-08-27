@@ -2,7 +2,9 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <optional>
 #include <string>
+#include <string_view>
 #include <vector>
 
 namespace app::large_input {
@@ -17,6 +19,24 @@ struct PageRange {
 
 constexpr std::size_t page_offset(std::size_t offset, const PageRange& range) noexcept {
     return std::clamp(offset, range.start, range.end) - range.start;
+}
+
+inline std::optional<std::string> replacement_text(
+    std::string_view old_page,
+    std::string_view new_page,
+    std::size_t selection_start,
+    std::size_t selection_end) {
+    if (selection_start > selection_end || selection_end > old_page.size()) {
+        return std::nullopt;
+    }
+    const std::size_t retained = old_page.size() - (selection_end - selection_start);
+    if (new_page.size() < retained) return std::nullopt;
+    const std::size_t inserted_size = new_page.size() - retained;
+    if (new_page.substr(0, selection_start) != old_page.substr(0, selection_start) ||
+        new_page.substr(selection_start + inserted_size) != old_page.substr(selection_end)) {
+        return std::nullopt;
+    }
+    return std::string(new_page.substr(selection_start, inserted_size));
 }
 
 constexpr std::size_t page_count(std::size_t bytes) noexcept {

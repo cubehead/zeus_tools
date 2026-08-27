@@ -329,6 +329,14 @@ void test_large_input_pages_preserve_utf8_boundaries() {
                app::large_input::page_offset(input.size(), second) ==
                    second.end - second.start,
            "global selection offsets should project safely onto each visible page");
+    const auto inserted = app::large_input::replacement_text("abcdef", "abXYef", 2, 4);
+    const auto deleted = app::large_input::replacement_text("abcdef", "abef", 2, 4);
+    expect(inserted && *inserted == "XY" && deleted && deleted->empty(),
+           "large-input edits should recover insertion and deletion text around a selection");
+    expect(!app::large_input::replacement_text("abcdef", "axXYef", 2, 4) &&
+               !app::large_input::replacement_text("abcdef", "abcdef", 5, 4) &&
+               !app::large_input::replacement_text("abcdef", "abcdef", 2, 7),
+           "large-input edit inference should reject unrelated changes and invalid ranges");
     auto resized = boundaries;
     const std::size_t original_total = resized.back();
     const std::size_t original_first = resized[1] - resized[0];
