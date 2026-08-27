@@ -196,6 +196,20 @@ MinGW GUI/CLI 采用静态运行时，`objdump` 已确认不再导入
 VersionInfo、CLI 冒烟和 GUI 启动均通过，GUI/CLI 均按该 Alpha 的发布策略保持未签名。
 Windows 10 启动与 IME 仍保持待验收状态。
 
+2026-08-27 补充完成 Windows 11 全量回归：MinGW-w64 Debug 核心测试 4/4、
+Visual Studio 2022/MSVC Release 测试 5/5 通过；MSVC 使用 Visual Studio 生成器
+构建 GUI、CLI、测试和 Portable ZIP，以避开中文系统上 Ninja `cmcldeps` 资源包装器
+对本地化输出的不稳定处理。两个工具链的包均通过 SHA-256、内容、VersionInfo、CLI
+和 GUI 启动校验，签名按当前策略不纳入本轮验收。
+
+同次回归修正了合成 JSON/CSV 基准超过目标值几十字节的问题，三个基准现在都生成
+精确 10,485,760 字节并验证边界。真实 GUI 验证覆盖中文、emoji、组合字符、JSON
+格式化、搜索、Tab 可见焦点、普通输入撤销/重做；精确 10 MiB JSON 显示 640 页，
+全选替换后可撤销恢复完整文档并重做；精确 10 MiB CSV 显示 640 页、173,715 行，
+搜索得到 173,714 个数据单元格命中；10 MiB + 1 byte 输入会先显示保护提示，用户明确
+继续后仍能完成处理且不崩溃。当前机器为 Windows 11，因此 Windows 10 真机启动、
+字体和交互复验仍不能在本轮关闭。
+
 ## 依赖
 
 - CMake 3.20+

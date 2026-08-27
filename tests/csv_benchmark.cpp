@@ -15,12 +15,27 @@ int main(int argc, char** argv) {
     std::string input = "id,name,city,email,role,status,notes\n";
     input.reserve(target_bytes + 1024);
     std::size_t rows = 0;
-    while (input.size() < target_bytes) {
-        input += std::to_string(rows) +
+    while (true) {
+        const std::string row = std::to_string(rows) +
             ",Zeus benchmark row,Shanghai,benchmark@example.com,Engineer,Active,"
             "searchable CSV performance fixture\n";
+        const std::string final_row = std::to_string(rows + 1) +
+            ",Zeus benchmark row,Shanghai,benchmark@example.com,Engineer,Active,"
+            "searchable CSV performance fixture";
+        if (input.size() + row.size() + final_row.size() > target_bytes) break;
+        input += row;
         ++rows;
     }
+    const std::string final_row = std::to_string(rows) +
+        ",Zeus benchmark row,Shanghai,benchmark@example.com,Engineer,Active,"
+        "searchable CSV performance fixture";
+    if (input.size() + final_row.size() > target_bytes) {
+        std::cerr << "target is too small for the CSV benchmark fixture\n";
+        return 2;
+    }
+    input += final_row;
+    input.resize(target_bytes, ' ');
+    ++rows;
 
     const auto parse_start = std::chrono::steady_clock::now();
     const auto parsed = zeus::parse_csv(input, '\0', true);
@@ -54,5 +69,5 @@ int main(int argc, char** argv) {
               << "matches=" << matches << '\n'
               << "parse_ms=" << millis(parse_start, parse_end) << '\n'
               << "search_ms=" << millis(search_start, search_end) << '\n';
-    return 0;
+    return input.size() == target_bytes && matches == rows ? 0 : 1;
 }

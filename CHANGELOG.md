@@ -8,6 +8,9 @@ semantic versioning after the first stable release.
 
 ### Fixed
 
+- Made the JSON, CSV and application pipeline benchmarks generate exact target
+  byte sizes, so the 10 MiB boundary exercises the supported limit instead of
+  accidentally entering the oversized-input path.
 - Preserved full-document undo and redo history while editing paged large input,
   including replacements whose selection crosses page boundaries.
 - Tightened MongoDB `NumberDecimal`/`Decimal128` validation to the Decimal128
@@ -18,6 +21,8 @@ semantic versioning after the first stable release.
 
 ### Added
 
+- Added a native Windows MSVC Release validation preset using the Visual Studio
+  generator, including the desktop app, CLI, tests and portable package.
 - Added boundary-aware selection continuation for the 16 KiB large-input
   editor pages. Copy, cut, replacement and select-all now operate on the full
   global selection instead of only the visible page.

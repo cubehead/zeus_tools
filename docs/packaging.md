@@ -11,10 +11,11 @@
 macOS 最低系统版本由 `ZEUS_MACOS_MIN_VERSION` 统一控制，默认 12.0；配置会同时写入
 Mach-O deployment target 与 `LSMinimumSystemVersion`，产物校验器会拒绝两者不一致的包。
 
-`v0.2.1` 已发布 macOS arm64 DMG 和 Windows x64 Portable ZIP。macOS 产物在
-本机完成构建与磁盘映像验证；Windows 产物使用 MinGW-w64 交叉构建，并完成
-ZIP、PE 架构、GUI 子系统、VersionInfo、资源和系统 DLL 依赖检查，但尚未
-替代 Windows 10/11 原生运行与 IME 验证。两个产物均未签名。
+`v0.2.1` 已发布 macOS arm64 DMG 和 Windows x64 Portable ZIP。macOS 发布产物在
+本机完成构建与磁盘映像验证，Windows 发布产物使用 MinGW-w64 交叉构建。当前源码的
+Windows 候选包又在 Windows 11 使用 MinGW-w64 和 Visual Studio 2022/MSVC 原生
+构建，并完成 ZIP、PE 架构、GUI 子系统、VersionInfo、资源、系统 DLL 依赖、
+CLI/GUI 启动和 IME 验证。Windows 10 真机验证仍待完成；当前策略不要求签名。
 
 两个平台的发布包都必须包含项目许可证、隐私说明、第三方声明，以及
 `docs/licenses/` 中与锁定依赖和实际运行时资源对应的完整许可证文本。
@@ -76,13 +77,26 @@ spctl --assess --type open --context context:primary-signature -v Zeus-Tools-0.2
 
 ## Windows 便携 ZIP
 
-在 Visual Studio 2022 Developer PowerShell 中执行：
+MinGW-w64 便携发布构建：
 
 ```powershell
 cmake --preset package-windows
 cmake --build --preset package-windows
 cmake --build build/package-windows --target package
 ```
+
+在 Visual Studio 2022 Developer PowerShell 中执行原生 MSVC Release 验证：
+
+```powershell
+cmake --preset msvc-windows
+cmake --build --preset msvc-windows
+ctest --preset msvc-windows
+cmake --build build\msvc-windows --config Release --target package
+```
+
+`msvc-windows` 使用 Visual Studio 生成器，避免本地化 Windows 环境中 Ninja
+`cmcldeps` 处理第三方 `.rc` 资源时受编译器输出语言影响。输出目录为
+`build\msvc-windows\packages\`，可使用下文同一个 PowerShell 校验器验证。
 
 ZIP 包含：
 

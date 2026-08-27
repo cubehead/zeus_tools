@@ -79,6 +79,24 @@
         "ZEUS_BUILD_TESTS": "OFF",
         "ZEUS_ENABLE_PACKAGING": "ON"
       }
+    },
+    {
+      "name": "msvc-windows",
+      "displayName": "Native Windows MSVC release validation",
+      "generator": "Visual Studio 17 2022",
+      "architecture": "x64",
+      "binaryDir": "${sourceDir}/build/msvc-windows",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      },
+      "cacheVariables": {
+        "ZEUS_BUILD_APP": "ON",
+        "ZEUS_BUILD_CLI": "ON",
+        "ZEUS_BUILD_TESTS": "ON",
+        "ZEUS_ENABLE_PACKAGING": "ON"
+      }
     }
   ],
   "buildPresets": [
@@ -86,7 +104,12 @@
     { "name": "core", "configurePreset": "core" },
     { "name": "core-sanitize", "configurePreset": "core-sanitize" },
     { "name": "package-macos", "configurePreset": "package-macos" },
-    { "name": "package-windows", "configurePreset": "package-windows" }
+    { "name": "package-windows", "configurePreset": "package-windows" },
+    {
+      "name": "msvc-windows",
+      "configurePreset": "msvc-windows",
+      "configuration": "Release"
+    }
   ],
   "packagePresets": [
     { "name": "package-macos", "configurePreset": "package-macos" },
@@ -101,6 +124,12 @@
     {
       "name": "core-sanitize",
       "configurePreset": "core-sanitize",
+      "output": { "outputOnFailure": true }
+    },
+    {
+      "name": "msvc-windows",
+      "configurePreset": "msvc-windows",
+      "configuration": "Release",
       "output": { "outputOnFailure": true }
     }
   ]

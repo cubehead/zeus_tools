@@ -10,8 +10,8 @@ This checklist is intentionally manual. The repository does not use GitHub CI.
 - [ ] `project(... VERSION ...)`, build number and `CHANGELOG.md` agree.
 - [ ] Core tests pass from a clean build directory.
 - [ ] `core-sanitize` ASan + UBSan tests pass on a Clang/GCC development host.
-- [ ] Synthetic JSON and CSV benchmarks have no material regression.
-- [ ] `zeus_detection_report` passes its corpus coverage floors with no mismatch.
+- [x] Synthetic JSON and CSV benchmarks have no material regression.
+- [x] `zeus_detection_report` passes its corpus coverage floors with no mismatch.
 - [ ] Dependency revisions and `THIRD_PARTY_NOTICES.md` are current.
 
 ## Functional smoke test
@@ -36,8 +36,9 @@ This checklist is intentionally manual. The repository does not use GitHub CI.
       a crash or prolonged UI freeze.
 - [x] macOS exact 10 MiB single-line JSON reaches a responsive paged editor
       and formatted result without measuring the complete line in either UI surface.
-- [x] Large-input pages preserve UTF-8 boundaries and support page-local editing,
-      selection and undo without copying the entire source into the EUI input model.
+- [x] Large-input pages preserve UTF-8 boundaries and support full-document
+      cross-page selection, replacement and undo/redo without copying the entire
+      source into the EUI input model.
 - [x] macOS exact 10 MiB CSV reaches the 640-page input preview and virtual table,
       completes analysis once, then returns to idle CPU; stable RSS is recorded.
 - [x] macOS Physical footprint and process-lifetime peak are recorded for exact
@@ -46,20 +47,25 @@ This checklist is intentionally manual. The repository does not use GitHub CI.
       copy/cut/paste and undo/redo pass.
 - [ ] macOS IME candidate-window composition passes with a system input method.
 - [x] Windows 11 IME/emoji/combining characters pass.
+- [x] Windows 11 exact 10 MiB JSON/CSV, full-document replacement and undo/redo,
+      search, oversized-input guard and explicit continue path pass.
 - [ ] Windows 10 IME/emoji/combining characters pass.
 - [ ] Minimum supported macOS version starts the app.
 
 ## Package
 
 - [ ] macOS `.app` and `.dmg` contain the intended icon and version.
-- [ ] Windows portable ZIP contains `ZeusTools.exe`, required runtime assets,
+- [x] Windows portable ZIP contains `ZeusTools.exe`, required runtime assets,
       `zeus-tools-cli.exe`, icon and VersionInfo; no installer is generated.
 - [ ] A fresh user account can launch each artifact.
 - [ ] Uninstall/removal leaves no content history; only optional preference files
       may remain.
-- [ ] SHA-256 checksums are generated and verified.
+- [x] SHA-256 checksums are generated and verified for the current Windows
+      MinGW-w64 and MSVC portable packages.
 - [ ] `scripts/check-package.sh` passes against the final macOS DMG and Windows
       Portable ZIP; `scripts/check-package.ps1` passes natively on Windows.
+- [x] `scripts/check-package.ps1` passes natively against the current Windows
+      MinGW-w64 and MSVC portable packages, including CLI and GUI startup.
 - [ ] Signing/notarization status is stated accurately in release notes.
 
 ## Privacy and security

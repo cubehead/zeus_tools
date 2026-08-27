@@ -15,15 +15,17 @@ int main(int argc, char** argv) {
     input.reserve(target_bytes + 1024);
     input.push_back('[');
     std::size_t id = 0;
-    while (input.size() < target_bytes) {
-        if (id != 0) {
-            input.push_back(',');
-        }
-        input += "{\"id\":" + std::to_string(id) +
-                 ",\"active\":true,\"name\":\"Zeus Tools benchmark row\"}";
+    while (true) {
+        const std::string row = "{\"id\":" + std::to_string(id) +
+            ",\"active\":true,\"name\":\"Zeus Tools benchmark row\"}";
+        const std::size_t separator = id == 0 ? 0 : 1;
+        if (input.size() + separator + row.size() + 1 > target_bytes) break;
+        if (separator != 0) input.push_back(',');
+        input += row;
         ++id;
     }
     input.push_back(']');
+    input.resize(target_bytes, ' ');
 
     const auto format_start = std::chrono::steady_clock::now();
     const auto result = zeus::format_json(input);

@@ -13,24 +13,38 @@ std::string make_json(std::size_t target_bytes, std::size_t& rows) {
     std::string input;
     input.reserve(target_bytes + 1024);
     input.push_back('[');
-    while (input.size() < target_bytes) {
-        if (rows != 0) input.push_back(',');
-        input += "{\"id\":" + std::to_string(rows) +
+    while (true) {
+        const std::string row = "{\"id\":" + std::to_string(rows) +
             ",\"active\":true,\"name\":\"Zeus pipeline benchmark row\"}";
+        const std::size_t separator = rows == 0 ? 0 : 1;
+        if (input.size() + separator + row.size() + 1 > target_bytes) break;
+        if (separator != 0) input.push_back(',');
+        input += row;
         ++rows;
     }
     input.push_back(']');
+    input.resize(target_bytes, ' ');
     return input;
 }
 
 std::string make_csv(std::size_t target_bytes, std::size_t& rows) {
     std::string input = "id,name,city,status,notes\n";
     input.reserve(target_bytes + 1024);
-    while (input.size() < target_bytes) {
-        input += std::to_string(rows) +
+    while (true) {
+        const std::string row = std::to_string(rows) +
             ",Zeus pipeline benchmark,Shanghai,Active,searchable CSV fixture\n";
+        const std::string final_row = std::to_string(rows + 1) +
+            ",Zeus pipeline benchmark,Shanghai,Active,searchable CSV fixture";
+        if (input.size() + row.size() + final_row.size() > target_bytes) break;
+        input += row;
         ++rows;
     }
+    const std::string final_row = std::to_string(rows) +
+        ",Zeus pipeline benchmark,Shanghai,Active,searchable CSV fixture";
+    if (input.size() + final_row.size() > target_bytes) return {};
+    input += final_row;
+    input.resize(target_bytes, ' ');
+    ++rows;
     return input;
 }
 
