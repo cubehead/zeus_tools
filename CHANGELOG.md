@@ -13,7 +13,10 @@ semantic versioning after the first stable release.
   global selection instead of only the visible page.
 - Added cyclic Tab/Shift+Tab focus traversal, visible focus outlines and
   Enter/Space button activation. CSV result cells also support arrow-key
-  navigation and keyboard copy.
+  navigation and keyboard copy; read-only text results support arrow,
+  Home/End and Space/Shift+Space scrolling.
+- Reset the editable input viewport to the beginning when a file is opened,
+  instead of leaving the cursor and vertical scroll at the end of the document.
 - Added conservative MongoDB Shell/BSON detection and a manual `mongodb` input
   override. Whitelisted `NumberInt`, `NumberLong`, `NumberDecimal`/`Decimal128`,
   `ObjectId` and `ISODate` constructors are converted to type-preserving

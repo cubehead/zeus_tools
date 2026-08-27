@@ -142,6 +142,7 @@ void initialize_documentation_scenario() {
             processing::kRecommendedMaxInputBytes);
         app_state.csv.delimiter_index = 1;
     }
+    if (!app_state.input_text.empty()) ++app_state.input_editor_reset_revision;
 #endif
 }
 
@@ -777,6 +778,7 @@ static void load_input_file_impl(const std::string& path) {
     }
 
     app_state.input_text = std::move(value);
+    ++app_state.input_editor_reset_revision;
     app_state.oversized_input_approved = false;
     app_state.large_input_page = 0;
     app_state.large_input_page_boundaries.clear();

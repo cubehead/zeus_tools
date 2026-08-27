@@ -5,6 +5,7 @@
 #include "large_input_editor.h"
 
 #include "components/components.h"
+#include "components/input_model.h"
 #include "core/platform/platform.h"
 
 #include <algorithm>
@@ -19,6 +20,30 @@ namespace app::views {
 
 namespace {
 AppState& app_state = controller::state();
+
+void reset_input_editor_if_requested(eui::Ui& ui) {
+    struct ResetState {
+        std::size_t applied_revision = 0;
+    };
+    ResetState& reset = ui.state<ResetState>("input.editor.reset");
+    if (reset.applied_revision == app_state.input_editor_reset_revision) return;
+    using InputState = components::input_detail::InputModel::InputState;
+    InputState& state = ui.state<InputState>("input.editor");
+    state.text = app_state.input_text;
+    state.compositionText.clear();
+    state.cursor = 0;
+    state.selectionStart = 0;
+    state.selectionEnd = 0;
+    state.dragAnchor = 0;
+    state.horizontalScroll = 0.0f;
+    state.verticalScroll = 0.0f;
+    ++state.textRevision;
+    ++state.compositionRevision;
+    state.layoutCacheValid = false;
+    state.undoStack.clear();
+    state.redoStack.clear();
+    reset.applied_revision = app_state.input_editor_reset_revision;
+}
 }
 
 using namespace controller;
@@ -56,6 +81,7 @@ void build_input_panel(eui::Ui& ui, const ViewContext& context) {
         build_large_input_editor(ui, context);
         return;
     }
+    reset_input_editor_if_requested(ui);
     components::input(ui, "input.editor")
         .position(margin, margin + header_height)
         .size(content_width, input_height)

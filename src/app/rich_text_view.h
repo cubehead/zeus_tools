@@ -363,7 +363,8 @@ public:
                     byteOffsetAtX(document->lines()[line].text, local_x));
                 core::platform::requestUiUpdate();
             })
-            .onTextInput([document, selection, on_copy](const core::KeyboardEvent& event) {
+            .onTextInput([document, selection, visible_lines, scroll, row_height,
+                          viewport_height, on_copy](const core::KeyboardEvent& event) {
                 if (event.selectAll) {
                     selection->select_all(*document);
                     core::platform::requestUiUpdate();
@@ -371,6 +372,23 @@ public:
                 if (event.copy && on_copy) on_copy();
                 if (event.escape) {
                     selection->clear();
+                    core::platform::requestUiUpdate();
+                }
+                const float maximum = std::max(
+                    0.0f,
+                    static_cast<float>(visible_lines->size()) * row_height - viewport_height);
+                float next = *scroll;
+                if (event.up) next -= row_height;
+                if (event.down) next += row_height;
+                if (event.home) next = 0.0f;
+                if (event.end) next = maximum;
+                if (event.space) {
+                    const float page = std::max(row_height, viewport_height - row_height);
+                    next += event.shift ? -page : page;
+                }
+                next = std::clamp(next, 0.0f, maximum);
+                if (next != *scroll) {
+                    *scroll = next;
                     core::platform::requestUiUpdate();
                 }
             })
