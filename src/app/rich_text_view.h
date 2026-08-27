@@ -376,6 +376,17 @@ public:
             })
             .build();
 
+        if (ui_.isFocused(id_ + ".hit")) {
+            ui_.rect(id_ + ".focus")
+                .position(x_, y_)
+                .size(viewport_width, viewport_height)
+                .color({0.0f, 0.0f, 0.0f, 0.0f})
+                .border(2.0f, tokens.primary)
+                .radius(6.0f)
+                .zIndex(900)
+                .build();
+        }
+
         if (folds != nullptr && !document->fold_regions().empty()) {
             const std::size_t first = std::min(
                 visible_lines->size(),

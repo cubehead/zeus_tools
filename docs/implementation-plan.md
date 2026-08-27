@@ -89,7 +89,7 @@
 | P0 | Windows 10 原生运行验证 | Windows 11 已通过；仍需在 Windows 10 验证 Portable ZIP 启动、图标、VersionInfo、字体和核心交互。 |
 | P0 | 剩余输入与 IME 验证 | Windows 11 中文 IME、emoji 与组合字符已通过；仍需完成 macOS 与 Windows 10 的剪贴板、选择、撤销和 IME 验收。 |
 | P0 | 10 MB UI 端到端验收 | 后台基准、超限保护、macOS/Windows 11 精确 10 MiB JSON/CSV、macOS RSS/整机峰值、16 KiB 分页编辑及跨页选择/复制/替换已完成；仍需 Windows 10 复验。 |
-| P1 | 键盘与可访问性 | 已完成搜索聚焦和 Esc 关闭；已确认当前 EUI 自绘控件未暴露到 macOS AX 树，需先补框架辅助功能桥接，再完成全键盘导航、焦点顺序和屏幕阅读器检查。 |
+| P1 | 键盘与可访问性 | 已完成 Tab/Shift+Tab 循环焦点、可见焦点框、Enter/Space 按钮激活、搜索聚焦、Esc 关闭及 CSV 方向键导航；当前 EUI 自绘控件仍未暴露到 macOS AX 树，需补框架辅助功能桥接并完成屏幕阅读器检查。 |
 | P1 | 检测质量外部验证 | 仓库内 75 例基线与报告已完成；仍需收集经授权脱敏、未用于规则开发的真实样例，输出独立准确率与高置信度误判率。 |
 | P1 | 签名与公证 | v0.2.0 已明确采用未签名 Alpha 包；后续版本评估 macOS notarization 与 Windows Authenticode。 |
 

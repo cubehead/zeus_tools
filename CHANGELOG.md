@@ -11,6 +11,9 @@ semantic versioning after the first stable release.
 - Added boundary-aware selection continuation for the 16 KiB large-input
   editor pages. Copy, cut, replacement and select-all now operate on the full
   global selection instead of only the visible page.
+- Added cyclic Tab/Shift+Tab focus traversal, visible focus outlines and
+  Enter/Space button activation. CSV result cells also support arrow-key
+  navigation and keyboard copy.
 - Added conservative MongoDB Shell/BSON detection and a manual `mongodb` input
   override. Whitelisted `NumberInt`, `NumberLong`, `NumberDecimal`/`Decimal128`,
   `ObjectId` and `ISODate` constructors are converted to type-preserving

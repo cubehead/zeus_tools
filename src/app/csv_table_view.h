@@ -13,6 +13,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
+#include <functional>
 #include <limits>
 #include <memory>
 #include <string>
@@ -47,6 +48,9 @@ public:
         active_match_ = active_match;
         return *this;
     }
+    CsvTableViewBuilder& onCopy(std::function<void()> value) {
+        on_copy_ = std::move(value); return *this;
+    }
 
     void build() {
         if (!document_ || document_->rows.empty() || !vertical_scroll_ || !horizontal_scroll_ ||
@@ -68,6 +72,12 @@ public:
         const float content_height = static_cast<float>(body_rows) * row_height;
         const float max_horizontal = std::max(0.0f, content_width - body_width);
         const float max_vertical = std::max(0.0f, content_height - body_height);
+        float* const vertical_scroll = vertical_scroll_;
+        float* const horizontal_scroll = horizontal_scroll_;
+        std::size_t* const selected_row = selected_row_;
+        std::size_t* const selected_column = selected_column_;
+        const bool first_row_header = first_row_header_;
+        const auto on_copy = on_copy_;
         *vertical_scroll_ = std::clamp(*vertical_scroll_, 0.0f, max_vertical);
         *horizontal_scroll_ = std::clamp(*horizontal_scroll_, 0.0f, max_horizontal);
 
@@ -214,17 +224,18 @@ public:
                     .position(row_number_width, 0.0f).size(body_width, hit_height)
                     .zIndex(10).color({0.0f, 0.0f, 0.0f, 0.0f}).interactive().focusable()
                     .cursor(core::CursorShape::Arrow)
-                    .onScroll([this, max_vertical, max_horizontal](const core::ScrollEvent& event) {
+                    .onScroll([vertical_scroll, horizontal_scroll, max_vertical, max_horizontal](const core::ScrollEvent& event) {
                         const float step_x = std::clamp(static_cast<float>(event.x), -4.0f, 4.0f) * 42.0f;
                         const float step_y = std::clamp(static_cast<float>(event.y), -4.0f, 4.0f) * 42.0f;
                         if (std::fabs(step_x) > std::fabs(step_y)) {
-                            *horizontal_scroll_ = std::clamp(*horizontal_scroll_ - step_x, 0.0f, max_horizontal);
+                            *horizontal_scroll = std::clamp(*horizontal_scroll - step_x, 0.0f, max_horizontal);
                         } else {
-                            *vertical_scroll_ = std::clamp(*vertical_scroll_ - step_y, 0.0f, max_vertical);
+                            *vertical_scroll = std::clamp(*vertical_scroll - step_y, 0.0f, max_vertical);
                         }
                         core::platform::requestUiUpdate();
                     })
-                    .onPress([this, document, header_height, row_height, column_width,
+                    .onPress([vertical_scroll, horizontal_scroll, selected_row, selected_column,
+                              first_row_header, document, header_height, row_height, column_width,
                               header_rows, body_rows, column_count, body_width, hit_height](
                                  const core::PointerEvent& event, const core::Rect& bounds) {
                         const float scale_x = bounds.width > 0.0f ? bounds.width / body_width : 1.0f;
@@ -232,17 +243,69 @@ public:
                         const float local_x = static_cast<float>(event.x - bounds.x) / std::max(0.001f, scale_x);
                         const float local_y = static_cast<float>(event.y - bounds.y) / std::max(0.001f, scale_y);
                         const std::size_t column = static_cast<std::size_t>(std::max(
-                            0.0f, std::floor((local_x + *horizontal_scroll_) / column_width)));
-                        if (local_y < header_height && !first_row_header_) return;
+                            0.0f, std::floor((local_x + *horizontal_scroll) / column_width)));
+                        if (local_y < header_height && !first_row_header) return;
                         const std::size_t row = local_y < header_height ? 0
                             : header_rows + static_cast<std::size_t>(std::max(0.0f,
-                                std::floor((local_y - header_height + *vertical_scroll_) / row_height)));
+                                std::floor((local_y - header_height + *vertical_scroll) / row_height)));
                         if (row < document->rows.size() && column < column_count) {
-                            *selected_row_ = row;
-                            *selected_column_ = column;
+                            *selected_row = row;
+                            *selected_column = column;
                             core::platform::requestUiUpdate();
                         }
+                    })
+                    .onTextInput([vertical_scroll, horizontal_scroll, selected_row,
+                                  selected_column, on_copy, document, header_rows,
+                                  column_count, row_height, column_width, body_height,
+                                  body_width, max_vertical, max_horizontal](
+                                     const core::KeyboardEvent& event) {
+                        const bool had_selection = *selected_row < document->rows.size() &&
+                            *selected_column < column_count;
+                        std::size_t row = had_selection ? *selected_row : 0;
+                        std::size_t column = had_selection ? *selected_column : 0;
+                        const std::size_t old_row = row;
+                        const std::size_t old_column = column;
+                        if (event.up && row > 0) --row;
+                        if (event.down && row + 1 < document->rows.size()) ++row;
+                        if (event.left && column > 0) --column;
+                        if (event.right && column + 1 < column_count) ++column;
+                        if (event.home) column = 0;
+                        if (event.end) column = column_count - 1;
+                        const bool changed = !had_selection || row != old_row || column != old_column;
+                        if (!changed) {
+                            if (event.copy && on_copy) on_copy();
+                            return;
+                        }
+                        *selected_row = row;
+                        *selected_column = column;
+                        const std::size_t body_row = row < header_rows ? 0 : row - header_rows;
+                        const float cell_top = static_cast<float>(body_row) * row_height;
+                        const float cell_bottom = cell_top + row_height;
+                        if (cell_top < *vertical_scroll) *vertical_scroll = cell_top;
+                        else if (cell_bottom > *vertical_scroll + body_height) {
+                            *vertical_scroll = cell_bottom - body_height;
+                        }
+                        const float cell_left = static_cast<float>(column) * column_width;
+                        const float cell_right = cell_left + column_width;
+                        if (cell_left < *horizontal_scroll) *horizontal_scroll = cell_left;
+                        else if (cell_right > *horizontal_scroll + body_width) {
+                            *horizontal_scroll = cell_right - body_width;
+                        }
+                        *vertical_scroll = std::clamp(*vertical_scroll, 0.0f, max_vertical);
+                        *horizontal_scroll = std::clamp(*horizontal_scroll, 0.0f, max_horizontal);
+                        if (event.copy && on_copy) on_copy();
+                        core::platform::requestUiUpdate();
                     }).build();
+
+                if (ui_.isFocused(id_ + ".interaction")) {
+                    ui_.rect(id_ + ".focus")
+                        .size(width_, height_)
+                        .color({0.0f, 0.0f, 0.0f, 0.0f})
+                        .border(2.0f, tokens_.primary)
+                        .radius(6.0f)
+                        .zIndex(900)
+                        .build();
+                }
 
                 if (max_vertical > 0.0f) {
                     const float thumb_height = std::max(22.0f, body_height * body_height / content_height);
@@ -255,13 +318,13 @@ public:
                     ui_.rect(id_ + ".vscroll.hit").position(width_ - scrollbar_size, header_height)
                         .size(scrollbar_size, body_height).zIndex(20)
                         .color({0.0f, 0.0f, 0.0f, 0.0f}).interactive()
-                        .onPress([this, max_vertical, body_height, thumb_height](
+                        .onPress([vertical_scroll, max_vertical, body_height, thumb_height](
                                      const core::PointerEvent& event, const core::Rect& bounds) {
                             const float scale = bounds.height > 0.0f ? bounds.height / body_height : 1.0f;
                             const float local = static_cast<float>(event.y - bounds.y) / std::max(0.001f, scale);
                             const float travel = std::max(1.0f, body_height - thumb_height);
                             const float ratio = std::clamp((local - thumb_height * 0.5f) / travel, 0.0f, 1.0f);
-                            *vertical_scroll_ = ratio * max_vertical;
+                            *vertical_scroll = ratio * max_vertical;
                             core::platform::requestUiUpdate();
                         }).build();
                 }
@@ -276,13 +339,13 @@ public:
                     ui_.rect(id_ + ".hscroll.hit").position(row_number_width, height_ - scrollbar_size)
                         .size(body_width, scrollbar_size).zIndex(20)
                         .color({0.0f, 0.0f, 0.0f, 0.0f}).interactive()
-                        .onPress([this, max_horizontal, body_width, thumb_width](
+                        .onPress([horizontal_scroll, max_horizontal, body_width, thumb_width](
                                      const core::PointerEvent& event, const core::Rect& bounds) {
                             const float scale = bounds.width > 0.0f ? bounds.width / body_width : 1.0f;
                             const float local = static_cast<float>(event.x - bounds.x) / std::max(0.001f, scale);
                             const float travel = std::max(1.0f, body_width - thumb_width);
                             const float ratio = std::clamp((local - thumb_width * 0.5f) / travel, 0.0f, 1.0f);
-                            *horizontal_scroll_ = ratio * max_horizontal;
+                            *horizontal_scroll = ratio * max_horizontal;
                             core::platform::requestUiUpdate();
                         }).build();
                 }
@@ -383,6 +446,7 @@ private:
     components::theme::ThemeColorTokens tokens_ = components::theme::dark();
     const std::vector<CsvSearchMatch>* search_matches_ = nullptr;
     std::size_t active_match_ = 0;
+    std::function<void()> on_copy_;
     bool first_row_header_ = true;
     float x_ = 0.0f;
     float y_ = 0.0f;

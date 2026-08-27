@@ -64,6 +64,7 @@ void build_result_panel(eui::Ui& ui, const ViewContext& context) {
             .firstRowHeader(app_state.csv.first_row_header)
             .theme(tokens)
             .searchMatches(app_state.search.csv_matches, app_state.search.active_match)
+            .onCopy([] { copy_result(true); })
             .build();
     } else if (!app_state.result.image_preview_source.empty()) {
         const float inner_x = margin + 8.0f;
