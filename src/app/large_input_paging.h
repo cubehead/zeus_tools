@@ -15,6 +15,10 @@ struct PageRange {
     std::size_t end = 0;
 };
 
+constexpr std::size_t page_offset(std::size_t offset, const PageRange& range) noexcept {
+    return std::clamp(offset, range.start, range.end) - range.start;
+}
+
 constexpr std::size_t page_count(std::size_t bytes) noexcept {
     return bytes == 0 ? 1 : (bytes + kPageBytes - 1) / kPageBytes;
 }

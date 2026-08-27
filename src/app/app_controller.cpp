@@ -723,6 +723,24 @@ void copy_input_text() {
     }
 }
 
+void copy_input_range(std::size_t start, std::size_t end) {
+    start = std::min(start, app_state.input_text.size());
+    end = std::min(end, app_state.input_text.size());
+    if (end < start) std::swap(start, end);
+    if (start == end) return;
+    try {
+        const std::string value = app_state.input_text.substr(start, end - start);
+        core::window::setClipboardText(value);
+        app_state.result.status = std::string(tr(i18n::Text::Copied)) + " " +
+            std::to_string(value.size()) + " " + tr(i18n::Text::Bytes);
+        core::platform::requestUiUpdate();
+    } catch (const std::exception& exception) {
+        report_operation_failure("Unable to copy input selection", exception.what());
+    } catch (...) {
+        report_operation_failure("Unable to copy input selection", "Unknown clipboard error");
+    }
+}
+
 static void load_input_file_impl(const std::string& path) {
     if (path.empty()) return;
     constexpr std::uintmax_t max_file_bytes = 10U * 1024U * 1024U;
@@ -762,6 +780,7 @@ static void load_input_file_impl(const std::string& path) {
     app_state.oversized_input_approved = false;
     app_state.large_input_page = 0;
     app_state.large_input_page_boundaries.clear();
+    app_state.large_input_selection = {};
     app_state.processing_action_id = "auto";
     app_state.input_type_id = "auto";
     app_state.input_type_dropdown_open = false;

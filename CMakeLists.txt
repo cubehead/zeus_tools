@@ -192,6 +192,16 @@ if(ZEUS_BUILD_APP)
     execute_process(
         COMMAND ${CMAKE_COMMAND}
                 -DSOURCE_DIR=${ZEUS_EUI_SOURCE_ROOT}
+                -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/patch_eui_input_selection.cmake
+        RESULT_VARIABLE ZEUS_EUI_INPUT_SELECTION_PATCH_RESULT
+    )
+    if(NOT ZEUS_EUI_INPUT_SELECTION_PATCH_RESULT EQUAL 0)
+        message(FATAL_ERROR "Failed to add input-selection callbacks to EUI-NEO")
+    endif()
+
+    execute_process(
+        COMMAND ${CMAKE_COMMAND}
+                -DSOURCE_DIR=${ZEUS_EUI_SOURCE_ROOT}
                 -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/patch_eui_file_drop.cmake
         RESULT_VARIABLE ZEUS_EUI_FILE_DROP_PATCH_RESULT
     )

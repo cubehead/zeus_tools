@@ -70,6 +70,7 @@ void build_input_panel(eui::Ui& ui, const ViewContext& context) {
             app_state.oversized_input_approved = false;
             app_state.large_input_page = 0;
             app_state.large_input_page_boundaries.clear();
+            app_state.large_input_selection = {};
             app_state.processing_action_id = "auto";
             analyze_input(true);
         })

@@ -8,6 +8,7 @@
 
 #include "zeus/crypto_service.h"
 
+#include <cstddef>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -44,6 +45,7 @@ void continue_decode_one_layer();
 void move_match(int direction);
 void copy_result(bool selection_only);
 void copy_input_text();
+void copy_input_range(std::size_t start, std::size_t end);
 void open_input_file();
 void load_input_file(const std::string& path);
 void export_result();

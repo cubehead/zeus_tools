@@ -324,6 +324,11 @@ void test_large_input_pages_preserve_utf8_boundaries() {
     expect(boundaries.size() == 4 && boundaries[1] == first.end &&
                boundaries[2] == second.end && boundaries[3] == input.size(),
            "stored page boundaries should match direct UTF-8-safe page ranges");
+    expect(app::large_input::page_offset(0, second) == 0 &&
+               app::large_input::page_offset(second.start + 7, second) == 7 &&
+               app::large_input::page_offset(input.size(), second) ==
+                   second.end - second.start,
+           "global selection offsets should project safely onto each visible page");
     auto resized = boundaries;
     const std::size_t original_total = resized.back();
     const std::size_t original_first = resized[1] - resized[0];

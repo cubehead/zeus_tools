@@ -72,6 +72,14 @@ struct LayoutState {
     bool splitter_hovered = false;
 };
 
+struct LargeInputSelectionState {
+    std::size_t anchor = 0;
+    std::size_t caret = 0;
+    bool continuation_pending = false;
+    bool pointer_extending = false;
+    bool ignore_next_change = false;
+};
+
 struct AppState {
     std::string input_text;
     SearchState search;
@@ -85,6 +93,7 @@ struct AppState {
     bool oversized_input_approved = false;
     std::size_t large_input_page = 0;
     std::vector<std::size_t> large_input_page_boundaries;
+    LargeInputSelectionState large_input_selection;
     bool language_dropdown_open = false;
     bool about_dialog_open = false;
     std::size_t full_repaint_revision = 0;
