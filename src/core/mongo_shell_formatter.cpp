@@ -1,6 +1,7 @@
 #include "zeus/mongo_shell_formatter.h"
 
 #include "zeus/base64_codec.h"
+#include "zeus/developer_tools.h"
 
 #include <algorithm>
 #include <charconv>
@@ -25,6 +26,8 @@ constexpr ConstructorDefinition kConstructors[] = {
     {"Double", "$numberDouble"},
     {"NumberDecimal", "$numberDecimal"},
     {"Decimal128", "$numberDecimal"},
+    {"ObjectId.createFromBase64", "$oid"},
+    {"ObjectId.createFromHexString", "$oid"},
     {"ObjectId", "$oid"},
     {"ISODate", "$date"},
     {"Date", "$date"},
@@ -513,6 +516,26 @@ bool is_canonical_base64(std::string_view value) {
     return true;
 }
 
+bool decode_canonical_base64(std::string_view value, std::string& output) {
+    if (!is_canonical_base64(value)) return false;
+    output.clear();
+    output.reserve((value.size() / 4) * 3);
+    std::uint32_t buffer = 0;
+    int bits = 0;
+    for (char ch : value) {
+        if (ch == '=') break;
+        const int digit = base64_value(ch);
+        if (digit < 0) return false;
+        buffer = (buffer << 6U) | static_cast<std::uint32_t>(digit);
+        bits += 6;
+        if (bits >= 8) {
+            bits -= 8;
+            output.push_back(static_cast<char>((buffer >> bits) & 0xFFU));
+        }
+    }
+    return true;
+}
+
 bool read_bin_data_arguments(
     std::string_view input,
     std::size_t& position,
@@ -963,6 +986,61 @@ bool convert_constructor(
         position = cursor;
         return true;
     }
+    if (definition->name == "ObjectId.createFromBase64") {
+        std::string payload;
+        std::uint32_t subtype = 0;
+        if (!read_binary_base64_arguments(input, cursor, payload, subtype) ||
+            payload.size() != 16) {
+            issue = issue_at(input, cursor, "MONGO_SHELL_ARGUMENT",
+                             "ObjectId.createFromBase64 requires exactly 16 Base64 characters");
+            return false;
+        }
+        std::string bytes;
+        if (!decode_canonical_base64(payload, bytes) || bytes.size() != 12) {
+            issue = issue_at(input, cursor, "MONGO_SHELL_VALUE",
+                             "ObjectId Base64 must decode to exactly 12 bytes");
+            return false;
+        }
+        skip_space(input, cursor);
+        if (cursor >= input.size() || input[cursor] != ')') {
+            issue = issue_at(input, cursor, "MONGO_SHELL_ARGUMENT",
+                             "ObjectId.createFromBase64 accepts Base64 and an optional subtype");
+            return false;
+        }
+        ++cursor;
+        output += "{\"$oid\":";
+        output += quote_json_string(encode_hex(bytes));
+        output += '}';
+        position = cursor;
+        return true;
+    }
+    if (definition->name == "ObjectId.createFromHexString") {
+        skip_space(input, cursor);
+        std::string decoded;
+        std::size_t error_offset = cursor;
+        if (!read_constructor_argument(
+                input, cursor, definition->name, decoded, error_offset) ||
+            !is_object_id(decoded)) {
+            issue = issue_at(input, error_offset, "MONGO_SHELL_ARGUMENT",
+                             "ObjectId.createFromHexString requires exactly 24 hexadecimal characters");
+            return false;
+        }
+        skip_space(input, cursor);
+        if (cursor >= input.size() || input[cursor] != ')') {
+            issue = issue_at(input, cursor, "MONGO_SHELL_ARGUMENT",
+                             "ObjectId.createFromHexString accepts one hexadecimal string");
+            return false;
+        }
+        ++cursor;
+        std::transform(decoded.begin(), decoded.end(), decoded.begin(), [](unsigned char ch) {
+            return static_cast<char>(std::tolower(ch));
+        });
+        output += "{\"$oid\":";
+        output += quote_json_string(decoded);
+        output += '}';
+        position = cursor;
+        return true;
+    }
     if (definition->name == "BSONRegExp") {
         std::string pattern;
         std::string options;
@@ -1042,6 +1120,11 @@ bool convert_constructor(
         output += quote_json_string(canonical_integer_string<std::int32_t>(decoded));
     } else if (definition->name == "NumberLong") {
         output += quote_json_string(canonical_integer_string<std::int64_t>(decoded));
+    } else if (definition->name == "ObjectId") {
+        std::transform(decoded.begin(), decoded.end(), decoded.begin(), [](unsigned char ch) {
+            return static_cast<char>(std::tolower(ch));
+        });
+        output += quote_json_string(decoded);
     } else {
         output += quote_json_string(decoded);
     }

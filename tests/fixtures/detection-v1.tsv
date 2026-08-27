@@ -17,6 +17,8 @@ mongodb-hex-data	MongoDB	true	{payload:HexData(4,'123456abcdef')}
 mongodb-hex-data-invalid	MongoDB	false	{payload:HexData(4,'123xz')}
 mongodb-binary-display	MongoDB	true	{payload:Binary.createFromBase64('EjRWq83v',4),hex:Binary.createFromHexString('123456abcdef')}
 mongodb-binary-display-invalid	MongoDB	false	{payload:Binary.createFromBase64('AQIDB-_=',4)}
+mongodb-object-id-factory	MongoDB	true	{id:ObjectId.createFromBase64('SGVsbG8gV29ybGQh'),other:ObjectId.createFromHexString('64c13ab08edf48a008793cac')}
+mongodb-object-id-factory-invalid	MongoDB	false	{id:ObjectId.createFromBase64('SGVsbG8gV29ybGQ=')}
 json-string	JSON	true	"plain JSON string"
 xml-document	XML	true	<?xml version="1.0"?><root><item id="1"/></root>
 xml-invalid-structure	XML	false	<root><item></root>

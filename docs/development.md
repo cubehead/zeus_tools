@@ -12,7 +12,8 @@
 - 严格 JSON 格式化及行列错误信息。
 - MongoDB Shell/BSON 使用独立的非执行转换器：完整输入必须是 JSON 结构，只替换
   `NumberInt`/`Int32`、`NumberLong`、`Double`、`NumberDecimal`/`Decimal128`、
-  `ObjectId`、`ISODate`/`Date`、`UUID`、`Timestamp`、`BinData`、`HexData`、
+  `ObjectId` 及其 `createFromBase64`/`createFromHexString` 工厂形式、
+  `ISODate`/`Date`、`UUID`、`Timestamp`、`BinData`、`HexData`、
   `Binary.createFromBase64`/`Binary.createFromHexString`、`BSONRegExp`、单参数 `Code`、
   `MinKey` 与 `MaxKey` 白名单构造器，并输出 MongoDB Extended JSON；`Code` 不执行且
   暂不接受 scope 对象；参数支持 Mongo Shell 常见单引号，
@@ -26,6 +27,8 @@
   转换结果与普通 Base64 编码及图片 Data URL 共用同一个字节编码器。
   当前 mongosh 二进制回显使用的 `Binary.createFromBase64` 及手动
   `Binary.createFromHexString` 也会进入同一严格 `$binary` 转换路径。
+  ObjectId Base64 工厂必须解码为 12 字节，Hex 工厂必须为 24 位；输出统一转为
+  小写 `$oid`，可选 subtype 仅按官方签名校验而不改变 ObjectId 类型。
 - XML 自动识别、严格解析、格式化、行列错误和 token 高亮；混合内容不注入语义空白，`DOCTYPE`/`ENTITY` 在解析前拒绝。
 - YAML 保守自动识别、规范化、错误行列和 token 高亮；首版采用单文档安全子集，限制 10 MB、128 层和 10 万节点，并拒绝 Directive、Tag、Anchor/Alias。
 - TOML 使用固定版本 toml++ 严格解析、规范化、行列错误、专用高亮和章节折叠，支持 JSON 双向转换；JSON `null` 等无 TOML 等价物会明确失败。

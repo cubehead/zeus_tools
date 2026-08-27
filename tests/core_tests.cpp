@@ -446,6 +446,17 @@ int main() {
                 displayed_binary.value.find(R"("base64": "EjRWq83v")") !=
                     std::string::npos,
             "mongosh Binary display constructors should convert to canonical Extended JSON");
+    const auto object_id_factories = zeus::process_text(
+        R"({base64:ObjectId.createFromBase64('SGVsbG8gV29ybGQh'),hex:ObjectId.createFromHexString('64C13AB08EDF48A008793CAC'),direct:ObjectId('507F1F77BCF86CD799439011')})",
+        zeus::ProcessingMode::MongoShell);
+    require(object_id_factories.ok &&
+                object_id_factories.value.find(
+                    R"("$oid": "48656c6c6f20576f726c6421")") != std::string::npos &&
+                object_id_factories.value.find(
+                    R"("$oid": "64c13ab08edf48a008793cac")") != std::string::npos &&
+                object_id_factories.value.find(
+                    R"("$oid": "507f1f77bcf86cd799439011")") != std::string::npos,
+            "ObjectId factories and direct values should emit canonical lowercase hex");
     const auto code_and_canonical_integers = zeus::process_text(
         R"({script:new Code('function () { return 1; }'),padded:NumberInt('001'),zero:NumberLong('-0')})",
         zeus::ProcessingMode::MongoShell);
@@ -542,6 +553,13 @@ int main() {
                     R"({"value":Binary.createFromHexString("123")})",
                     zeus::ProcessingMode::MongoShell).ok,
             "Binary display constructors should reject malformed payloads and subtypes");
+    require(!zeus::process_text(
+                R"({"value":ObjectId.createFromBase64("SGVsbG8gV29ybGQ=")})",
+                zeus::ProcessingMode::MongoShell).ok &&
+                !zeus::process_text(
+                    R"({"value":ObjectId.createFromHexString("64c13ab08edf48a008793ca")})",
+                    zeus::ProcessingMode::MongoShell).ok,
+            "ObjectId factories should require exactly 12 decoded bytes or 24 hex characters");
     require(!zeus::process_text(
                 R"({"value":new Date()})",
                 zeus::ProcessingMode::MongoShell).ok,

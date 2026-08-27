@@ -34,6 +34,8 @@ semantic versioning after the first stable release.
   binary values, backed by the shared Base64 encoder.
 - Added current `mongosh` `Binary.createFromBase64` and
   `Binary.createFromHexString` display-form conversion with optional subtype handling.
+- Added `ObjectId.createFromBase64` and `ObjectId.createFromHexString` conversion,
+  with exact 12-byte validation and lowercase canonical `$oid` output.
 - Reused JSON highlighting, folding, search, minify/escape and structured
   conversion actions for successfully converted MongoDB Shell input.
 
