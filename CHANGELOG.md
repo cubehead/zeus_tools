@@ -8,6 +8,9 @@ semantic versioning after the first stable release.
 
 ### Fixed
 
+- Prevented dismissed dropdowns and other overlays from reappearing as stale
+  rectangles on macOS by conservatively synchronizing the OpenGL backbuffer
+  from EUI-NEO's retained render cache before presentation.
 - Made the JSON, CSV and application pipeline benchmarks generate exact target
   byte sizes, so the 10 MiB boundary exercises the supported limit instead of
   accidentally entering the oversized-input path.

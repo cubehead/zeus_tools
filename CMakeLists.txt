@@ -167,8 +167,8 @@ if(ZEUS_BUILD_APP)
         set(ZEUS_EUI_SOURCE_ROOT "${eui_neo_SOURCE_DIR}")
     endif()
 
-    # Apply small, idempotent EUI-NEO v0.5.3 compatibility patches for the
-    # native splitter cursor, desktop shortcuts and file-drop input.
+    # Apply small, idempotent EUI-NEO v0.5.3 compatibility patches for native
+    # interaction, rendering and desktop integration behavior used by the app.
     execute_process(
         COMMAND ${CMAKE_COMMAND}
                 -DSOURCE_DIR=${ZEUS_EUI_SOURCE_ROOT}
@@ -237,6 +237,16 @@ if(ZEUS_BUILD_APP)
     )
     if(NOT ZEUS_EUI_DATA_IMAGE_PATCH_RESULT EQUAL 0)
         message(FATAL_ERROR "Failed to add in-memory Data URL image support to EUI-NEO")
+    endif()
+
+    execute_process(
+        COMMAND ${CMAKE_COMMAND}
+                -DSOURCE_DIR=${ZEUS_EUI_SOURCE_ROOT}
+                -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/patch_eui_opengl_backbuffer_sync.cmake
+        RESULT_VARIABLE ZEUS_EUI_OPENGL_BACKBUFFER_PATCH_RESULT
+    )
+    if(NOT ZEUS_EUI_OPENGL_BACKBUFFER_PATCH_RESULT EQUAL 0)
+        message(FATAL_ERROR "Failed to make EUI-NEO OpenGL backbuffer synchronization conservative")
     endif()
 
     set(ZEUS_APP_SOURCES
