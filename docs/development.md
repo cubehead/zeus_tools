@@ -171,7 +171,7 @@ Unix 路径、SQL、日志、环境变量、HTTP 头和普通查询串。
 这些数字仅代表仓库内固定回归语料，不是对真实世界数据分布的统计推断。后续仍需使用
 经过脱敏且获得授权的真实样例建立独立评估集，避免在同一开发语料上调参与评估。
 
-CSV 大数据虚拟滚动、精确搜索定位以及 XML、YAML、摘要/HMAC、Base64、URL Decode 已完成首个可用版本。`v0.2.0` 提供 macOS arm64 DMG 和通过 MinGW-w64 交叉构建的 Windows x64 Portable ZIP，并在两个包中加入 CLI。Windows 11 原生 MinGW/MSVC 构建、启动和 IME 已完成；大文本分页边界连续选择、Tab/Shift+Tab 焦点遍历、按钮键盘激活与 CSV 方向键导航已接入。Windows 10、屏幕阅读器辅助功能桥接与签名/公证仍按发布清单推进。
+CSV 大数据虚拟滚动、精确搜索定位以及 XML、YAML、摘要/HMAC、Base64、URL Decode 已完成首个可用版本。`v0.2.0` 提供 macOS arm64 DMG 和通过 MinGW-w64 交叉构建的 Windows x64 Portable ZIP，并在两个包中加入 CLI。Windows 11 原生 MinGW/MSVC 构建、启动和 IME 已完成；大文本分页边界连续选择、Tab/Shift+Tab 焦点遍历、按钮键盘激活、下拉框键盘选择与 CSV 方向键导航已接入。下拉框关闭和切换选项后会触发完整重绘，避免弹层残影。Windows 10、屏幕阅读器辅助功能桥接与签名/公证仍按发布清单推进。
 
 ## Windows 11 原生验证
 

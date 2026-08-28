@@ -20,6 +20,24 @@ function(zeus_replace_once relative_path before after)
     file(WRITE "${path}" "${contents}")
 endfunction()
 
+function(zeus_replace_if_present relative_path before after)
+    set(path "${SOURCE_DIR}/${relative_path}")
+    if(NOT EXISTS "${path}")
+        message(FATAL_ERROR "EUI keyboard patch target is missing: ${path}")
+    endif()
+    file(READ "${path}" contents)
+    string(FIND "${contents}" "${after}" already_patched)
+    if(NOT already_patched EQUAL -1)
+        return()
+    endif()
+    string(FIND "${contents}" "${before}" original_found)
+    if(original_found EQUAL -1)
+        return()
+    endif()
+    string(REPLACE "${before}" "${after}" contents "${contents}")
+    file(WRITE "${path}" "${contents}")
+endfunction()
+
 zeus_replace_once(
     "core/input/input_types.h"
     "    bool enter = false;\n    bool left = false;"
@@ -94,3 +112,23 @@ zeus_replace_once(
     "components/button.h"
     "                    .disabled(disabled_)\n                    .preserveFocusOnPress(preserveFocusOnPress_)\n                    .onClick(onClick_)"
     "                    .disabled(disabled_)\n                    .preserveFocusOnPress(preserveFocusOnPress_)\n                    .focusable()\n                    .onClick(onClick_)\n                    .onTextInput([callback = onClick_](const core::KeyboardEvent& event) {\n                        if (callback && (event.enter || event.space)) callback();\n                    })")
+
+zeus_replace_once(
+    "components/dropdown.h"
+    "        const std::function<void(int)> onChange = onChange_;\n        const std::function<void(bool)> onOpenChange = onOpenChange_;"
+    "        const std::function<void(int)> onChange = onChange_;\n        const std::function<void(bool)> onOpenChange = onOpenChange_;\n        core::Border fieldBorder = {metrics_.spacing.hairline, style_.border};\n        if (ui_.isFocused(id_ + \".field\")) {\n            fieldBorder.width = 2.0f;\n            fieldBorder.color = style_.accent;\n        }")
+
+zeus_replace_if_present(
+    "components/dropdown.h"
+    "                        if (count <= 0 || (!event.up && !event.down && !event.home && !event.end)) {\n                            return;\n                        }\n                        int next = selected >= 0 ? selected : 0;"
+    "                        const bool navigating = event.up || event.down || event.home || event.end;\n                        if (count <= 0 || !navigating) {\n                            return;\n                        }\n                        if (!open) {\n                            if (onOpenChange) onOpenChange(true);\n                            return;\n                        }\n                        int next = selected >= 0 ? selected : 0;")
+
+zeus_replace_once(
+    "components/dropdown.h"
+    "                    .border(metrics_.spacing.hairline, style_.border)\n                    .transition(transition_)\n                    .onClick([onOpenChange, open = open_] {\n                        if (onOpenChange) {\n                            onOpenChange(!open);\n                        }\n                    })\n                    .build();"
+    "                    .border(fieldBorder)\n                    .transition(transition_)\n                    .focusable()\n                    .onClick([onOpenChange, open = open_] {\n                        if (onOpenChange) {\n                            onOpenChange(!open);\n                        }\n                    })\n                    .onTextInput([onChange, onOpenChange, open = open_, selected, count](const core::KeyboardEvent& event) {\n                        if ((event.enter || event.space) && onOpenChange) {\n                            onOpenChange(!open);\n                            return;\n                        }\n                        if (event.escape && open && onOpenChange) {\n                            onOpenChange(false);\n                            return;\n                        }\n                        const bool navigating = event.up || event.down || event.home || event.end;\n                        if (count <= 0 || !navigating) {\n                            return;\n                        }\n                        if (!open) {\n                            if (onOpenChange) onOpenChange(true);\n                            return;\n                        }\n                        int next = selected >= 0 ? selected : 0;\n                        if (event.up) next = (next + count - 1) % count;\n                        if (event.down) next = (next + 1) % count;\n                        if (event.home) next = 0;\n                        if (event.end) next = count - 1;\n                        if (next != selected) {\n                            if (onChange) onChange(next);\n                            if (onOpenChange) onOpenChange(false);\n                        }\n                    })\n                    .build();")
+
+zeus_replace_once(
+    "components/dropdown.h"
+    "                        if (next != selected && onChange) onChange(next);"
+    "                        if (next != selected) {\n                            if (onChange) onChange(next);\n                            if (onOpenChange) onOpenChange(false);\n                        }")
