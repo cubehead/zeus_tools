@@ -20,6 +20,24 @@ function(zeus_replace_once relative_path before after)
     file(WRITE "${path}" "${contents}")
 endfunction()
 
+function(zeus_replace_if_present relative_path before after)
+    set(path "${SOURCE_DIR}/${relative_path}")
+    if(NOT EXISTS "${path}")
+        message(FATAL_ERROR "EUI compatibility patch target is missing: ${path}")
+    endif()
+    file(READ "${path}" contents)
+    string(FIND "${contents}" "${after}" already_patched)
+    if(NOT already_patched EQUAL -1)
+        return()
+    endif()
+    string(FIND "${contents}" "${before}" original_found)
+    if(original_found EQUAL -1)
+        return()
+    endif()
+    string(REPLACE "${before}" "${after}" contents "${contents}")
+    file(WRITE "${path}" "${contents}")
+endfunction()
+
 zeus_replace_once(
     "components/input.h"
     "    InputBuilder& onFocus(std::function<void(bool)> callback) {\n        onFocus_ = std::move(callback);\n        return *this;\n    }"
@@ -59,6 +77,11 @@ zeus_replace_once(
     "components/input.h"
     "                            InputModel::syncScroll(state, std::max(0.0f, width - inset * 2.0f), fontFamily, fontSize);\n                        }\n                    });"
     "                            InputModel::syncScroll(state, std::max(0.0f, width - inset * 2.0f), fontFamily, fontSize);\n                        }\n                        if (onSelectionChange) onSelectionChange(state.selectionStart, state.selectionEnd);\n                    });")
+
+zeus_replace_if_present(
+    "components/input.h"
+    "hit.onTextInput([&state, allowMultiline, onChange, onEnter, onSelectionChange, onCopy, onSelectAll, width, inset, fontSize, fontFamily, textHeight](const core::KeyboardEvent& event) {"
+    "hit.onTextInput([&state, allowMultiline, onChange, onEnter, onSelectionChange, onCopy, onSelectAll, onHistory, width, inset, fontSize, fontFamily, textHeight](const core::KeyboardEvent& event) {")
 
 zeus_replace_once(
     "components/input.h"
