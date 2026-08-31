@@ -173,6 +173,17 @@ Unix 路径、SQL、日志、环境变量、HTTP 头和普通查询串。
 
 CSV 大数据虚拟滚动、精确搜索定位以及 XML、YAML、摘要/HMAC、Base64、URL Decode 已完成首个可用版本。`v0.2.0` 提供 macOS arm64 DMG 和通过 MinGW-w64 交叉构建的 Windows x64 Portable ZIP，并在两个包中加入 CLI。Windows 11 原生 MinGW/MSVC 构建、启动和 IME 已完成；大文本分页边界连续选择、Tab/Shift+Tab 焦点遍历、按钮键盘激活、下拉框键盘选择与 CSV 方向键导航已接入。下拉框关闭和切换选项后会触发完整重绘，避免弹层残影。Windows 10、屏幕阅读器辅助功能桥接与签名/公证仍按发布清单推进。
 
+2026-08-31 从当前 `main` 重新生成 macOS arm64 DMG 与 MinGW-w64 Windows x64
+Portable ZIP，两个包均通过 `scripts/check-package.sh`。macOS 验证覆盖应用、CLI、
+图标、版本、最低系统声明、运行时资源和许可证；Windows 验证覆盖 PE/VersionInfo、
+GUI/CLI、图标、系统依赖、运行时资源和许可证。EUI OpenGL 后端改为在呈现前从保留
+缓存保守同步默认帧缓冲，语言下拉框关闭后及后续焦点重绘均未再出现旧弹层残影。
+
+同日评估 macOS Accessibility/AX 桥接：EUI 当前元素模型只有布局、绘制和交互回调，
+尚无语义角色、可访问名称/值或原生动作描述。应用层叠加透明原生控件会复制焦点、
+命中和状态同步逻辑，因此不采用该临时方案；后续应先在框架层建立跨平台语义快照，
+再由 macOS AX 与 Windows UI Automation 分别映射。
+
 ## Windows 11 原生验证
 
 2026-08-17 在 Windows 11 专业版 x64（build 26200）完成以下验证：

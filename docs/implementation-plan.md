@@ -2,7 +2,7 @@
 
 > 状态：v0.2.1 Alpha 已发布，继续跨平台稳定化
 >
-> 更新日期：2026-08-27
+> 更新日期：2026-08-31
 >
 > 产品基线：[产品需求](./product-requirements.md)
 >
@@ -74,6 +74,9 @@
 - macOS arm64 DMG 已通过 SHA-256、磁盘映像及包内文件检查。
 - Windows x64 Portable ZIP 已通过 MinGW-w64 交叉构建、压缩包完整性、
   PE/VersionInfo、运行时资源和系统 DLL 依赖检查。
+- 2026-08-31 从当前 `main` 重新生成 macOS arm64 DMG 与 Windows x64 Portable
+  ZIP；两个候选包的 SHA-256、版本、图标、GUI/CLI、运行时资源、许可证和禁止资源
+  检查均通过。macOS 下拉框等弹层关闭后的 OpenGL 后缓冲残影已完成回归验证。
 - Windows 11 已完成 MinGW-w64/MSVC 原生 Debug/Release 构建、CTest（MSVC
   Release 5/5）、Portable
   ZIP、CLI/GUI 启动、中文 IME 预编辑与候选提交、emoji/组合字符和 10 MiB
@@ -90,7 +93,7 @@
 | P0 | Windows 10 原生运行验证 | Windows 11 已通过；仍需在 Windows 10 验证 Portable ZIP 启动、图标、VersionInfo、字体和核心交互。 |
 | P0 | 剩余输入与 IME 验证 | Windows 11 中文 IME、emoji 与组合字符已通过；macOS 已验证 UTF-8 文件输入、中文/日文/韩文、emoji、组合字符、全选、复制、剪切、粘贴、撤销和重做，仍需人工验证 macOS 候选词组合态及完成 Windows 10 复验。 |
 | P0 | 10 MB UI 端到端验收 | 后台基准、超限保护及继续路径、macOS/Windows 11 精确 10 MiB JSON/CSV、macOS RSS/整机峰值、16 KiB 分页编辑及跨页选择/复制/替换/撤销/重做已完成；仍需 Windows 10 复验。 |
-| P1 | 键盘与可访问性 | 已完成 Tab/Shift+Tab 循环焦点、可见焦点框、Enter/Space 按钮激活、下拉框键盘选择、搜索聚焦、Esc 关闭、CSV 方向键导航、只读文本键盘滚动及结构化结果左右键折叠；当前 EUI 自绘控件仍未暴露到 macOS AX 树，需补框架辅助功能桥接并完成屏幕阅读器检查。 |
+| P1 | 键盘与可访问性 | 已完成 Tab/Shift+Tab 循环焦点、可见焦点框、Enter/Space 按钮激活、下拉框键盘选择、搜索聚焦、Esc 关闭、CSV 方向键导航、只读文本键盘滚动及结构化结果左右键折叠；当前 EUI 元素模型没有语义角色、可访问名称/值或原生动作接口，自绘控件仍未暴露到 macOS AX 树。需先在框架层设计语义快照与原生桥接，避免用透明控件复制第二套焦点和命中逻辑，再完成屏幕阅读器检查。 |
 | P1 | 检测质量外部验证 | 仓库内 75 例基线与报告已完成；仍需收集经授权脱敏、未用于规则开发的真实样例，输出独立准确率与高置信度误判率。 |
 | P1 | 签名与公证 | v0.2.0 已明确采用未签名 Alpha 包；后续版本评估 macOS notarization 与 Windows Authenticode。 |
 

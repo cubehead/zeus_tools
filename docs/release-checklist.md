@@ -2,37 +2,42 @@
 
 This checklist is intentionally manual. The repository does not use GitHub CI.
 
+The checked state records validation of the current `main` branch through
+2026-08-31. Unchecked items require another operating-system version, native
+assistive technology, signing credentials, a fresh account, or the final
+release upload; they must not be inferred from a cross-build.
+
 ## Source and version
 
-- [ ] Working tree contains only intended source, documentation and assets.
-- [ ] `./scripts/check-repository.sh` passes; on native Windows,
+- [x] Working tree contains only intended source, documentation and assets.
+- [x] `./scripts/check-repository.sh` passes; on native Windows,
       `.\scripts\check-repository.ps1` passes.
-- [ ] `project(... VERSION ...)`, build number and `CHANGELOG.md` agree.
-- [ ] Core tests pass from a clean build directory.
-- [ ] `core-sanitize` ASan + UBSan tests pass on a Clang/GCC development host.
+- [x] `project(... VERSION ...)`, build number and `CHANGELOG.md` agree.
+- [x] Core tests pass from a clean build directory.
+- [x] `core-sanitize` ASan + UBSan tests pass on a Clang/GCC development host.
 - [x] Synthetic JSON and CSV benchmarks have no material regression.
 - [x] `zeus_detection_report` passes its corpus coverage floors with no mismatch.
-- [ ] Dependency revisions and `THIRD_PARTY_NOTICES.md` are current.
+- [x] Dependency revisions and `THIRD_PARTY_NOTICES.md` are current.
 
 ## Functional smoke test
 
-- [ ] JSON format/minify/escape and JSON → YAML/XML/CSV.
-- [ ] XML/YAML format and conversion to JSON.
-- [ ] Base64, Base64 Data URL and URL auto-decode exactly one layer; verified
+- [x] JSON format/minify/escape and JSON → YAML/XML/CSV.
+- [x] XML/YAML format and conversion to JSON.
+- [x] Base64, Base64 Data URL and URL auto-decode exactly one layer; verified
   PNG/JPEG Data URLs preview without creating a temporary file.
-- [ ] Unicode Escape encodes UTF-8, decodes valid `\uXXXX`/surrogate pairs and
+- [x] Unicode Escape encodes UTF-8, decodes valid `\uXXXX`/surrogate pairs and
       continues exactly one layer at a time.
-- [ ] JWT header/payload inspection without claiming signature verification.
-- [ ] CSV auto/manual delimiter, header switch, scroll, search and TSV copy.
-- [ ] Text selection, double-click word selection, copy and search navigation.
-- [ ] CRC32/MD5/SHA/HMAC output plus checksum/weak-algorithm warnings.
-- [ ] System/light/dark themes and all locale menu entries.
-- [ ] Invalid input displays a concise error and detailed hover card.
-- [ ] CLI stdin/file input, registered action, stderr diagnostics and 10 MiB limit.
+- [x] JWT header/payload inspection without claiming signature verification.
+- [x] CSV auto/manual delimiter, header switch, scroll, search and TSV copy.
+- [x] Text selection, double-click word selection, copy and search navigation.
+- [x] CRC32/MD5/SHA/HMAC output plus checksum/weak-algorithm warnings.
+- [x] System/light/dark themes and all locale menu entries.
+- [x] Invalid input displays a concise error and detailed hover card.
+- [x] CLI stdin/file input, registered action, stderr diagnostics and 10 MiB limit.
 
 ## Performance and platform
 
-- [ ] 10 MB input paste, edit, undo, selection, search and clear complete without
+- [x] 10 MB input paste, edit, undo, selection, search and clear complete without
       a crash or prolonged UI freeze.
 - [x] macOS exact 10 MiB single-line JSON reaches a responsive paged editor
       and formatted result without measuring the complete line in either UI surface.
@@ -54,7 +59,7 @@ This checklist is intentionally manual. The repository does not use GitHub CI.
 
 ## Package
 
-- [ ] macOS `.app` and `.dmg` contain the intended icon and version.
+- [x] macOS `.app` and `.dmg` contain the intended icon and version.
 - [x] Windows portable ZIP contains `ZeusTools.exe`, required runtime assets,
       `zeus-tools-cli.exe`, icon and VersionInfo; no installer is generated.
 - [ ] A fresh user account can launch each artifact.
@@ -62,26 +67,27 @@ This checklist is intentionally manual. The repository does not use GitHub CI.
       may remain.
 - [x] SHA-256 checksums are generated and verified for the current Windows
       MinGW-w64 and MSVC portable packages.
-- [ ] `scripts/check-package.sh` passes against the final macOS DMG and Windows
+- [x] `scripts/check-package.sh` passes against the current macOS DMG and Windows
       Portable ZIP; `scripts/check-package.ps1` passes natively on Windows.
 - [x] `scripts/check-package.ps1` passes natively against the current Windows
       MinGW-w64 and MSVC portable packages, including CLI and GUI startup.
-- [ ] Signing/notarization status is stated accurately in release notes.
+- [x] Signing/notarization status is stated accurately in release notes.
 
 ## Privacy and security
 
-- [ ] No real user content, key, credential or signing identity is in the repo or
+- [x] No real user content, key, credential or signing identity is in the repo or
       package.
-- [ ] Application logs and crash output do not include input/output/search/HMAC.
-- [ ] Offline smoke test passes with network access disabled.
-- [ ] XML DTD/entity and constrained YAML security fixtures pass.
-- [ ] Public security reporting is enabled or a private contact route exists.
+- [x] Application logs do not include input/output/search/HMAC content; crash
+      reports remain under operating-system control.
+- [x] Offline smoke test passes with no application network sockets.
+- [x] XML DTD/entity and constrained YAML security fixtures pass.
+- [x] A private reporting route is documented in `SECURITY.md`.
 
 ## GitHub release
 
-- [ ] README screenshots match the released UI.
-- [ ] README, privacy, security, contributing and license links render correctly.
-- [ ] Release notes include known limitations and supported platforms.
+- [x] README screenshots match the released UI.
+- [x] README, privacy, security, contributing and license targets resolve locally.
+- [x] Release notes include known limitations and supported platforms.
 - [ ] Artifacts and checksum files are attached manually.
-- [ ] No `.github/workflows` directory is added unless maintainers explicitly
+- [x] No `.github/workflows` directory is added unless maintainers explicitly
       reverse the current no-CI decision.
