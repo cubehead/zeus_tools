@@ -50,12 +50,18 @@ release upload; they must not be inferred from a cross-build.
       10 MiB JSON and CSV scenarios.
 - [x] macOS UTF-8 file input, emoji/combining-character rendering, selection,
       copy/cut/paste and undo/redo pass.
-- [ ] macOS IME candidate-window composition passes with a system input method.
+- [x] macOS system Simplified Pinyin pre-edit, first-candidate selection and
+      committed Chinese text pass through the native IME path.
+- [ ] The macOS candidate panel is visually confirmed at the insertion caret in
+      a full-screen check; app-scoped automation does not capture that system window.
 - [x] Windows 11 IME/emoji/combining characters pass.
 - [x] Windows 11 exact 10 MiB JSON/CSV, full-document replacement and undo/redo,
       search, oversized-input guard and explicit continue path pass.
 - [ ] Windows 10 IME/emoji/combining characters pass.
 - [ ] Minimum supported macOS version starts the app.
+- [ ] macOS VoiceOver reaches and announces application content. The 2026-08-31
+      check reached only the window and title-bar elements; custom EUI controls
+      are not present in the AX tree.
 
 ## Package
 
