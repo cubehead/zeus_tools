@@ -20,7 +20,7 @@ enum class Text {
     About, Version, Build, AboutDescription, PrivacySummary, SpecialThanks,
     OpenSourceThanks, ProjectWebsite, License, OpenFile, ExportResult, ExportBinary, Close,
     InputTooLarge, LargeInputEditor, ProcessAnyway,
-    PreviousPage, NextPage, CopyInput, Count,
+    PreviousPage, NextPage, CopyInput, PreviousMatch, NextMatch, Count,
 };
 
 struct Translation {

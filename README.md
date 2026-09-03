@@ -61,6 +61,8 @@ Windows uses a portable package and does not include an NSIS/MSI installer.
 - Supports system/light/dark themes and ten interface languages.
 - Opens or drops UTF-8 files and exports the current result without keeping a
   recent-file or content history.
+- Exposes native macOS accessibility names, values, focus and actions for the
+  input, result, search, processing buttons and pop-up controls.
 - Provides the same registered processors through an offline stdin/stdout CLI.
 - Never uploads or saves the text being processed.
 

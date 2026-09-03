@@ -80,6 +80,8 @@ const std::array<Translation, static_cast<std::size_t>(Text::Count)> translation
     {"上一页", "上一頁", "Previous page", "前のページ", "이전 페이지", "Página anterior", "Page précédente", "Vorherige Seite", "Página anterior", "Предыдущая страница"},
     {"下一页", "下一頁", "Next page", "次のページ", "다음 페이지", "Página siguiente", "Page suivante", "Nächste Seite", "Próxima página", "Следующая страница"},
     {"复制完整输入", "複製完整輸入", "Copy full input", "入力全体をコピー", "전체 입력 복사", "Copiar entrada completa", "Copier toute l’entrée", "Gesamte Eingabe kopieren", "Copiar entrada completa", "Копировать весь ввод"},
+    {"上一个匹配", "上一個相符項", "Previous match", "前の一致", "이전 일치", "Coincidencia anterior", "Résultat précédent", "Vorheriger Treffer", "Correspondência anterior", "Предыдущее совпадение"},
+    {"下一个匹配", "下一個相符項", "Next match", "次の一致", "다음 일치", "Coincidencia siguiente", "Résultat suivant", "Nächster Treffer", "Próxima correspondência", "Следующее совпадение"},
 }};
 
 const char* get(Text text, zeus::LocalePreference locale) {

@@ -59,9 +59,11 @@ release upload; they must not be inferred from a cross-build.
       search, oversized-input guard and explicit continue path pass.
 - [ ] Windows 10 IME/emoji/combining characters pass.
 - [ ] Minimum supported macOS version starts the app.
-- [ ] macOS VoiceOver reaches and announces application content. The 2026-08-31
-      check reached only the window and title-bar elements; custom EUI controls
-      are not present in the AX tree.
+- [x] macOS AX exposes localized input/search text fields, buttons, pop-up
+      controls and a read-only result text area. AX focus can enter the real EUI
+      editor, type JSON, read the formatted value and activate processing actions.
+- [ ] VoiceOver continuous navigation is rechecked against the new AX bridge;
+      the earlier 2026-08-31 pre-bridge run reached only the window chrome.
 
 ## Package
 

@@ -1,3 +1,4 @@
+#include "accessibility.h"
 #include "app_controller.h"
 #include "views/action_bar.h"
 #include "views/about_dialog.h"
@@ -166,6 +167,8 @@ void compose(eui::Ui& ui, const eui::Screen& screen) {
             views::build_about_dialog(ui, context);
         })
         .build();
+
+    accessibility::publish(ui, screen);
 }
 
 } // namespace app

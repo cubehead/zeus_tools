@@ -24,6 +24,11 @@ semantic versioning after the first stable release.
 
 ### Added
 
+- Added native macOS accessibility semantics for the canvas UI. Input and
+  search fields now share focus with EUI's real text editors; buttons and
+  pop-up controls expose native actions; formatted text and CSV results expose
+  localized read-only values. AX value updates no longer announce a full
+  layout rebuild, preserving screen-reader navigation during live formatting.
 - Added a native Windows MSVC Release validation preset using the Visual Studio
   generator, including the desktop app, CLI, tests and portable package.
 - Added boundary-aware selection continuation for the 16 KiB large-input

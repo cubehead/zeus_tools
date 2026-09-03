@@ -249,8 +249,19 @@ if(ZEUS_BUILD_APP)
         message(FATAL_ERROR "Failed to make EUI-NEO OpenGL backbuffer synchronization conservative")
     endif()
 
+    execute_process(
+        COMMAND ${CMAKE_COMMAND}
+                -DSOURCE_DIR=${ZEUS_EUI_SOURCE_ROOT}
+                -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/patch_eui_macos_accessibility.cmake
+        RESULT_VARIABLE ZEUS_EUI_ACCESSIBILITY_PATCH_RESULT
+    )
+    if(NOT ZEUS_EUI_ACCESSIBILITY_PATCH_RESULT EQUAL 0)
+        message(FATAL_ERROR "Failed to add native accessibility semantics to EUI-NEO")
+    endif()
+
     set(ZEUS_APP_SOURCES
         "${ZEUS_EUI_APP_MAIN}"
+        src/app/accessibility.cpp
         src/app/app.cpp
         src/app/app_controller.cpp
         src/app/i18n.cpp
