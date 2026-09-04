@@ -51,8 +51,9 @@ release upload; they must not be inferred from a cross-build.
 - [x] macOS UTF-8 file input, emoji/combining-character rendering, selection,
       copy/cut/paste and undo/redo pass.
 - [x] macOS system Simplified Pinyin pre-edit, first-candidate selection and
-      committed Chinese text pass through the native IME path in both windowed
-      and full-screen modes; the result stays empty until composition commits.
+      committed Chinese text pass through the native IME path. A windowed and
+      full-screen recheck with Sogou Pinyin also passes; the result stays empty
+      until composition commits.
 - [ ] The macOS candidate panel is visually confirmed at the insertion caret in
       a full-screen check; app-scoped automation does not capture that system window.
 - [x] Windows 11 IME/emoji/combining characters pass.
