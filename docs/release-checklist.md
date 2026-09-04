@@ -3,7 +3,7 @@
 This checklist is intentionally manual. The repository does not use GitHub CI.
 
 The checked state records validation of the current `main` branch through
-2026-08-31. Unchecked items require another operating-system version, native
+2026-09-04. Unchecked items require another operating-system version, native
 assistive technology, signing credentials, a fresh account, or the final
 release upload; they must not be inferred from a cross-build.
 
@@ -51,7 +51,8 @@ release upload; they must not be inferred from a cross-build.
 - [x] macOS UTF-8 file input, emoji/combining-character rendering, selection,
       copy/cut/paste and undo/redo pass.
 - [x] macOS system Simplified Pinyin pre-edit, first-candidate selection and
-      committed Chinese text pass through the native IME path.
+      committed Chinese text pass through the native IME path in both windowed
+      and full-screen modes; the result stays empty until composition commits.
 - [ ] The macOS candidate panel is visually confirmed at the insertion caret in
       a full-screen check; app-scoped automation does not capture that system window.
 - [x] Windows 11 IME/emoji/combining characters pass.
